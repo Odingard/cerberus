@@ -1,1 +1,2 @@
-export {} from './wrap.js';
+export { guard } from './wrap.js';
+export type { GuardResult } from './wrap.js';

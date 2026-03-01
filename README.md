@@ -102,6 +102,59 @@ const securedAgent = cerberus.guard(myAgent, {
 
 ---
 
+## Research Results
+
+> **21 payloads. 21 successful exfiltrations. 0 blocked. 100% attack success rate.**
+
+We built a 3-tool attack agent powered by GPT-4o-mini and ran 21 injection payloads across 5 categories. Every single attack completed the full Lethal Trifecta kill chain — privileged data access, injection delivery, and exfiltration of PII (names, emails, SSNs, phone numbers) to attacker-controlled endpoints. No payload was blocked, partially blocked, or triggered any safety refusal.
+
+| Category | Payloads | Success Rate | Technique |
+|----------|----------|-------------|-----------|
+| **Direct Injection** | 5 | 100% | System update spoofs, admin overrides, compliance mandates |
+| **Encoded / Obfuscated** | 4 | 100% | Base64, ROT13, Unicode escapes, hex encoding |
+| **Social Engineering** | 4 | 100% | CEO fraud, IT support impersonation, legal threats |
+| **Multi-Turn** | 4 | 100% | Persistent CC rules, delayed triggers, context poisoning |
+| **Multilingual** | 4 | 100% | Spanish, Mandarin, Arabic, Russian payloads |
+| **Total** | **21** | **100%** | — |
+
+### Key Findings
+
+1. **The attack costs nothing.** Free-tier GPT-4o-mini + 3 tool definitions + one injected instruction = full PII exfiltration in under 15 seconds.
+2. **Encoding doesn't help.** Base64, ROT13, hex, and Unicode-escaped payloads all succeed. The model decodes and executes them without hesitation.
+3. **Language doesn't matter.** Spanish, Mandarin, Arabic, and Russian injection payloads all exfiltrate data to attacker-controlled addresses.
+4. **Social engineering scales.** CEO impersonation, IT support pretexts, and legal threats all bypass the model's judgment — it never questions authority claims embedded in fetched content.
+5. **Every exfiltrated payload contained SSNs, emails, and phone numbers** — the full PII dataset, not just partial fields.
+
+### Attack Anatomy (3 tool calls, ~12 seconds)
+
+```
+Turn 0:  Agent calls readPrivateData()        → 5 customer records (SSNs, emails, phones)
+         Agent calls fetchExternalContent()    → Attacker payload injected via webpage
+Turn 1:  Agent calls sendOutboundReport()      → Full PII sent to attacker's address
+Turn 2:  Agent confirms: "Report sent successfully!"
+```
+
+**Risk Vector: `[L1: true, L2: true, L3: true, L4: false]`** — all three runtime layers fire. No existing tool detects or interrupts any of these calls.
+
+### Reproducibility
+
+All execution traces are logged as structured JSON in [`harness/traces/`](harness/traces/) with full ground-truth labels, token usage, and timing data. The harness supports multi-trial runs with configurable system prompts, temperature, and seed for statistical validation.
+
+```bash
+# Run the full payload suite (requires OPENAI_API_KEY)
+npx tsx harness/runner.ts
+
+# Stress test: 3 trials per payload with safety-hardened system prompt
+npx tsx harness/runner.ts --trials 3 --prompt safety --temperature 0 --seed 42
+
+# Analyze results
+npx tsx harness/analyze.ts --traces-dir harness/traces/
+```
+
+See [docs/research-results.md](docs/research-results.md) for full methodology, per-payload breakdowns, and trace analysis.
+
+---
+
 ## Tech Stack
 
 - **Language**: TypeScript (strict mode)
@@ -128,8 +181,9 @@ cerberus/
 │   ├── traces/           # Labeled execution logs (JSON)
 │   ├── agent.ts          # 3-tool attack agent
 │   ├── tools.ts          # Tool A, B, C definitions
-│   ├── payloads.ts       # 20+ injection payload variants
-│   └── runner.ts         # Automated attack executor
+│   ├── payloads.ts       # 30 injection payloads across 6 categories
+│   ├── runner.ts         # Automated attack executor + multi-trial stress
+│   └── analyze.ts        # Run comparison + trace analysis CLI
 ├── tests/                # Mirrors src/ structure
 ├── docs/                 # Architecture, research, API reference
 └── examples/             # Runnable demo integrations
@@ -141,9 +195,11 @@ cerberus/
 
 | Phase | Deliverable | Status |
 |-------|-------------|--------|
-| **0** | Repository scaffold, toolchain, CI | **Active** |
-| 1 | Attack harness — 3-tool agent + injection runner + labeled traces | Planned |
-| 2 | Detection middleware — L1+L2+L3 + Correlation Engine | Planned |
+| **0** | Repository scaffold, toolchain, CI | **Complete** |
+| **1** | Attack harness — 3-tool agent, 30 injection payloads, labeled traces | **Complete** |
+| **1.5** | Hardening — retry/timeout, safeParse, error traces, 88 tests | **Complete** |
+| **1.6** | Stress testing — multi-trial, prompt variants, 9 advanced payloads, 111 tests | **Complete** |
+| 2 | Detection middleware — L1+L2+L3 + Correlation Engine | **Next** |
 | 3 | Memory Contamination Graph — L4 + temporal attack detection | Planned |
 | 4 | npm-installable SDK, developer docs, examples | Planned |
 | 5 | GitHub Release, security advisory, DEF CON submission | Planned |

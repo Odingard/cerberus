@@ -22,3 +22,5 @@ export type {
   TrustOverride,
   CerberusConfig,
 } from './config.js';
+
+export type { ToolCallContext } from './context.js';

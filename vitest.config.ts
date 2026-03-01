@@ -9,6 +9,13 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'lcov'],
       include: ['src/**/*.ts'],
+      exclude: [
+        'src/adapters/**',         // Phase 4 stubs
+        'src/graph/**',            // Phase 3 stubs
+        'src/layers/l4-memory.ts', // Phase 3 stub
+        'src/**/index.ts',         // Barrel re-exports only
+        'src/types/**',            // Type-only files (no runtime code)
+      ],
       thresholds: {
         lines: 80,
         functions: 80,

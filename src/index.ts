@@ -5,8 +5,8 @@
  * across all agentic AI systems.
  *
  * Usage:
- *   import { cerberus } from '@cerberus/core';
- *   const securedAgent = cerberus.guard(myAgent, { alertMode: 'interrupt' });
+ *   import { guard } from '@cerberus/core';
+ *   const guarded = guard(myToolExecutors, config, outboundTools);
  */
 
 export type {
@@ -24,4 +24,9 @@ export type {
   AlertMode,
   LogDestination,
   CerberusConfig,
+  ToolCallContext,
 } from './types/index.js';
+
+export { guard } from './middleware/wrap.js';
+export type { GuardResult } from './middleware/wrap.js';
+export type { ToolExecutorFn } from './engine/interceptor.js';

@@ -9,3 +9,5 @@ dist/
 coverage/
 .vitest/
 .DS_Store
+harness/traces/*.json
+!harness/traces/.gitkeep
