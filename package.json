@@ -1,0 +1,56 @@
+{
+  "name": "@cerberus/core",
+  "version": "0.1.0",
+  "description": "Agentic AI runtime security platform — detects, correlates, and interrupts the Lethal Trifecta attack pattern across all agentic AI systems.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src/ harness/ tests/",
+    "lint:fix": "eslint src/ harness/ tests/ --fix",
+    "format": "prettier --write \"src/**/*.ts\" \"harness/**/*.ts\" \"tests/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"harness/**/*.ts\" \"tests/**/*.ts\"",
+    "ci": "npm run typecheck && npm run lint && npm run test",
+    "prepare": "husky"
+  },
+  "keywords": [
+    "ai-security",
+    "agentic-ai",
+    "prompt-injection",
+    "data-exfiltration",
+    "runtime-security",
+    "llm-security",
+    "cerberus"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^25.3.3",
+    "@typescript-eslint/eslint-plugin": "^8.56.1",
+    "@typescript-eslint/parser": "^8.56.1",
+    "eslint": "^8.57.1",
+    "husky": "^9.1.7",
+    "prettier": "^3.8.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.6.2",
+    "openai": "^6.25.0",
+    "zod": "^4.3.6"
+  }
+}
