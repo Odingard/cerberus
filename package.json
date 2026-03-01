@@ -38,6 +38,10 @@
   ],
   "author": "",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Odingard/cerberus"
+  },
   "engines": {
     "node": ">=20.0.0"
   },
