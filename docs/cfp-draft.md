@@ -146,7 +146,7 @@ Validated against 21 attack payloads with 100% baseline attack success rate. Typ
 - **Authors:** [To be filled]
 - **Affiliation:** [To be filled]
 - **Contact:** security@cerberus.dev
-- **Repository:** https://github.com/YOUR_ORG/cerberus
+- **Repository:** https://github.com/Odingard/cerberus
 - **License:** MIT
 - **Date:** March 2026
 

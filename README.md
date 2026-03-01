@@ -2,7 +2,7 @@
 
 **Agentic AI Runtime Security Platform**
 
-[![CI](https://github.com/YOUR_ORG/cerberus/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_ORG/cerberus/actions/workflows/ci.yml)
+[![CI](https://github.com/Odingard/cerberus/actions/workflows/ci.yml/badge.svg)](https://github.com/Odingard/cerberus/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![npm version](https://img.shields.io/npm/v/@cerberus-ai/core.svg)](https://www.npmjs.com/package/@cerberus-ai/core)
 

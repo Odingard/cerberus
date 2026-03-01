@@ -26,4 +26,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Examples** — `basic-guard.ts` (Lethal Trifecta detection) and `memory-tracking.ts` (L4 cross-session contamination)
 - **Documentation** — API reference, architecture guide, research results
 
-[0.1.0]: https://github.com/YOUR_ORG/cerberus/releases/tag/v0.1.0
+[0.1.0]: https://github.com/Odingard/cerberus/releases/tag/v0.1.0

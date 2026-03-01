@@ -6,7 +6,7 @@ Thank you for your interest in contributing to Cerberus. This document provides 
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/YOUR_ORG/cerberus.git
+   git clone https://github.com/Odingard/cerberus.git
    cd cerberus
    ```
 
