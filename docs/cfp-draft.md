@@ -57,7 +57,7 @@ We present **Cerberus**, a runtime security platform that addresses these vulner
 - Live demo: same 3 attacks, now intercepted
 
 ### 5. Deployment & Open Source (5 min)
-- `npm install @cerberus/core` — one function call integration
+- `npm install @cerberus-ai/core` — one function call integration
 - 326 tests, 99.7% coverage
 - Call to action: test your agents, contribute detection layers
 

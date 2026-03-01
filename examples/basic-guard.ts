@@ -7,7 +7,7 @@
  * Run: npx tsx examples/basic-guard.ts
  *
  * Note: This example uses relative imports for development.
- * In your project, use: import { guard } from '@cerberus/core';
+ * In your project, use: import { guard } from '@cerberus-ai/core';
  */
 
 import { guard } from '../src/index.js';

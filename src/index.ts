@@ -1,11 +1,11 @@
 /**
- * @cerberus/core — Agentic AI Runtime Security Platform
+ * @cerberus-ai/core — Agentic AI Runtime Security Platform
  *
  * Detects, correlates, and interrupts the Lethal Trifecta attack pattern
  * across all agentic AI systems.
  *
  * Usage:
- *   import { guard } from '@cerberus/core';
+ *   import { guard } from '@cerberus-ai/core';
  *   const guarded = guard(myToolExecutors, config, outboundTools);
  */
 

@@ -35,13 +35,13 @@ Default threshold: **3** (the Lethal Trifecta — L1+L2+L3 firing together).
 ## Installation
 
 ```bash
-npm install @cerberus/core
+npm install @cerberus-ai/core
 ```
 
 ## Quick Usage
 
 ```typescript
-import { guard } from '@cerberus/core';
+import { guard } from '@cerberus-ai/core';
 
 const { executors: secured, destroy } = guard(
   {

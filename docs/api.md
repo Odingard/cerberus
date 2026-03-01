@@ -5,7 +5,7 @@
 The main entry point. Wraps tool executors with the Cerberus detection pipeline.
 
 ```typescript
-import { guard } from '@cerberus/core';
+import { guard } from '@cerberus-ai/core';
 
 function guard(
   executors: Record<string, ToolExecutorFn>,
@@ -44,8 +44,8 @@ interface GuardResult {
 ### Example
 
 ```typescript
-import { guard } from '@cerberus/core';
-import type { CerberusConfig } from '@cerberus/core';
+import { guard } from '@cerberus-ai/core';
+import type { CerberusConfig } from '@cerberus-ai/core';
 
 const executors = {
   readDatabase: async (args) => db.query(args.sql),
