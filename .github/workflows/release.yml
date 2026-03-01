@@ -9,7 +9,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       id-token: write
 
     steps:
@@ -26,13 +26,16 @@ jobs:
         run: npm ci
 
       - name: Type check
-        run: npx tsc --noEmit
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
 
       - name: Test
-        run: npx vitest run
+        run: npm run test
 
       - name: Build
-        run: npx tsc
+        run: npm run build
 
       - name: Publish to npm
         run: npm publish --provenance --access public

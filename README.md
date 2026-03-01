@@ -237,7 +237,7 @@ cerberus/
 | **2** | Detection middleware — L1+L2+L3 + Correlation Engine | **Complete** |
 | **3** | Memory Contamination Graph — L4 + temporal attack detection | **Complete** |
 | **4** | npm SDK packaging, developer docs, examples | **Complete** |
-| 5 | GitHub Release, security advisory, DEF CON submission | **Next** |
+| **5** | GitHub Release, security advisory, conference submission | **Complete** |
 
 ---
 
