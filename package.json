@@ -4,9 +4,15 @@
   "description": "Agentic AI runtime security platform — detects, correlates, and interrupts the Lethal Trifecta attack pattern across all agentic AI systems.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
   "type": "module",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -16,6 +22,9 @@
     "format": "prettier --write \"src/**/*.ts\" \"harness/**/*.ts\" \"tests/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\" \"harness/**/*.ts\" \"tests/**/*.ts\"",
     "ci": "npm run typecheck && npm run lint && npm run test",
+    "clean": "rm -rf dist",
+    "prebuild": "npm run clean",
+    "prepublishOnly": "npm run ci && npm run build",
     "prepare": "husky"
   },
   "keywords": [
@@ -45,13 +54,13 @@
     "@vitest/coverage-v8": "^4.0.18",
     "eslint": "^8.57.1",
     "husky": "^9.1.7",
+    "openai": "^6.25.0",
     "prettier": "^3.8.1",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.18"
+    "vitest": "^4.0.18",
+    "zod": "^4.3.6"
   },
   "dependencies": {
-    "better-sqlite3": "^12.6.2",
-    "openai": "^6.25.0",
-    "zod": "^4.3.6"
+    "better-sqlite3": "^12.6.2"
   }
 }

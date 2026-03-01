@@ -101,8 +101,14 @@ export function interceptToolCall(
       }
     }
 
-    // Correlate signals into a risk assessment
-    const assessment = assessRisk(turnId, signals, config);
+    // Collect all session signals (including current turn) for cumulative scoring
+    const allSessionSignals: DetectionSignal[] = [];
+    for (const turnSignals of session.signalsByTurn.values()) {
+      allSessionSignals.push(...turnSignals);
+    }
+
+    // Correlate: vector/score from cumulative session signals, turn signals for inspection
+    const assessment = assessRisk(turnId, signals, config, allSessionSignals);
 
     // Invoke callbacks
     onFullAssessment?.(assessment);

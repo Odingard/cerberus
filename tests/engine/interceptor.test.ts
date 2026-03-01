@@ -222,12 +222,14 @@ describe('interceptToolCall', () => {
     });
 
     expect(assessments[2].vector.l3).toBe(true);
-    expect(assessments[2].score).toBeGreaterThanOrEqual(1);
+    // Session-cumulative: L1 (turn 0) + L2 (turn 1) + L3 (turn 2) = score 3
+    expect(assessments[2].score).toBe(3);
+    expect(assessments[2].vector).toEqual({ l1: true, l2: true, l3: true, l4: false });
 
-    // With interrupt mode and L3 firing, should be blocked
-    // (L3 fires alone in this turn, score=1, but threshold=3 so not blocked)
-    // The score for this turn is only 1 (only L3 in this turn)
-    expect(sendResult).toBe('sent'); // Not blocked because per-turn score is 1
+    // Lethal Trifecta detected → interrupt
+    expect(sendResult).toContain('[Cerberus]');
+    expect(sendResult).toContain('blocked');
+    expect(sendResult).toContain('3/4');
   });
 
   it('should produce score=3 interrupt when all signals fire in one turn', async () => {
@@ -424,8 +426,11 @@ describe('interceptToolCall — L4 integration', () => {
     });
 
     expect(assessments[3].vector.l3).toBe(true);
-    // L3 per-turn score is 1, threshold=4 so not blocked
-    expect(sendResult).toBe('sent');
+    // Session-cumulative: L1+L2+L4+L3 = score 4, threshold=4 → interrupt
+    expect(assessments[3].score).toBe(4);
+    expect(assessments[3].vector).toEqual({ l1: true, l2: true, l3: true, l4: true });
+    expect(sendResult).toContain('[Cerberus]');
+    expect(sendResult).toContain('4/4');
 
     ledger.close();
   });

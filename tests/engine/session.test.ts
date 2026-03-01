@@ -13,7 +13,7 @@ import type { PrivilegedDataSignal, UntrustedTokensSignal } from '../../src/type
 describe('createSession', () => {
   it('should create a session with a default ID', () => {
     const session = createSession();
-    expect(session.sessionId).toMatch(/^session-\d+$/);
+    expect(session.sessionId).toMatch(/^session-\d+-\d+$/);
   });
 
   it('should create a session with a custom ID', () => {
@@ -139,9 +139,10 @@ describe('resetSession', () => {
     expect(session.turnCounter).toBe(0);
   });
 
-  it('should preserve session ID after reset', () => {
-    const session = createSession('persistent-id');
+  it('should rotate session ID on reset for L4 cross-session detection', () => {
+    const session = createSession('old-id');
     resetSession(session);
-    expect(session.sessionId).toBe('persistent-id');
+    expect(session.sessionId).not.toBe('old-id');
+    expect(session.sessionId).toMatch(/^session-\d+-\d+$/);
   });
 });

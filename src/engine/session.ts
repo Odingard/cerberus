@@ -8,9 +8,18 @@
 
 import type { SessionId, DetectionSignal } from '../types/signals.js';
 
+/** Monotonic counter to guarantee unique session IDs even within the same millisecond. */
+let sessionSeq = 0;
+
+/** Generate a unique session ID. */
+function generateSessionId(): SessionId {
+  return `session-${Date.now()}-${String(sessionSeq++)}`;
+}
+
 /** Per-session state accumulated by detection layers. */
 export interface DetectionSession {
-  readonly sessionId: SessionId;
+  /** Unique session identifier. Rotated on reset() for L4 cross-session detection. */
+  sessionId: SessionId;
 
   /** Field names accessed from privileged/trusted data sources (set by L1). */
   readonly accessedFields: Set<string>;
@@ -37,7 +46,7 @@ export interface DetectionSession {
 /** Create a fresh detection session. */
 export function createSession(sessionId?: string): DetectionSession {
   return {
-    sessionId: sessionId ?? `session-${Date.now()}`,
+    sessionId: sessionId ?? generateSessionId(),
     accessedFields: new Set(),
     privilegedValues: new Set(),
     trustedSourcesAccessed: new Set(),
@@ -58,8 +67,9 @@ export function recordSignal(session: DetectionSession, signal: DetectionSignal)
   }
 }
 
-/** Reset all session state for reuse between runs. */
+/** Reset all session state for reuse between runs. Rotates sessionId for L4 cross-session detection. */
 export function resetSession(session: DetectionSession): void {
+  session.sessionId = generateSessionId();
   session.accessedFields.clear();
   session.privilegedValues.clear();
   session.trustedSourcesAccessed.clear();

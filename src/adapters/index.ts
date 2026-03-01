@@ -1,2 +1,2 @@
-export {} from './langchain.js';
-export {} from './autogen.js';
+export type { LangChainAdapterConfig } from './langchain.js';
+export type { AutoGenAdapterConfig } from './autogen.js';

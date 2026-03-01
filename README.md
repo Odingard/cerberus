@@ -77,27 +77,62 @@ npm install @cerberus/core
 ```
 
 ```typescript
-import { cerberus } from '@cerberus/core';
+import { guard } from '@cerberus/core';
+import type { CerberusConfig } from '@cerberus/core';
 
-// One line to secure your agent
-const securedAgent = cerberus.guard(myAgent, {
-  alertMode: 'interrupt',    // 'log' | 'alert' | 'interrupt'
-  memoryTracking: true,      // Enable Layer 4
-  logDestination: 'console'  // 'console' | 'file' | 'webhook'
-});
+// Define your agent's tool executors
+const executors = {
+  readDatabase: async (args) => fetchFromDb(args.query),
+  fetchUrl: async (args) => httpGet(args.url),
+  sendEmail: async (args) => smtp.send(args),
+};
+
+// Configure Cerberus
+const config: CerberusConfig = {
+  alertMode: 'interrupt',     // 'log' | 'alert' | 'interrupt'
+  threshold: 3,               // Score needed to trigger action (0-4)
+  trustOverrides: [
+    { toolName: 'readDatabase', trustLevel: 'trusted' },
+    { toolName: 'fetchUrl', trustLevel: 'untrusted' },
+  ],
+};
+
+// Wrap your tools — one function call
+const { executors: secured, assessments, destroy } = guard(
+  executors,
+  config,
+  ['sendEmail'],  // Outbound tools (L3 monitors these)
+);
+
+// Use secured.readDatabase(), secured.fetchUrl(), secured.sendEmail()
+// exactly like the originals — Cerberus intercepts transparently
 ```
 
-### What You See
+### What Happens
+
+When a multi-turn attack unfolds (L1: privileged access, L2: injection, L3: exfiltration), Cerberus correlates signals across the session and blocks the outbound call:
 
 ```
-[Cerberus] ⚠️  ALERT — Turn 7
-  Risk Score: 4/4 (CRITICAL)
-  L1: PRIVILEGED_DATA_ACCESSED (customer_records.json)
-  L2: UNTRUSTED_TOKENS_IN_CONTEXT (source: external_fetch)
-  L3: EXFILTRATION_RISK (outbound content matches private field 'email')
-  L4: CONTAMINATED_MEMORY_ACTIVE (session_2026-02-15, node: ext_fetch_3)
-  Action: OUTBOUND TOOL CALL INTERRUPTED
-  Trace: ./traces/turn-007-2026-02-28T14:32:00Z.json
+[Cerberus] Tool call blocked — risk score 3/4
+```
+
+The `assessments` array provides detailed per-turn breakdowns:
+
+```typescript
+assessments[2].vector  // { l1: true, l2: true, l3: true, l4: false }
+assessments[2].score   // 3
+assessments[2].action  // 'interrupt'
+```
+
+Use the `onAssessment` callback in config for real-time monitoring:
+
+```typescript
+const config: CerberusConfig = {
+  alertMode: 'interrupt',
+  onAssessment: ({ turnId, score, action }) => {
+    console.log(`Turn ${turnId}: score=${score}, action=${action}`);
+  },
+};
 ```
 
 ---
@@ -160,7 +195,7 @@ See [docs/research-results.md](docs/research-results.md) for full methodology, p
 - **Language**: TypeScript (strict mode)
 - **Runtime**: Node.js >= 20
 - **Primary Harness**: OpenAI Function Calling API
-- **Testing**: Vitest
+- **Testing**: Vitest (326 tests, 99.7% coverage)
 - **Memory Store**: SQLite via better-sqlite3
 - **Validation**: Zod
 
@@ -174,14 +209,14 @@ cerberus/
 │   ├── layers/           # L1-L4 detection layers
 │   ├── engine/           # Correlation engine + interceptor
 │   ├── graph/            # Memory contamination graph + provenance ledger
-│   ├── middleware/        # Developer-facing cerberus.guard() API
-│   ├── adapters/         # LangChain, AutoGen integrations
+│   ├── middleware/        # Developer-facing guard() API
+│   ├── adapters/         # Framework integrations (planned)
 │   └── types/            # Shared TypeScript interfaces
 ├── harness/              # Phase 1 attack research instrument
 │   ├── traces/           # Labeled execution logs (JSON)
 │   ├── agent.ts          # 3-tool attack agent
 │   ├── tools.ts          # Tool A, B, C definitions
-│   ├── payloads.ts       # 30 injection payloads across 6 categories
+│   ├── payloads.ts       # 21 injection payloads across 5 categories
 │   ├── runner.ts         # Automated attack executor + multi-trial stress
 │   └── analyze.ts        # Run comparison + trace analysis CLI
 ├── tests/                # Mirrors src/ structure
@@ -196,13 +231,13 @@ cerberus/
 | Phase | Deliverable | Status |
 |-------|-------------|--------|
 | **0** | Repository scaffold, toolchain, CI | **Complete** |
-| **1** | Attack harness — 3-tool agent, 30 injection payloads, labeled traces | **Complete** |
+| **1** | Attack harness — 3-tool agent, 21 injection payloads, labeled traces | **Complete** |
 | **1.5** | Hardening — retry/timeout, safeParse, error traces, 88 tests | **Complete** |
-| **1.6** | Stress testing — multi-trial, prompt variants, 9 advanced payloads, 111 tests | **Complete** |
-| 2 | Detection middleware — L1+L2+L3 + Correlation Engine | **Next** |
-| 3 | Memory Contamination Graph — L4 + temporal attack detection | Planned |
-| 4 | npm-installable SDK, developer docs, examples | Planned |
-| 5 | GitHub Release, security advisory, DEF CON submission | Planned |
+| **1.6** | Stress testing — multi-trial, prompt variants, advanced payloads | **Complete** |
+| **2** | Detection middleware — L1+L2+L3 + Correlation Engine | **Complete** |
+| **3** | Memory Contamination Graph — L4 + temporal attack detection | **Complete** |
+| **4** | npm SDK packaging, developer docs, examples | **Complete** |
+| 5 | GitHub Release, security advisory, DEF CON submission | **Next** |
 
 ---
 
@@ -210,10 +245,11 @@ cerberus/
 
 | Framework | Status |
 |-----------|--------|
-| OpenAI Function Calling | Primary (Phase 1+) |
-| Anthropic Tool Use | Phase 4 |
-| LangChain | Phase 4 |
-| AutoGen | Phase 4 |
+| Generic tool executors | **Supported** |
+| OpenAI Function Calling | **Supported** (via harness) |
+| LangChain | Planned (adapter stub) |
+| AutoGen | Planned (adapter stub) |
+| Anthropic Tool Use | Planned |
 | Ollama (Local) | Future |
 
 ---

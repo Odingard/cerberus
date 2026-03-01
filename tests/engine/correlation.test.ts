@@ -166,4 +166,33 @@ describe('assessRisk', () => {
     expect(assessment.score).toBe(2);
     expect(assessment.action).toBe('alert');
   });
+
+  it('should use sessionSignals for cumulative vector when provided', () => {
+    // Turn signals: just L3
+    // Session signals: L1 + L2 + L3 (accumulated across turns)
+    const assessment = assessRisk(
+      'turn-003',
+      [L3_SIGNAL],
+      { alertMode: 'interrupt' },
+      [L1_SIGNAL, L2_SIGNAL, L3_SIGNAL],
+    );
+
+    // Vector and score reflect cumulative session signals
+    expect(assessment.vector).toEqual({ l1: true, l2: true, l3: true, l4: false });
+    expect(assessment.score).toBe(3);
+    expect(assessment.action).toBe('interrupt');
+
+    // But signals field contains only the current turn's signals
+    expect(assessment.signals).toHaveLength(1);
+    expect(assessment.signals[0].layer).toBe('L3');
+  });
+
+  it('should fall back to turnSignals when sessionSignals not provided', () => {
+    const assessment = assessRisk('turn-001', [L1_SIGNAL], { alertMode: 'interrupt' });
+
+    expect(assessment.vector).toEqual({ l1: true, l2: false, l3: false, l4: false });
+    expect(assessment.score).toBe(1);
+    expect(assessment.action).toBe('none');
+    expect(assessment.signals).toHaveLength(1);
+  });
 });

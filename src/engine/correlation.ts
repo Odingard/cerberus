@@ -74,14 +74,21 @@ export function resolveAction(score: number, config: CerberusConfig): RiskAction
 }
 
 /**
- * Compute a risk assessment from a set of signals for a single turn.
+ * Compute a risk assessment for a single turn.
+ *
+ * When `sessionSignals` is provided, the risk vector and score are computed
+ * from the cumulative session signals (enabling cross-turn detection of
+ * the Lethal Trifecta). The `signals` field on the returned assessment
+ * contains only the current turn's signals for turn-level inspection.
  */
 export function assessRisk(
   turnId: TurnId,
-  signals: readonly DetectionSignal[],
+  turnSignals: readonly DetectionSignal[],
   config: CerberusConfig,
+  sessionSignals?: readonly DetectionSignal[],
 ): RiskAssessment {
-  const vector = buildRiskVector(signals);
+  const vectorSignals = sessionSignals ?? turnSignals;
+  const vector = buildRiskVector(vectorSignals);
   const score = computeScore(vector);
   const action = resolveAction(score, config);
 
@@ -90,7 +97,7 @@ export function assessRisk(
     vector,
     score,
     action,
-    signals,
+    signals: turnSignals,
     timestamp: Date.now(),
   };
 }

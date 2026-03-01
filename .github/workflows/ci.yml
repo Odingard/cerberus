@@ -36,3 +36,9 @@ jobs:
 
       - name: Test with coverage
         run: npx vitest run --coverage
+
+      - name: Build package
+        run: npm run build
+
+      - name: Verify package contents
+        run: npm pack --dry-run 2>&1 | head -50
