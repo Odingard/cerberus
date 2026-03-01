@@ -11,9 +11,13 @@ import type { DetectionSignal, RiskAssessment } from '../types/signals.js';
 import type { ToolCallContext } from '../types/context.js';
 import type { DetectionSession } from './session.js';
 import { recordSignal } from './session.js';
-import { classifyDataSource } from '../layers/l1-classifier.js';
+import { classifyDataSource, resolveTrustLevel } from '../layers/l1-classifier.js';
 import { tagTokenProvenance } from '../layers/l2-tagger.js';
 import { classifyOutboundIntent } from '../layers/l3-classifier.js';
+import { checkMemoryContamination } from '../layers/l4-memory.js';
+import type { MemoryToolConfig } from '../layers/l4-memory.js';
+import type { ContaminationGraph } from '../graph/contamination.js';
+import type { ProvenanceLedger } from '../graph/ledger.js';
 import { assessRisk } from './correlation.js';
 
 /** Generic tool executor function signature. */
@@ -41,6 +45,9 @@ export function interceptToolCall(
   config: CerberusConfig,
   outboundTools: readonly string[],
   onFullAssessment?: OnFullAssessmentCallback,
+  memoryTools?: readonly MemoryToolConfig[],
+  graph?: ContaminationGraph,
+  ledger?: ProvenanceLedger,
 ): ToolExecutorFn {
   const trustOverrides = config.trustOverrides ?? [];
 
@@ -82,6 +89,16 @@ export function interceptToolCall(
     if (l3Signal) {
       signals.push(l3Signal);
       recordSignal(session, l3Signal);
+    }
+
+    // L4: Memory contamination detection (optional — skip if not configured)
+    if (graph && ledger && memoryTools && memoryTools.length > 0) {
+      const trustLevel = resolveTrustLevel(toolName, trustOverrides);
+      const l4Signal = checkMemoryContamination(ctx, memoryTools, graph, ledger, trustLevel);
+      if (l4Signal) {
+        signals.push(l4Signal);
+        recordSignal(session, l4Signal);
+      }
     }
 
     // Correlate signals into a risk assessment

@@ -15,4 +15,11 @@ export {
   serializeArguments,
 } from './l3-classifier.js';
 
-export {} from './l4-memory.js';
+export {
+  checkMemoryContamination,
+  extractNodeId,
+  defaultExtractNodeId,
+  defaultExtractContent,
+} from './l4-memory.js';
+
+export type { MemoryToolConfig } from './l4-memory.js';

