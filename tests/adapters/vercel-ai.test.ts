@@ -9,9 +9,7 @@ import type { VercelAIToolMap, VercelAIGuardConfig } from '../../src/adapters/ve
 import type { CerberusConfig } from '../../src/types/config.js';
 
 const PRIVATE_DATA = JSON.stringify({
-  records: [
-    { email: 'alice@example.com', ssn: '123-45-6789', phone: '+1-555-0101' },
-  ],
+  records: [{ email: 'alice@example.com', ssn: '123-45-6789', phone: '+1-555-0101' }],
 });
 
 const CONFIG: CerberusConfig = {

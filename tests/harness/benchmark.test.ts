@@ -11,9 +11,7 @@ import {
   BENCHMARK_CONFIG,
   BENCHMARK_OUTBOUND_TOOLS,
 } from '../../harness/benchmark.js';
-import type {
-  PayloadBenchmarkResult,
-} from '../../harness/benchmark.js';
+import type { PayloadBenchmarkResult } from '../../harness/benchmark.js';
 import type { GroundTruthLabels } from '../../harness/types.js';
 import type { RiskAssessment } from '../../src/types/signals.js';
 
@@ -49,7 +47,11 @@ function makeResult(overrides: Partial<PayloadBenchmarkResult> = {}): PayloadBen
   const assessments = [
     makeAssessment({ vector: { l1: true, l2: false, l3: false, l4: false }, score: 1 }),
     makeAssessment({ vector: { l1: false, l2: true, l3: false, l4: false }, score: 1 }),
-    makeAssessment({ vector: { l1: false, l2: false, l3: true, l4: false }, score: 1, action: 'interrupt' }),
+    makeAssessment({
+      vector: { l1: false, l2: false, l3: true, l4: false },
+      score: 1,
+      action: 'interrupt',
+    }),
   ];
   const comparison = compareBenchmark(labels, assessments);
   return {
@@ -66,15 +68,34 @@ describe('compareBenchmark', () => {
   it('should classify TP when ground truth and detection match', () => {
     const labels = makeLabels();
     const assessments = [
-      makeAssessment({ vector: { l1: true, l2: true, l3: true, l4: false }, score: 3, action: 'interrupt' }),
+      makeAssessment({
+        vector: { l1: true, l2: true, l3: true, l4: false },
+        score: 3,
+        action: 'interrupt',
+      }),
     ];
 
     const result = compareBenchmark(labels, assessments);
 
     expect(result.layerResults).toHaveLength(3);
-    expect(result.layerResults[0]).toEqual({ layer: 'L1', expected: true, detected: true, result: 'TP' });
-    expect(result.layerResults[1]).toEqual({ layer: 'L2', expected: true, detected: true, result: 'TP' });
-    expect(result.layerResults[2]).toEqual({ layer: 'L3', expected: true, detected: true, result: 'TP' });
+    expect(result.layerResults[0]).toEqual({
+      layer: 'L1',
+      expected: true,
+      detected: true,
+      result: 'TP',
+    });
+    expect(result.layerResults[1]).toEqual({
+      layer: 'L2',
+      expected: true,
+      detected: true,
+      result: 'TP',
+    });
+    expect(result.layerResults[2]).toEqual({
+      layer: 'L3',
+      expected: true,
+      detected: true,
+      result: 'TP',
+    });
   });
 
   it('should classify FN when expected but not detected', () => {
@@ -149,10 +170,7 @@ describe('compareBenchmark', () => {
 
   it('should not set wouldHaveBlocked when no interrupt', () => {
     const labels = makeLabels();
-    const assessments = [
-      makeAssessment({ action: 'none' }),
-      makeAssessment({ action: 'alert' }),
-    ];
+    const assessments = [makeAssessment({ action: 'none' }), makeAssessment({ action: 'alert' })];
 
     const result = compareBenchmark(labels, assessments);
     expect(result.wouldHaveBlocked).toBe(false);
@@ -277,7 +295,8 @@ describe('createBenchmarkGuard', () => {
 
   it('should use default BENCHMARK_CONFIG', async () => {
     const executors = {
-      readPrivateData: (): Promise<string> => Promise.resolve('{"records":[{"email":"test@test.com"}]}'),
+      readPrivateData: (): Promise<string> =>
+        Promise.resolve('{"records":[{"email":"test@test.com"}]}'),
     };
 
     const guarded = createBenchmarkGuard(executors);

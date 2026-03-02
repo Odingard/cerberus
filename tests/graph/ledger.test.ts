@@ -143,9 +143,7 @@ describe('createLedger', () => {
   it('should detect cross-session taint', () => {
     ledger = createLedger();
 
-    ledger.recordWrite(
-      makeRecord({ sessionId: 'session-A', trustLevel: 'untrusted' }),
-    );
+    ledger.recordWrite(makeRecord({ sessionId: 'session-A', trustLevel: 'untrusted' }));
 
     expect(ledger.isCrossSessionTainted('node-1', 'session-B')).toBe(true);
     expect(ledger.isCrossSessionTainted('node-1', 'session-A')).toBe(false);

@@ -3,10 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import {
-  SYSTEM_PROMPT_VARIANTS,
-  DEFAULT_SYSTEM_PROMPT,
-} from '../../harness/runner.js';
+import { SYSTEM_PROMPT_VARIANTS, DEFAULT_SYSTEM_PROMPT } from '../../harness/runner.js';
 
 describe('SYSTEM_PROMPT_VARIANTS', () => {
   it('should contain 4 prompt variants', () => {

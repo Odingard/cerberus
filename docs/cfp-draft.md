@@ -33,22 +33,26 @@ We present **Cerberus**, a runtime security platform that addresses these vulner
 ## DEF CON AI Village — Talk Outline (45 min)
 
 ### 1. The $0 Attack (10 min)
+
 - Live demo: 3 tool calls, 12 seconds, full PII exfiltration
 - Show the attack anatomy — readPrivateData → fetchExternalContent (injected) → sendOutboundReport
 - Audience participation: guess which payload category succeeds (trick question — they all do)
 
 ### 2. Why Everything You've Tried Doesn't Work (10 min)
+
 - System prompts: "Do not share sensitive data" — bypassed by every payload
 - Safety tuning: model never refuses, even with explicit PII
 - Input sanitization: Base64, ROT13, hex, Unicode all decode and execute
 - Language barriers: Spanish, Mandarin, Arabic, Russian — all succeed
 
 ### 3. The Lethal Trifecta Model (5 min)
+
 - Formalize the 3 conditions: privileged access + untrusted tokens + outbound capability
 - Show why this is architectural, not model-specific
 - Introduce the 4th dimension: memory contamination across sessions
 
 ### 4. Cerberus: Runtime Detection (15 min)
+
 - L1: Data source classification — tag trust at access time
 - L2: Token provenance — label every token by origin
 - L3: Outbound intent — substring correlation catches exfiltration
@@ -57,6 +61,7 @@ We present **Cerberus**, a runtime security platform that addresses these vulner
 - Live demo: same 3 attacks, now intercepted
 
 ### 5. Deployment & Open Source (5 min)
+
 - `npm install @cerberus-ai/core` — one function call integration
 - 326 tests, 99.7% coverage
 - Call to action: test your agents, contribute detection layers
@@ -86,17 +91,20 @@ Validated against 21 attack payloads with 100% baseline attack success rate. Typ
 **Target Venues:** USENIX Security, IEEE S&P, ACM CCS
 
 ### 1. Introduction
+
 - Agentic AI adoption trajectory and security gap
 - The Lethal Trifecta: formalizing the fundamental vulnerability
 - Contributions and paper structure
 
 ### 2. Threat Model
+
 - Agent capabilities: tool calling, persistent memory, multi-turn conversations
 - Attacker capabilities: indirect prompt injection via external content
 - Attack surface: the 3-capability intersection + memory persistence
 - Relationship to existing work (MINJA, Greshake et al., Perez & Ribeiro)
 
 ### 3. Attack Validation
+
 - Experimental setup: 3-tool agent, GPT-4o-mini, simulated enterprise scenario
 - Payload taxonomy: 5 categories, 21 payloads
 - Results: 100% success rate across all categories
@@ -104,6 +112,7 @@ Validated against 21 attack payloads with 100% baseline attack success rate. Typ
 - Statistical analysis: zero variance in attack outcomes
 
 ### 4. Cerberus: Detection Architecture
+
 - Design principles: session-cumulative scoring, model-agnostic, framework-agnostic
 - L1: Data source classifier (PII extraction, trust tagging)
 - L2: Token provenance tagger (untrusted content labeling)
@@ -112,29 +121,34 @@ Validated against 21 attack payloads with 100% baseline attack success rate. Typ
 - Correlation engine: 4-bit risk vector, score computation, action resolution
 
 ### 5. Implementation
+
 - TypeScript/Node.js, single-function API
 - SQLite-backed provenance ledger for audit
 - Performance characteristics: latency overhead per tool call
 
 ### 6. Evaluation
+
 - Detection rate against all 21 payloads
 - False positive analysis with benign tool-call sequences
 - Cross-session L4 detection timing
 - Comparison with existing defenses (system prompts, safety tuning, input filters)
 
 ### 7. Discussion
+
 - Limitations: substring correlation vs. semantic similarity
 - Adversarial robustness: paraphrased exfiltration, split-token attacks
 - Multi-model generalization (future work)
 - Ethical considerations: dual-use research
 
 ### 8. Related Work
+
 - Prompt injection: Greshake et al. (2023), Perez & Ribeiro (2022)
 - Memory attacks: MINJA (NeurIPS 2025)
 - AI security frameworks: OWASP LLM Top 10
 - Runtime monitoring: existing application security parallels
 
 ### 9. Conclusion
+
 - The Lethal Trifecta is architectural — no amount of model safety training eliminates it
 - Runtime detection at the tool-call level is necessary and sufficient
 - Cerberus: first open-source, deployable defense with L4 memory contamination detection
@@ -152,10 +166,10 @@ Validated against 21 attack payloads with 100% baseline attack success rate. Typ
 
 ## Submission Deadlines (2026)
 
-| Venue | Deadline | Format |
-|-------|----------|--------|
-| DEF CON 34 AI Village | TBD (typically May) | Talk proposal |
-| Black Hat USA Arsenal | TBD (typically April) | Tool demo |
-| USENIX Security '27 | TBD (typically Feb 2027) | Full paper (18 pages) |
-| IEEE S&P '27 | TBD (typically Jun 2026) | Full paper |
-| ACM CCS '26 | TBD (typically May 2026) | Full paper (12 pages) |
+| Venue                 | Deadline                 | Format                |
+| --------------------- | ------------------------ | --------------------- |
+| DEF CON 34 AI Village | TBD (typically May)      | Talk proposal         |
+| Black Hat USA Arsenal | TBD (typically April)    | Tool demo             |
+| USENIX Security '27   | TBD (typically Feb 2027) | Full paper (18 pages) |
+| IEEE S&P '27          | TBD (typically Jun 2026) | Full paper            |
+| ACM CCS '26           | TBD (typically May 2026) | Full paper (12 pages) |

@@ -21,7 +21,11 @@ vi.mock('openai', () => {
   };
 });
 
-import { OpenAIProvider, toOpenAITools, toOpenAIMessages } from '../../../harness/providers/openai.js';
+import {
+  OpenAIProvider,
+  toOpenAITools,
+  toOpenAIMessages,
+} from '../../../harness/providers/openai.js';
 import type { ProviderMessage } from '../../../harness/providers/types.js';
 
 describe('toOpenAITools', () => {
@@ -36,7 +40,10 @@ describe('toOpenAITools', () => {
   });
 
   it('should preserve parameter schemas', () => {
-    const result = toOpenAITools(CANONICAL_TOOLS) as unknown as Array<{ type: string; function: { name: string; parameters: { required: string[] } } }>;
+    const result = toOpenAITools(CANONICAL_TOOLS) as unknown as Array<{
+      type: string;
+      function: { name: string; parameters: { required: string[] } };
+    }>;
     const sendReport = result.find((t) => t.function.name === 'sendOutboundReport');
     expect(sendReport).toBeDefined();
     expect(sendReport!.function.parameters.required).toContain('recipient');
@@ -45,9 +52,7 @@ describe('toOpenAITools', () => {
 
 describe('toOpenAIMessages', () => {
   it('should convert system messages', () => {
-    const messages: ProviderMessage[] = [
-      { role: 'system', content: 'You are helpful' },
-    ];
+    const messages: ProviderMessage[] = [{ role: 'system', content: 'You are helpful' }];
     const result = toOpenAIMessages(messages);
     expect(result[0]).toEqual({ role: 'system', content: 'You are helpful' });
   });
@@ -93,14 +98,16 @@ describe('OpenAIProvider', () => {
 
   it('should send completion request and parse response', async () => {
     mockCreate.mockResolvedValueOnce({
-      choices: [{
-        message: {
-          role: 'assistant',
-          content: 'Hello!',
-          tool_calls: undefined,
+      choices: [
+        {
+          message: {
+            role: 'assistant',
+            content: 'Hello!',
+            tool_calls: undefined,
+          },
+          finish_reason: 'stop',
         },
-        finish_reason: 'stop',
-      }],
+      ],
       usage: { prompt_tokens: 100, completion_tokens: 20 },
     });
 
@@ -118,21 +125,25 @@ describe('OpenAIProvider', () => {
 
   it('should parse tool calls from response', async () => {
     mockCreate.mockResolvedValueOnce({
-      choices: [{
-        message: {
-          role: 'assistant',
-          content: null,
-          tool_calls: [{
-            id: 'call-1',
-            type: 'function',
-            function: {
-              name: 'readPrivateData',
-              arguments: '{"customerId":"CUST-001"}',
-            },
-          }],
+      choices: [
+        {
+          message: {
+            role: 'assistant',
+            content: null,
+            tool_calls: [
+              {
+                id: 'call-1',
+                type: 'function',
+                function: {
+                  name: 'readPrivateData',
+                  arguments: '{"customerId":"CUST-001"}',
+                },
+              },
+            ],
+          },
+          finish_reason: 'tool_calls',
         },
-        finish_reason: 'tool_calls',
-      }],
+      ],
       usage: { prompt_tokens: 100, completion_tokens: 30 },
     });
 
@@ -162,19 +173,20 @@ describe('OpenAIProvider', () => {
 
   it('should pass temperature and seed', async () => {
     mockCreate.mockResolvedValueOnce({
-      choices: [{
-        message: { role: 'assistant', content: 'Ok', tool_calls: undefined },
-        finish_reason: 'stop',
-      }],
+      choices: [
+        {
+          message: { role: 'assistant', content: 'Ok', tool_calls: undefined },
+          finish_reason: 'stop',
+        },
+      ],
       usage: { prompt_tokens: 50, completion_tokens: 10 },
     });
 
     const provider = new OpenAIProvider('gpt-4o-mini', 'test-key');
-    await provider.createCompletion(
-      [{ role: 'user', content: 'Hi' }],
-      CANONICAL_TOOLS,
-      { temperature: 0, seed: 42 },
-    );
+    await provider.createCompletion([{ role: 'user', content: 'Hi' }], CANONICAL_TOOLS, {
+      temperature: 0,
+      seed: 42,
+    });
 
     const callArgs = mockCreate.mock.calls[0][0] as Record<string, unknown>;
     expect(callArgs.temperature).toBe(0);
@@ -192,10 +204,12 @@ describe('OpenAIProvider', () => {
 
     for (const { input, expected } of reasons) {
       mockCreate.mockResolvedValueOnce({
-        choices: [{
-          message: { role: 'assistant', content: 'x', tool_calls: undefined },
-          finish_reason: input,
-        }],
+        choices: [
+          {
+            message: { role: 'assistant', content: 'x', tool_calls: undefined },
+            finish_reason: input,
+          },
+        ],
         usage: { prompt_tokens: 10, completion_tokens: 5 },
       });
 

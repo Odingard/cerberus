@@ -170,12 +170,11 @@ describe('assessRisk', () => {
   it('should use sessionSignals for cumulative vector when provided', () => {
     // Turn signals: just L3
     // Session signals: L1 + L2 + L3 (accumulated across turns)
-    const assessment = assessRisk(
-      'turn-003',
-      [L3_SIGNAL],
-      { alertMode: 'interrupt' },
-      [L1_SIGNAL, L2_SIGNAL, L3_SIGNAL],
-    );
+    const assessment = assessRisk('turn-003', [L3_SIGNAL], { alertMode: 'interrupt' }, [
+      L1_SIGNAL,
+      L2_SIGNAL,
+      L3_SIGNAL,
+    ]);
 
     // Vector and score reflect cumulative session signals
     expect(assessment.vector).toEqual({ l1: true, l2: true, l3: true, l4: false });

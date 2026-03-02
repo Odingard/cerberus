@@ -83,9 +83,7 @@ describe('toAnthropicMessages', () => {
       {
         role: 'assistant',
         content: 'Let me check.',
-        toolCalls: [
-          { id: 'tc-1', name: 'readPrivateData', arguments: {} },
-        ],
+        toolCalls: [{ id: 'tc-1', name: 'readPrivateData', arguments: {} }],
       },
     ];
     const result = toAnthropicMessages(messages);
@@ -183,11 +181,9 @@ describe('AnthropicProvider', () => {
     });
 
     const provider = new AnthropicProvider('claude-sonnet-4-6', 'test-key');
-    await provider.createCompletion(
-      [{ role: 'user', content: 'Hi' }],
-      CANONICAL_TOOLS,
-      { temperature: 0 },
-    );
+    await provider.createCompletion([{ role: 'user', content: 'Hi' }], CANONICAL_TOOLS, {
+      temperature: 0,
+    });
 
     const callArgs = mockCreate.mock.calls[0][0] as Record<string, unknown>;
     expect(callArgs.temperature).toBe(0);

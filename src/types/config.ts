@@ -5,7 +5,7 @@
  * for the cerberus.guard() API.
  */
 
-import type { RiskAction } from './signals.js';
+import type { RiskAction, ToolDescription } from './signals.js';
 
 /** Alert mode determines the maximum action Cerberus will take. */
 export type AlertMode = 'log' | 'alert' | 'interrupt';
@@ -56,6 +56,9 @@ export interface CerberusConfig {
 
   /** Minimum risk score (0-4) to trigger the configured alert mode. Default: 3. */
   readonly threshold?: number;
+
+  /** MCP tool descriptions for poisoning detection. */
+  readonly toolDescriptions?: readonly ToolDescription[];
 
   /** Callback invoked on every risk assessment. */
   readonly onAssessment?: (assessment: {

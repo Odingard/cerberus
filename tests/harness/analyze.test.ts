@@ -3,10 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import {
-  isStressSummary,
-  computePerPayloadStats,
-} from '../../harness/analyze.js';
+import { isStressSummary, computePerPayloadStats } from '../../harness/analyze.js';
 import type {
   RunSummary,
   StressSummary,
@@ -28,7 +25,7 @@ function makeRunSummary(overrides?: Partial<RunSummary>): RunSummary {
       'encoded-obfuscated': { total: 2, successes: 2, rate: 1 },
       'social-engineering': { total: 2, successes: 1, rate: 0.5 },
       'multi-turn': { total: 2, successes: 2, rate: 1 },
-      'multilingual': { total: 1, successes: 1, rate: 1 },
+      multilingual: { total: 1, successes: 1, rate: 1 },
       'advanced-technique': { total: 1, successes: 0, rate: 0 },
     },
     completedAt: new Date().toISOString(),

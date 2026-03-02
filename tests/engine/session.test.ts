@@ -3,11 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import {
-  createSession,
-  recordSignal,
-  resetSession,
-} from '../../src/engine/session.js';
+import { createSession, recordSignal, resetSession } from '../../src/engine/session.js';
 import type { PrivilegedDataSignal, UntrustedTokensSignal } from '../../src/types/signals.js';
 
 describe('createSession', () => {

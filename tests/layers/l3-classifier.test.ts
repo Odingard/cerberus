@@ -57,11 +57,15 @@ describe('extractDestination', () => {
   });
 
   it('should extract url field', () => {
-    expect(extractDestination({ url: 'https://webhook.site/test' })).toBe('https://webhook.site/test');
+    expect(extractDestination({ url: 'https://webhook.site/test' })).toBe(
+      'https://webhook.site/test',
+    );
   });
 
   it('should extract endpoint field', () => {
-    expect(extractDestination({ endpoint: 'https://api.example.com' })).toBe('https://api.example.com');
+    expect(extractDestination({ endpoint: 'https://api.example.com' })).toBe(
+      'https://api.example.com',
+    );
   });
 
   it('should extract target field', () => {

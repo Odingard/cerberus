@@ -3,10 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import {
-  tagTokenProvenance,
-  estimateTokenCount,
-} from '../../src/layers/l2-tagger.js';
+import { tagTokenProvenance, estimateTokenCount } from '../../src/layers/l2-tagger.js';
 import { createSession } from '../../src/engine/session.js';
 import type { ToolCallContext } from '../../src/types/context.js';
 import type { TrustOverride } from '../../src/types/config.js';

@@ -3,10 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import {
-  detectProvider,
-  createProvider,
-} from '../../../harness/providers/index.js';
+import { detectProvider, createProvider } from '../../../harness/providers/index.js';
 
 describe('detectProvider', () => {
   it('should detect OpenAI models', () => {

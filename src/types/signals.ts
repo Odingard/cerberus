@@ -58,12 +58,95 @@ export interface ContaminatedMemorySignal {
   readonly timestamp: number;
 }
 
+/** Sub-classifier signal — secrets/credentials detected in tool results (enhances L1). */
+export interface SecretsDetectedSignal {
+  readonly layer: 'L1';
+  readonly signal: 'SECRETS_DETECTED';
+  readonly turnId: TurnId;
+  readonly secretTypes: readonly string[];
+  readonly count: number;
+  readonly timestamp: number;
+}
+
+/** Sub-classifier signal — prompt injection patterns in untrusted content (enhances L2). */
+export interface InjectionPatternsSignal {
+  readonly layer: 'L2';
+  readonly signal: 'INJECTION_PATTERNS_DETECTED';
+  readonly turnId: TurnId;
+  readonly patternsFound: readonly string[];
+  readonly confidence: number;
+  readonly timestamp: number;
+}
+
+/** Sub-classifier signal — encoded/obfuscated content in untrusted input (enhances L2). */
+export interface EncodingDetectedSignal {
+  readonly layer: 'L2';
+  readonly signal: 'ENCODING_DETECTED';
+  readonly turnId: TurnId;
+  readonly encodingTypes: readonly string[];
+  readonly decodedSnippet?: string;
+  readonly timestamp: number;
+}
+
+/** Sub-classifier signal — suspicious destination in outbound call (enhances L3). */
+export interface SuspiciousDestinationSignal {
+  readonly layer: 'L3';
+  readonly signal: 'SUSPICIOUS_DESTINATION';
+  readonly turnId: TurnId;
+  readonly destination: string;
+  readonly riskFactors: readonly string[];
+  readonly domainRisk: 'low' | 'medium' | 'high';
+  readonly timestamp: number;
+}
+
+/** Sub-classifier signal — MCP tool description poisoning detected (enhances L2). */
+export interface ToolPoisoningSignal {
+  readonly layer: 'L2';
+  readonly signal: 'TOOL_POISONING_DETECTED';
+  readonly turnId: TurnId;
+  readonly toolName: string;
+  readonly patternsFound: readonly string[];
+  readonly severity: 'low' | 'medium' | 'high';
+  readonly timestamp: number;
+}
+
+/** Sub-classifier signal — behavioral drift after untrusted content (enhances L2/L3). */
+export interface BehavioralDriftSignal {
+  readonly layer: 'L2' | 'L3';
+  readonly signal: 'BEHAVIORAL_DRIFT_DETECTED';
+  readonly turnId: TurnId;
+  readonly driftType: string;
+  readonly evidence: string;
+  readonly timestamp: number;
+}
+
+/** Tool description for MCP scanner. */
+export interface ToolDescription {
+  readonly name: string;
+  readonly description: string;
+  readonly parameters?: Readonly<Record<string, unknown>>;
+}
+
+/** Result from standalone MCP tool description scan. */
+export interface ToolPoisoningResult {
+  readonly toolName: string;
+  readonly poisoned: boolean;
+  readonly patternsFound: readonly string[];
+  readonly severity: 'low' | 'medium' | 'high';
+}
+
 /** Union of all detection layer signals. */
 export type DetectionSignal =
   | PrivilegedDataSignal
   | UntrustedTokensSignal
   | ExfiltrationRiskSignal
-  | ContaminatedMemorySignal;
+  | ContaminatedMemorySignal
+  | SecretsDetectedSignal
+  | InjectionPatternsSignal
+  | EncodingDetectedSignal
+  | SuspiciousDestinationSignal
+  | ToolPoisoningSignal
+  | BehavioralDriftSignal;
 
 /** 4-bit risk vector — one boolean per detection layer. */
 export interface RiskVector {

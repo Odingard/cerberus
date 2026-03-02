@@ -24,7 +24,8 @@ function makeCtx(overrides: Partial<ToolCallContext> = {}): ToolCallContext {
     sessionId: 'session-test',
     toolName: 'readPrivateData',
     toolArguments: {},
-    toolResult: '{"records":[{"id":"CUST-001","name":"Alice","email":"alice@example.com","ssn":"123-45-6789","phone":"+1-555-0101"}]}',
+    toolResult:
+      '{"records":[{"id":"CUST-001","name":"Alice","email":"alice@example.com","ssn":"123-45-6789","phone":"+1-555-0101"}]}',
     timestamp: Date.now(),
     ...overrides,
   };

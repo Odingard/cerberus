@@ -41,6 +41,15 @@ export interface DetectionSession {
 
   /** Turn counter for generating sequential turn IDs. */
   turnCounter: number;
+
+  /** Secrets/credentials detected in tool results (set by secrets detector). */
+  readonly detectedSecrets: Set<string>;
+
+  /** Injection pattern categories found in untrusted content (set by injection scanner). */
+  readonly injectionPatternsFound: Set<string>;
+
+  /** Tool call history for behavioral drift detection. */
+  readonly toolCallHistory: Array<{ toolName: string; turnId: string; timestamp: number }>;
 }
 
 /** Create a fresh detection session. */
@@ -54,6 +63,9 @@ export function createSession(sessionId?: string): DetectionSession {
     untrustedSources: new Set(),
     signalsByTurn: new Map(),
     turnCounter: 0,
+    detectedSecrets: new Set(),
+    injectionPatternsFound: new Set(),
+    toolCallHistory: [],
   };
 }
 
@@ -77,4 +89,7 @@ export function resetSession(session: DetectionSession): void {
   session.untrustedSources.clear();
   session.signalsByTurn.clear();
   session.turnCounter = 0;
+  session.detectedSecrets.clear();
+  session.injectionPatternsFound.clear();
+  session.toolCallHistory.length = 0;
 }

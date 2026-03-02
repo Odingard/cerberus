@@ -62,9 +62,7 @@ describe('toGeminiContents', () => {
   });
 
   it('should map assistant role to model role', () => {
-    const messages: ProviderMessage[] = [
-      { role: 'assistant', content: 'Hello!' },
-    ];
+    const messages: ProviderMessage[] = [{ role: 'assistant', content: 'Hello!' }];
     const result = toGeminiContents(messages);
     expect(result.contents[0].role).toBe('model');
     expect(result.contents[0].parts[0]).toEqual({ text: 'Hello!' });
@@ -96,9 +94,7 @@ describe('toGeminiContents', () => {
       {
         role: 'assistant',
         content: null,
-        toolCalls: [
-          { id: 'call-1', name: 'readPrivateData', arguments: {} },
-        ],
+        toolCalls: [{ id: 'call-1', name: 'readPrivateData', arguments: {} }],
       },
     ];
     const result = toGeminiContents(messages);
@@ -116,13 +112,15 @@ describe('GoogleProvider', () => {
   it('should send completion request and parse text response', async () => {
     mockGenerateContent.mockResolvedValueOnce({
       response: {
-        candidates: [{
-          content: {
-            role: 'model',
-            parts: [{ text: 'Hello!' }],
+        candidates: [
+          {
+            content: {
+              role: 'model',
+              parts: [{ text: 'Hello!' }],
+            },
+            finishReason: 'STOP',
           },
-          finishReason: 'STOP',
-        }],
+        ],
         usageMetadata: {
           promptTokenCount: 100,
           candidatesTokenCount: 20,
@@ -146,18 +144,22 @@ describe('GoogleProvider', () => {
   it('should parse function calls from response', async () => {
     mockGenerateContent.mockResolvedValueOnce({
       response: {
-        candidates: [{
-          content: {
-            role: 'model',
-            parts: [{
-              functionCall: {
-                name: 'readPrivateData',
-                args: { customerId: 'CUST-001' },
-              },
-            }],
+        candidates: [
+          {
+            content: {
+              role: 'model',
+              parts: [
+                {
+                  functionCall: {
+                    name: 'readPrivateData',
+                    args: { customerId: 'CUST-001' },
+                  },
+                },
+              ],
+            },
+            finishReason: 'STOP',
           },
-          finishReason: 'STOP',
-        }],
+        ],
         usageMetadata: {
           promptTokenCount: 100,
           candidatesTokenCount: 30,
@@ -204,13 +206,15 @@ describe('GoogleProvider', () => {
     for (const { input, expected } of reasons) {
       mockGenerateContent.mockResolvedValueOnce({
         response: {
-          candidates: [{
-            content: {
-              role: 'model',
-              parts: [{ text: 'x' }],
+          candidates: [
+            {
+              content: {
+                role: 'model',
+                parts: [{ text: 'x' }],
+              },
+              finishReason: input,
             },
-            finishReason: input,
-          }],
+          ],
           usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 5, totalTokenCount: 15 },
         },
       });
@@ -227,16 +231,23 @@ describe('GoogleProvider', () => {
   it('should generate sequential call IDs for function calls', async () => {
     mockGenerateContent.mockResolvedValueOnce({
       response: {
-        candidates: [{
-          content: {
-            role: 'model',
-            parts: [
-              { functionCall: { name: 'readPrivateData', args: {} } },
-              { functionCall: { name: 'fetchExternalContent', args: { url: 'https://example.com' } } },
-            ],
+        candidates: [
+          {
+            content: {
+              role: 'model',
+              parts: [
+                { functionCall: { name: 'readPrivateData', args: {} } },
+                {
+                  functionCall: {
+                    name: 'fetchExternalContent',
+                    args: { url: 'https://example.com' },
+                  },
+                },
+              ],
+            },
+            finishReason: 'STOP',
           },
-          finishReason: 'STOP',
-        }],
+        ],
         usageMetadata: { promptTokenCount: 100, candidatesTokenCount: 30, totalTokenCount: 130 },
       },
     });

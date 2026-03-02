@@ -108,9 +108,9 @@ describe('TOOL_DEFINITIONS', () => {
   });
 
   it('should define readPrivateData, fetchExternalContent, sendOutboundReport', () => {
-    const names = TOOL_DEFINITIONS
-      .filter((t): t is Extract<typeof t, { type: 'function' }> => t.type === 'function')
-      .map((t) => t.function.name);
+    const names = TOOL_DEFINITIONS.filter(
+      (t): t is Extract<typeof t, { type: 'function' }> => t.type === 'function',
+    ).map((t) => t.function.name);
 
     expect(names).toContain('readPrivateData');
     expect(names).toContain('fetchExternalContent');
@@ -394,9 +394,9 @@ describe('createToolExecutors', () => {
       externalUrl: '',
     });
 
-    const definedNames = TOOL_DEFINITIONS
-      .filter((t): t is Extract<typeof t, { type: 'function' }> => t.type === 'function')
-      .map((t) => t.function.name);
+    const definedNames = TOOL_DEFINITIONS.filter(
+      (t): t is Extract<typeof t, { type: 'function' }> => t.type === 'function',
+    ).map((t) => t.function.name);
     for (const name of definedNames) {
       expect(executors[name]).toBeDefined();
     }

@@ -94,7 +94,12 @@ describe('createContaminationGraph', () => {
       const graph = createContaminationGraph();
       graph.writeNode(makeNode({ nodeId: 'parent' }));
       graph.writeNode(makeNode({ nodeId: 'child' }));
-      graph.addEdge({ sourceNodeId: 'parent', targetNodeId: 'child', sessionId: 's', timestamp: 1 });
+      graph.addEdge({
+        sourceNodeId: 'parent',
+        targetNodeId: 'child',
+        sessionId: 's',
+        timestamp: 1,
+      });
 
       const ancestors = graph.getAncestors('child');
       expect(ancestors).toHaveLength(1);
@@ -107,7 +112,12 @@ describe('createContaminationGraph', () => {
       graph.writeNode(makeNode({ nodeId: 'parent' }));
       graph.writeNode(makeNode({ nodeId: 'child' }));
       graph.addEdge({ sourceNodeId: 'gp', targetNodeId: 'parent', sessionId: 's', timestamp: 1 });
-      graph.addEdge({ sourceNodeId: 'parent', targetNodeId: 'child', sessionId: 's', timestamp: 2 });
+      graph.addEdge({
+        sourceNodeId: 'parent',
+        targetNodeId: 'child',
+        sessionId: 's',
+        timestamp: 2,
+      });
 
       const ancestors = graph.getAncestors('child');
       expect(ancestors).toHaveLength(2);
@@ -142,7 +152,12 @@ describe('createContaminationGraph', () => {
       graph.addEdge({ sourceNodeId: 'root', targetNodeId: 'left', sessionId: 's', timestamp: 1 });
       graph.addEdge({ sourceNodeId: 'root', targetNodeId: 'right', sessionId: 's', timestamp: 2 });
       graph.addEdge({ sourceNodeId: 'left', targetNodeId: 'bottom', sessionId: 's', timestamp: 3 });
-      graph.addEdge({ sourceNodeId: 'right', targetNodeId: 'bottom', sessionId: 's', timestamp: 4 });
+      graph.addEdge({
+        sourceNodeId: 'right',
+        targetNodeId: 'bottom',
+        sessionId: 's',
+        timestamp: 4,
+      });
 
       const ancestors = graph.getAncestors('bottom');
       expect(ancestors).toHaveLength(3);
@@ -179,7 +194,12 @@ describe('createContaminationGraph', () => {
       const graph = createContaminationGraph();
       graph.writeNode(makeNode({ nodeId: 'parent', trustLevel: 'untrusted' }));
       graph.writeNode(makeNode({ nodeId: 'child', trustLevel: 'trusted' }));
-      graph.addEdge({ sourceNodeId: 'parent', targetNodeId: 'child', sessionId: 's', timestamp: 1 });
+      graph.addEdge({
+        sourceNodeId: 'parent',
+        targetNodeId: 'child',
+        sessionId: 's',
+        timestamp: 1,
+      });
 
       expect(graph.isTainted('child')).toBe(true);
     });
@@ -188,7 +208,12 @@ describe('createContaminationGraph', () => {
       const graph = createContaminationGraph();
       graph.writeNode(makeNode({ nodeId: 'parent', trustLevel: 'trusted' }));
       graph.writeNode(makeNode({ nodeId: 'child', trustLevel: 'trusted' }));
-      graph.addEdge({ sourceNodeId: 'parent', targetNodeId: 'child', sessionId: 's', timestamp: 1 });
+      graph.addEdge({
+        sourceNodeId: 'parent',
+        targetNodeId: 'child',
+        sessionId: 's',
+        timestamp: 1,
+      });
 
       expect(graph.isTainted('child')).toBe(false);
     });
@@ -204,56 +229,78 @@ describe('createContaminationGraph', () => {
 
     it('should return true when node is untrusted from a different session', () => {
       const graph = createContaminationGraph();
-      graph.writeNode(makeNode({
-        nodeId: 'a',
-        trustLevel: 'untrusted',
-        sourceSessionId: 'session-A',
-      }));
+      graph.writeNode(
+        makeNode({
+          nodeId: 'a',
+          trustLevel: 'untrusted',
+          sourceSessionId: 'session-A',
+        }),
+      );
 
       expect(graph.hasCrossSessionTaint('a', 'session-B')).toBe(true);
     });
 
     it('should return false when node is untrusted from the same session', () => {
       const graph = createContaminationGraph();
-      graph.writeNode(makeNode({
-        nodeId: 'a',
-        trustLevel: 'untrusted',
-        sourceSessionId: 'session-A',
-      }));
+      graph.writeNode(
+        makeNode({
+          nodeId: 'a',
+          trustLevel: 'untrusted',
+          sourceSessionId: 'session-A',
+        }),
+      );
 
       expect(graph.hasCrossSessionTaint('a', 'session-A')).toBe(false);
     });
 
     it('should return true when ancestor is untrusted from a different session', () => {
       const graph = createContaminationGraph();
-      graph.writeNode(makeNode({
-        nodeId: 'parent',
-        trustLevel: 'untrusted',
-        sourceSessionId: 'session-A',
-      }));
-      graph.writeNode(makeNode({
-        nodeId: 'child',
-        trustLevel: 'trusted',
-        sourceSessionId: 'session-B',
-      }));
-      graph.addEdge({ sourceNodeId: 'parent', targetNodeId: 'child', sessionId: 'session-B', timestamp: 1 });
+      graph.writeNode(
+        makeNode({
+          nodeId: 'parent',
+          trustLevel: 'untrusted',
+          sourceSessionId: 'session-A',
+        }),
+      );
+      graph.writeNode(
+        makeNode({
+          nodeId: 'child',
+          trustLevel: 'trusted',
+          sourceSessionId: 'session-B',
+        }),
+      );
+      graph.addEdge({
+        sourceNodeId: 'parent',
+        targetNodeId: 'child',
+        sessionId: 'session-B',
+        timestamp: 1,
+      });
 
       expect(graph.hasCrossSessionTaint('child', 'session-B')).toBe(true);
     });
 
     it('should return false when ancestor is untrusted from the same session', () => {
       const graph = createContaminationGraph();
-      graph.writeNode(makeNode({
-        nodeId: 'parent',
-        trustLevel: 'untrusted',
-        sourceSessionId: 'session-A',
-      }));
-      graph.writeNode(makeNode({
-        nodeId: 'child',
-        trustLevel: 'trusted',
-        sourceSessionId: 'session-A',
-      }));
-      graph.addEdge({ sourceNodeId: 'parent', targetNodeId: 'child', sessionId: 'session-A', timestamp: 1 });
+      graph.writeNode(
+        makeNode({
+          nodeId: 'parent',
+          trustLevel: 'untrusted',
+          sourceSessionId: 'session-A',
+        }),
+      );
+      graph.writeNode(
+        makeNode({
+          nodeId: 'child',
+          trustLevel: 'trusted',
+          sourceSessionId: 'session-A',
+        }),
+      );
+      graph.addEdge({
+        sourceNodeId: 'parent',
+        targetNodeId: 'child',
+        sessionId: 'session-A',
+        timestamp: 1,
+      });
 
       expect(graph.hasCrossSessionTaint('child', 'session-A')).toBe(false);
     });
@@ -269,26 +316,35 @@ describe('createContaminationGraph', () => {
 
     it('should return the source of a directly untrusted node', () => {
       const graph = createContaminationGraph();
-      graph.writeNode(makeNode({
-        nodeId: 'a',
-        trustLevel: 'untrusted',
-        source: 'fetchExternalContent',
-      }));
+      graph.writeNode(
+        makeNode({
+          nodeId: 'a',
+          trustLevel: 'untrusted',
+          source: 'fetchExternalContent',
+        }),
+      );
 
       expect(graph.findContaminationSource('a')).toBe('fetchExternalContent');
     });
 
     it('should return the source of the first untrusted ancestor', () => {
       const graph = createContaminationGraph();
-      graph.writeNode(makeNode({
-        nodeId: 'gp',
-        trustLevel: 'untrusted',
-        source: 'evilFetch',
-      }));
+      graph.writeNode(
+        makeNode({
+          nodeId: 'gp',
+          trustLevel: 'untrusted',
+          source: 'evilFetch',
+        }),
+      );
       graph.writeNode(makeNode({ nodeId: 'parent', trustLevel: 'trusted' }));
       graph.writeNode(makeNode({ nodeId: 'child', trustLevel: 'trusted' }));
       graph.addEdge({ sourceNodeId: 'gp', targetNodeId: 'parent', sessionId: 's', timestamp: 1 });
-      graph.addEdge({ sourceNodeId: 'parent', targetNodeId: 'child', sessionId: 's', timestamp: 2 });
+      graph.addEdge({
+        sourceNodeId: 'parent',
+        targetNodeId: 'child',
+        sessionId: 's',
+        timestamp: 2,
+      });
 
       expect(graph.findContaminationSource('child')).toBe('evilFetch');
     });

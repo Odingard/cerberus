@@ -198,7 +198,11 @@ describe('guard — L4 memory tracking', () => {
   it('should create graph and ledger when memoryTracking is enabled', () => {
     const memConfig: CerberusConfig = { ...CONFIG, memoryTracking: true };
     const result = guard(
-      { ...makeExecutors(), writeMemory: vi.fn().mockResolvedValue('ok'), readMemory: vi.fn().mockResolvedValue('data') },
+      {
+        ...makeExecutors(),
+        writeMemory: vi.fn().mockResolvedValue('ok'),
+        readMemory: vi.fn().mockResolvedValue('data'),
+      },
       memConfig,
       OUTBOUND_TOOLS,
       { memoryTools: MEMORY_TOOLS },

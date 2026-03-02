@@ -19,6 +19,12 @@ import type { MemoryToolConfig } from '../layers/l4-memory.js';
 import type { ContaminationGraph } from '../graph/contamination.js';
 import type { ProvenanceLedger } from '../graph/ledger.js';
 import { assessRisk } from './correlation.js';
+import { detectSecretsInResult } from '../classifiers/secrets-detector.js';
+import { scanInjectionInResult } from '../classifiers/injection-scanner.js';
+import { detectEncodingInResult } from '../classifiers/encoding-detector.js';
+import { classifyOutboundDomain } from '../classifiers/domain-classifier.js';
+import { checkToolCallPoisoning } from '../classifiers/mcp-scanner.js';
+import { detectBehavioralDrift } from '../classifiers/drift-detector.js';
 
 /** Generic tool executor function signature. */
 export type ToolExecutorFn = (args: Record<string, unknown>) => Promise<string>;
@@ -32,11 +38,13 @@ export type OnFullAssessmentCallback = (assessment: RiskAssessment) => void;
  * The returned function has the same signature as the original executor
  * but runs the detection pipeline around it:
  * 1. Execute the tool
- * 2. Run L1 (data source classification)
- * 3. Run L2 (token provenance tagging)
- * 4. Run L3 (outbound intent classification)
- * 5. Correlate signals into a risk assessment
- * 6. If action='interrupt', return a blocked message instead of the real result
+ * 2. Run L1 (data source classification) → Secrets Detector
+ * 3. Run L2 (token provenance tagging) → Injection Scanner + Encoding Detector + MCP Scanner
+ * 4. Run L3 (outbound intent classification) → Domain Classifier
+ * 5. Run L4 (memory contamination — optional)
+ * 6. Run Behavioral Drift Detector
+ * 7. Correlate signals into a risk assessment
+ * 8. If action='interrupt', return a blocked message instead of the real result
  */
 export function interceptToolCall(
   toolName: string,
@@ -72,33 +80,81 @@ export function interceptToolCall(
 
     // Run detection layers and collect signals
     const signals: DetectionSignal[] = [];
+    const trustLevel = resolveTrustLevel(toolName, trustOverrides);
+    const isTrusted = trustLevel === 'trusted';
+    const isUntrusted = trustLevel === 'untrusted';
 
+    // L1: Data source classification
     const l1Signal = classifyDataSource(ctx, trustOverrides, session);
     if (l1Signal) {
       signals.push(l1Signal);
       recordSignal(session, l1Signal);
     }
 
+    // L1 sub-classifier: Secrets detector (runs when L1 fires)
+    const secretsSignal = detectSecretsInResult(ctx, session, isTrusted);
+    if (secretsSignal) {
+      signals.push(secretsSignal);
+      recordSignal(session, secretsSignal);
+    }
+
+    // L2: Token provenance tagging
     const l2Signal = tagTokenProvenance(ctx, trustOverrides, session);
     if (l2Signal) {
       signals.push(l2Signal);
       recordSignal(session, l2Signal);
     }
 
+    // L2 sub-classifiers: Injection scanner + Encoding detector (run when untrusted)
+    const injectionSignal = scanInjectionInResult(ctx, session, isUntrusted);
+    if (injectionSignal) {
+      signals.push(injectionSignal);
+      recordSignal(session, injectionSignal);
+    }
+
+    const encodingSignal = detectEncodingInResult(ctx, session, isUntrusted);
+    if (encodingSignal) {
+      signals.push(encodingSignal);
+      recordSignal(session, encodingSignal);
+    }
+
+    // L2 sub-classifier: MCP tool poisoning (runs when toolDescriptions configured)
+    if (config.toolDescriptions && config.toolDescriptions.length > 0) {
+      const poisoningSignal = checkToolCallPoisoning(ctx, config.toolDescriptions, session);
+      if (poisoningSignal) {
+        signals.push(poisoningSignal);
+        recordSignal(session, poisoningSignal);
+      }
+    }
+
+    // L3: Outbound intent classification
     const l3Signal = classifyOutboundIntent(ctx, session, outboundTools);
     if (l3Signal) {
       signals.push(l3Signal);
       recordSignal(session, l3Signal);
     }
 
+    // L3 sub-classifier: Suspicious domain classifier (runs for outbound tools)
+    const domainSignal = classifyOutboundDomain(ctx, session, outboundTools);
+    if (domainSignal) {
+      signals.push(domainSignal);
+      recordSignal(session, domainSignal);
+    }
+
     // L4: Memory contamination detection (optional — skip if not configured)
     if (graph && ledger && memoryTools && memoryTools.length > 0) {
-      const trustLevel = resolveTrustLevel(toolName, trustOverrides);
       const l4Signal = checkMemoryContamination(ctx, memoryTools, graph, ledger, trustLevel);
       if (l4Signal) {
         signals.push(l4Signal);
         recordSignal(session, l4Signal);
       }
+    }
+
+    // Behavioral drift detector (runs last — reads accumulated session state)
+    const driftSignal = detectBehavioralDrift(ctx, session, outboundTools, isTrusted);
+    if (driftSignal) {
+      signals.push(driftSignal);
+      recordSignal(session, driftSignal);
     }
 
     // Collect all session signals (including current turn) for cumulative scoring

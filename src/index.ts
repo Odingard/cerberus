@@ -17,6 +17,14 @@ export type {
   UntrustedTokensSignal,
   ExfiltrationRiskSignal,
   ContaminatedMemorySignal,
+  SecretsDetectedSignal,
+  InjectionPatternsSignal,
+  EncodingDetectedSignal,
+  SuspiciousDestinationSignal,
+  ToolPoisoningSignal,
+  BehavioralDriftSignal,
+  ToolDescription,
+  ToolPoisoningResult,
   DetectionSignal,
   RiskVector,
   RiskAction,
@@ -30,6 +38,9 @@ export type {
 export { guard } from './middleware/wrap.js';
 export type { GuardResult, MemoryGuardOptions } from './middleware/wrap.js';
 export type { ToolExecutorFn } from './engine/interceptor.js';
+
+// Standalone MCP tool description scanner
+export { scanToolDescriptions } from './classifiers/mcp-scanner.js';
 
 // L4 Memory Contamination Graph exports
 export type { MemoryToolConfig } from './layers/l4-memory.js';

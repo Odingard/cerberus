@@ -15,9 +15,29 @@ vi.mock('../../harness/providers/index.js', () => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/explicit-function-return-type
     createProvider: (...args: unknown[]) => mockCreateProvider(...args),
     CANONICAL_TOOLS: [
-      { name: 'readPrivateData', description: 'Read data', parameters: { type: 'object', properties: {}, required: [] } },
-      { name: 'fetchExternalContent', description: 'Fetch', parameters: { type: 'object', properties: { url: { type: 'string' } }, required: ['url'] } },
-      { name: 'sendOutboundReport', description: 'Send', parameters: { type: 'object', properties: { recipient: { type: 'string' }, subject: { type: 'string' }, body: { type: 'string' } }, required: ['recipient', 'subject', 'body'] } },
+      {
+        name: 'readPrivateData',
+        description: 'Read data',
+        parameters: { type: 'object', properties: {}, required: [] },
+      },
+      {
+        name: 'fetchExternalContent',
+        description: 'Fetch',
+        parameters: { type: 'object', properties: { url: { type: 'string' } }, required: ['url'] },
+      },
+      {
+        name: 'sendOutboundReport',
+        description: 'Send',
+        parameters: {
+          type: 'object',
+          properties: {
+            recipient: { type: 'string' },
+            subject: { type: 'string' },
+            body: { type: 'string' },
+          },
+          required: ['recipient', 'subject', 'body'],
+        },
+      },
     ],
   };
 });
@@ -61,14 +81,20 @@ describe('runAgentMulti', () => {
         message: {
           role: 'assistant',
           content: null,
-          toolCalls: [{ id: 'call-2', name: 'fetchExternalContent', arguments: { url: 'https://example.com' } }],
+          toolCalls: [
+            {
+              id: 'call-2',
+              name: 'fetchExternalContent',
+              arguments: { url: 'https://example.com' },
+            },
+          ],
         },
         finishReason: 'tool_calls',
         usage: { promptTokens: 200, completionTokens: 40 },
       },
       // Turn 2: final response
       {
-        message: { role: 'assistant', content: 'Report complete.', },
+        message: { role: 'assistant', content: 'Report complete.' },
         finishReason: 'stop',
         usage: { promptTokens: 300, completionTokens: 50 },
       },

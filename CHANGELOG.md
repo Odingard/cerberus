@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] — 2026-03-02
+
+### Added
+
+- **Secrets Detector** (L1 sub-classifier) — detects AWS keys, GitHub tokens, JWTs, private keys, connection strings, and generic API keys leaked in trusted tool results
+- **Prompt Injection Scanner** (L2 sub-classifier) — weighted heuristic detection of role overrides, authority spoofing, instruction injection, exfiltration commands, and encoded payloads in untrusted content
+- **Encoding/Obfuscation Detector** (L2 sub-classifier) — detects base64, hex, unicode, URL encoding, HTML entities, and ROT13 bypass attempts with decode verification
+- **Suspicious Domain Classifier** (L3 sub-classifier) — flags disposable email providers, webhook/exfil services, IP addresses, URL shorteners, and non-standard ports in outbound destinations
+- **MCP Tool Poisoning Scanner** (L2 + standalone) — scans MCP tool descriptions for hidden instructions, sensitive file references, cross-tool manipulation, data routing commands, and zero-width char obfuscation. Standalone `scanToolDescriptions()` API for registration-time scanning + runtime `checkToolCallPoisoning()` per-call
+- **Behavioral Drift Detector** (L2/L3 sub-classifier) — detects post-injection outbound calls, repeated exfiltration attempts, and privilege escalation patterns across session history
+- **5-phase integration test suite** — 48 tests covering integration, adversarial payloads, stress/edge cases, and maximum hardness full-pipeline regression
+- **`toolDescriptions`** config option for runtime MCP tool poisoning detection
+- **Session state extensions** — `detectedSecrets`, `injectionPatternsFound`, `toolCallHistory` fields for cross-turn sub-classifier correlation
+- **591 tests** at 98.69% statement coverage, 94.7% branch coverage, 100% function coverage
+
+### Changed
+
+- **Interceptor pipeline** — wired all 6 sub-classifiers after their parent layers (L1→Secrets, L2→Injection+Encoding+MCP, L3→Domain, then Drift after all layers)
+- Sub-classifiers emit signals with existing layer tags (L1/L2/L3) — correlation engine and risk vector unchanged
+
 ## [0.1.0] — 2026-03-01
 
 ### Added
@@ -26,4 +46,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Examples** — `basic-guard.ts` (Lethal Trifecta detection) and `memory-tracking.ts` (L4 cross-session contamination)
 - **Documentation** — API reference, architecture guide, research results
 
+[0.2.0]: https://github.com/Odingard/cerberus/releases/tag/v0.2.0
 [0.1.0]: https://github.com/Odingard/cerberus/releases/tag/v0.1.0

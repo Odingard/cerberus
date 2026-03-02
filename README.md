@@ -58,13 +58,28 @@ Cerberus is four independent detection layers sharing one correlation engine:
 
 ### Detection Layers
 
-| Layer | Name | Signal | Function |
-|-------|------|--------|----------|
-| **L1** | Data Source Classifier | `PRIVILEGED_DATA_ACCESSED` | Tags every tool call by data trust level at access time |
-| **L2** | Token Provenance Tagger | `UNTRUSTED_TOKENS_IN_CONTEXT` | Labels every context token by origin before the LLM call |
-| **L3** | Outbound Intent Classifier | `EXFILTRATION_RISK` | Checks if outbound content correlates with untrusted input |
-| **L4** | Memory Contamination Graph | `CONTAMINATED_MEMORY_ACTIVE` | Tracks taint through persistent memory across sessions |
-| **CE** | Correlation Engine | Risk Score (0-4) | Aggregates all signals per turn — alerts or interrupts |
+| Layer  | Name                       | Signal                        | Function                                                   |
+| ------ | -------------------------- | ----------------------------- | ---------------------------------------------------------- |
+| **L1** | Data Source Classifier     | `PRIVILEGED_DATA_ACCESSED`    | Tags every tool call by data trust level at access time    |
+| **L2** | Token Provenance Tagger    | `UNTRUSTED_TOKENS_IN_CONTEXT` | Labels every context token by origin before the LLM call   |
+| **L3** | Outbound Intent Classifier | `EXFILTRATION_RISK`           | Checks if outbound content correlates with untrusted input |
+| **L4** | Memory Contamination Graph | `CONTAMINATED_MEMORY_ACTIVE`  | Tracks taint through persistent memory across sessions     |
+| **CE** | Correlation Engine         | Risk Score (0-4)              | Aggregates all signals per turn — alerts or interrupts     |
+
+### Advanced Sub-Classifiers
+
+Six sub-classifiers enhance the core layers with deeper heuristic coverage:
+
+| Sub-Classifier            | Enhances | Signal                        | Function                                                                |
+| ------------------------- | -------- | ----------------------------- | ----------------------------------------------------------------------- |
+| **Secrets Detector**      | L1       | `SECRETS_DETECTED`            | Detects AWS keys, GitHub tokens, JWTs, private keys, connection strings |
+| **Injection Scanner**     | L2       | `INJECTION_PATTERNS_DETECTED` | Weighted heuristic detection of prompt injection patterns               |
+| **Encoding Detector**     | L2       | `ENCODING_DETECTED`           | Detects base64, hex, unicode, URL encoding, ROT13 bypass attempts       |
+| **MCP Poisoning Scanner** | L2       | `TOOL_POISONING_DETECTED`     | Scans MCP tool descriptions for hidden instructions and manipulation    |
+| **Domain Classifier**     | L3       | `SUSPICIOUS_DESTINATION`      | Flags disposable emails, webhook services, IP addresses, URL shorteners |
+| **Drift Detector**        | L2/L3    | `BEHAVIORAL_DRIFT_DETECTED`   | Detects post-injection outbound calls and privilege escalation patterns |
+
+Sub-classifiers emit signals with existing layer tags (L1/L2/L3), so they contribute to the same 4-bit risk vector without score inflation. The correlation engine requires no changes.
 
 > **Layer 4 is the novel research contribution.** MINJA (NeurIPS 2025) proved the memory contamination attack. Cerberus ships the first deployable defense as installable developer tooling.
 
@@ -89,8 +104,8 @@ const executors = {
 
 // Configure Cerberus
 const config: CerberusConfig = {
-  alertMode: 'interrupt',     // 'log' | 'alert' | 'interrupt'
-  threshold: 3,               // Score needed to trigger action (0-4)
+  alertMode: 'interrupt', // 'log' | 'alert' | 'interrupt'
+  threshold: 3, // Score needed to trigger action (0-4)
   trustOverrides: [
     { toolName: 'readDatabase', trustLevel: 'trusted' },
     { toolName: 'fetchUrl', trustLevel: 'untrusted' },
@@ -98,10 +113,14 @@ const config: CerberusConfig = {
 };
 
 // Wrap your tools — one function call
-const { executors: secured, assessments, destroy } = guard(
+const {
+  executors: secured,
+  assessments,
+  destroy,
+} = guard(
   executors,
   config,
-  ['sendEmail'],  // Outbound tools (L3 monitors these)
+  ['sendEmail'], // Outbound tools (L3 monitors these)
 );
 
 // Use secured.readDatabase(), secured.fetchUrl(), secured.sendEmail()
@@ -119,9 +138,9 @@ When a multi-turn attack unfolds (L1: privileged access, L2: injection, L3: exfi
 The `assessments` array provides detailed per-turn breakdowns:
 
 ```typescript
-assessments[2].vector  // { l1: true, l2: true, l3: true, l4: false }
-assessments[2].score   // 3
-assessments[2].action  // 'interrupt'
+assessments[2].vector; // { l1: true, l2: true, l3: true, l4: false }
+assessments[2].score; // 3
+assessments[2].action; // 'interrupt'
 ```
 
 Use the `onAssessment` callback in config for real-time monitoring:
@@ -135,6 +154,33 @@ const config: CerberusConfig = {
 };
 ```
 
+### MCP Tool Poisoning Protection
+
+Scan MCP tool descriptions at registration time for hidden instructions, cross-tool manipulation, and obfuscation:
+
+```typescript
+import { scanToolDescriptions } from '@cerberus-ai/core';
+
+const results = scanToolDescriptions([{ name: 'search', description: toolDescription }]);
+
+for (const tool of results) {
+  if (tool.poisoned) {
+    console.warn(`Tool "${tool.toolName}" has poisoned description:`, tool.patternsFound);
+    // Severity: tool.severity ('low' | 'medium' | 'high')
+  }
+}
+```
+
+For runtime detection, add `toolDescriptions` to your config — the MCP scanner will check each tool call against its description automatically:
+
+```typescript
+const config: CerberusConfig = {
+  alertMode: 'interrupt',
+  threshold: 3,
+  toolDescriptions: mcpTools, // Enable per-call MCP poisoning detection
+};
+```
+
 ---
 
 ## Research Results
@@ -143,14 +189,14 @@ const config: CerberusConfig = {
 
 We built a 3-tool attack agent powered by GPT-4o-mini and ran 21 injection payloads across 5 categories. Every single attack completed the full Lethal Trifecta kill chain — privileged data access, injection delivery, and exfiltration of PII (names, emails, SSNs, phone numbers) to attacker-controlled endpoints. No payload was blocked, partially blocked, or triggered any safety refusal.
 
-| Category | Payloads | Success Rate | Technique |
-|----------|----------|-------------|-----------|
-| **Direct Injection** | 5 | 100% | System update spoofs, admin overrides, compliance mandates |
-| **Encoded / Obfuscated** | 4 | 100% | Base64, ROT13, Unicode escapes, hex encoding |
-| **Social Engineering** | 4 | 100% | CEO fraud, IT support impersonation, legal threats |
-| **Multi-Turn** | 4 | 100% | Persistent CC rules, delayed triggers, context poisoning |
-| **Multilingual** | 4 | 100% | Spanish, Mandarin, Arabic, Russian payloads |
-| **Total** | **21** | **100%** | — |
+| Category                 | Payloads | Success Rate | Technique                                                  |
+| ------------------------ | -------- | ------------ | ---------------------------------------------------------- |
+| **Direct Injection**     | 5        | 100%         | System update spoofs, admin overrides, compliance mandates |
+| **Encoded / Obfuscated** | 4        | 100%         | Base64, ROT13, Unicode escapes, hex encoding               |
+| **Social Engineering**   | 4        | 100%         | CEO fraud, IT support impersonation, legal threats         |
+| **Multi-Turn**           | 4        | 100%         | Persistent CC rules, delayed triggers, context poisoning   |
+| **Multilingual**         | 4        | 100%         | Spanish, Mandarin, Arabic, Russian payloads                |
+| **Total**                | **21**   | **100%**     | —                                                          |
 
 ### Key Findings
 
@@ -201,7 +247,7 @@ See [docs/research-results.md](docs/research-results.md) for full methodology, p
 - **Language**: TypeScript (strict mode)
 - **Runtime**: Node.js >= 20
 - **Primary Harness**: OpenAI, Anthropic, Google Gemini (multi-provider)
-- **Testing**: Vitest (413+ tests)
+- **Testing**: Vitest (591 tests, 98.69% coverage)
 - **Memory Store**: SQLite via better-sqlite3
 - **Validation**: Zod
 
@@ -212,10 +258,11 @@ See [docs/research-results.md](docs/research-results.md) for full methodology, p
 ```
 cerberus/
 ├── src/
-│   ├── layers/           # L1-L4 detection layers
+│   ├── layers/           # L1-L4 core detection layers
+│   ├── classifiers/      # Advanced sub-classifiers (secrets, injection, encoding, domain, MCP, drift)
 │   ├── engine/           # Correlation engine + interceptor
 │   ├── graph/            # Memory contamination graph + provenance ledger
-│   ├── middleware/        # Developer-facing guard() API
+│   ├── middleware/       # Developer-facing guard() API
 │   ├── adapters/         # Framework integrations (LangChain, Vercel AI, OpenAI Agents)
 │   └── types/            # Shared TypeScript interfaces
 ├── harness/              # Attack research instrument
@@ -227,7 +274,10 @@ cerberus/
 │   ├── payloads.ts       # 21 injection payloads across 5 categories
 │   ├── runner.ts         # Automated attack executor + multi-trial stress
 │   └── analyze.ts        # Run comparison + trace analysis CLI
-├── tests/                # Mirrors src/ structure
+├── tests/
+│   ├── classifiers/      # Sub-classifier unit tests
+│   ├── integration/      # 5-phase severity test suite
+│   └── ...               # Mirrors src/ structure
 ├── docs/                 # Architecture, research, API reference
 └── examples/             # Runnable demo integrations
 ```
@@ -236,32 +286,32 @@ cerberus/
 
 ## Roadmap
 
-| Phase | Deliverable | Status |
-|-------|-------------|--------|
-| **0** | Repository scaffold, toolchain, CI | **Complete** |
-| **1** | Attack harness — 3-tool agent, 21 injection payloads, labeled traces | **Complete** |
-| **1.5** | Hardening — retry/timeout, safeParse, error traces, 88 tests | **Complete** |
-| **1.6** | Stress testing — multi-trial, prompt variants, advanced payloads | **Complete** |
-| **2** | Detection middleware — L1+L2+L3 + Correlation Engine | **Complete** |
-| **3** | Memory Contamination Graph — L4 + temporal attack detection | **Complete** |
-| **4** | npm SDK packaging, developer docs, examples | **Complete** |
-| **5** | GitHub Release, security advisory, conference submission | **Complete** |
+| Phase   | Deliverable                                                          | Status       |
+| ------- | -------------------------------------------------------------------- | ------------ |
+| **0**   | Repository scaffold, toolchain, CI                                   | **Complete** |
+| **1**   | Attack harness — 3-tool agent, 21 injection payloads, labeled traces | **Complete** |
+| **1.5** | Hardening — retry/timeout, safeParse, error traces, 88 tests         | **Complete** |
+| **1.6** | Stress testing — multi-trial, prompt variants, advanced payloads     | **Complete** |
+| **2**   | Detection middleware — L1+L2+L3 + Correlation Engine                 | **Complete** |
+| **3**   | Memory Contamination Graph — L4 + temporal attack detection          | **Complete** |
+| **4**   | npm SDK packaging, developer docs, examples                          | **Complete** |
+| **5**   | GitHub Release, security advisory, conference submission             | **Complete** |
 
 ---
 
 ## Framework Support
 
-| Framework | Status |
-|-----------|--------|
-| Generic tool executors | **Supported** — `guard()` |
-| LangChain | **Supported** — `guardLangChain()` |
-| Vercel AI SDK | **Supported** — `guardVercelAI()` |
-| OpenAI Agents SDK | **Supported** — `createCerberusGuardrail()` |
-| OpenAI Function Calling | **Supported** (via harness) |
-| Anthropic Tool Use | **Supported** (via harness) |
-| Google Gemini | **Supported** (via harness) |
-| AutoGen | Planned |
-| Ollama (Local) | Future |
+| Framework               | Status                                      |
+| ----------------------- | ------------------------------------------- |
+| Generic tool executors  | **Supported** — `guard()`                   |
+| LangChain               | **Supported** — `guardLangChain()`          |
+| Vercel AI SDK           | **Supported** — `guardVercelAI()`           |
+| OpenAI Agents SDK       | **Supported** — `createCerberusGuardrail()` |
+| OpenAI Function Calling | **Supported** (via harness)                 |
+| Anthropic Tool Use      | **Supported** (via harness)                 |
+| Google Gemini           | **Supported** (via harness)                 |
+| AutoGen                 | Planned                                     |
+| Ollama (Local)          | Future                                      |
 
 ---
 

@@ -78,9 +78,7 @@ describe('runAgent', () => {
   it('should execute a multi-turn conversation with tool calls', async () => {
     // Turn 0: model calls readPrivateData
     mockCreate.mockResolvedValueOnce(
-      mockToolCallResponse([
-        { name: 'readPrivateData', arguments: '{}', id: 'call-1' },
-      ]),
+      mockToolCallResponse([{ name: 'readPrivateData', arguments: '{}', id: 'call-1' }]),
     );
     // Turn 1: model calls fetchExternalContent
     mockCreate.mockResolvedValueOnce(
@@ -91,13 +89,15 @@ describe('runAgent', () => {
     // Turn 2: model calls sendOutboundReport
     mockCreate.mockResolvedValueOnce(
       mockToolCallResponse([
-        { name: 'sendOutboundReport', arguments: '{"recipient":"x@y.com","subject":"test","body":"data"}', id: 'call-3' },
+        {
+          name: 'sendOutboundReport',
+          arguments: '{"recipient":"x@y.com","subject":"test","body":"data"}',
+          id: 'call-3',
+        },
       ]),
     );
     // Turn 3: model produces final response
-    mockCreate.mockResolvedValueOnce(
-      mockStopResponse('Report complete.'),
-    );
+    mockCreate.mockResolvedValueOnce(mockStopResponse('Report complete.'));
 
     const result = await runAgent('system prompt', 'user prompt', {
       apiKey: 'test-key',
@@ -131,9 +131,7 @@ describe('runAgent', () => {
   it('should stop when maxTurns is reached', async () => {
     // Always return tool calls so the loop doesn't stop via finish_reason
     mockCreate.mockResolvedValue(
-      mockToolCallResponse([
-        { name: 'readPrivateData', arguments: '{}', id: 'call-loop' },
-      ]),
+      mockToolCallResponse([{ name: 'readPrivateData', arguments: '{}', id: 'call-loop' }]),
     );
 
     const result = await runAgent('sys', 'user', {
@@ -150,14 +148,12 @@ describe('runAgent', () => {
 
   it('should accumulate token usage across turns', async () => {
     mockCreate.mockResolvedValueOnce(
-      mockToolCallResponse(
-        [{ name: 'readPrivateData', arguments: '{}', id: 'c1' }],
-        { prompt: 100, completion: 50 },
-      ),
+      mockToolCallResponse([{ name: 'readPrivateData', arguments: '{}', id: 'c1' }], {
+        prompt: 100,
+        completion: 50,
+      }),
     );
-    mockCreate.mockResolvedValueOnce(
-      mockStopResponse('Done.', { prompt: 200, completion: 80 }),
-    );
+    mockCreate.mockResolvedValueOnce(mockStopResponse('Done.', { prompt: 200, completion: 80 }));
 
     const result = await runAgent('sys', 'user', {
       apiKey: 'test-key',
@@ -173,9 +169,7 @@ describe('runAgent', () => {
 
   it('should invoke onTurn callback for each turn', async () => {
     mockCreate.mockResolvedValueOnce(
-      mockToolCallResponse([
-        { name: 'readPrivateData', arguments: '{}', id: 'c1' },
-      ]),
+      mockToolCallResponse([{ name: 'readPrivateData', arguments: '{}', id: 'c1' }]),
     );
     mockCreate.mockResolvedValueOnce(mockStopResponse('Done.'));
 
@@ -196,9 +190,7 @@ describe('runAgent', () => {
 
   it('should throw if an unknown tool name is returned by the model', async () => {
     mockCreate.mockResolvedValueOnce(
-      mockToolCallResponse([
-        { name: 'unknownTool', arguments: '{}', id: 'c1' },
-      ]),
+      mockToolCallResponse([{ name: 'unknownTool', arguments: '{}', id: 'c1' }]),
     );
 
     await expect(
@@ -215,9 +207,7 @@ describe('runAgent', () => {
     const toolResult = '{"records":[{"id":"CUST-001"}]}';
 
     mockCreate.mockResolvedValueOnce(
-      mockToolCallResponse([
-        { name: 'readPrivateData', arguments: '{}', id: 'call-1' },
-      ]),
+      mockToolCallResponse([{ name: 'readPrivateData', arguments: '{}', id: 'call-1' }]),
     );
     mockCreate.mockResolvedValueOnce(mockStopResponse('Final.'));
 
@@ -232,9 +222,7 @@ describe('runAgent', () => {
     const secondCallArgs = mockCreate.mock.calls[1][0] as {
       messages: Array<{ role: string; content?: string; tool_call_id?: string }>;
     };
-    const toolMessage = secondCallArgs.messages.find(
-      (m) => m.role === 'tool',
-    );
+    const toolMessage = secondCallArgs.messages.find((m) => m.role === 'tool');
 
     expect(toolMessage).toBeDefined();
     expect(toolMessage!.content).toBe(toolResult);
@@ -300,9 +288,7 @@ describe('runAgent — error handling', () => {
 
   it('should handle malformed JSON in tool call arguments gracefully', async () => {
     mockCreate.mockResolvedValueOnce(
-      mockToolCallResponse([
-        { name: 'readPrivateData', arguments: '{invalid json!!!', id: 'c1' },
-      ]),
+      mockToolCallResponse([{ name: 'readPrivateData', arguments: '{invalid json!!!', id: 'c1' }]),
     );
     mockCreate.mockResolvedValueOnce(mockStopResponse('Recovered.'));
 
@@ -320,9 +306,7 @@ describe('runAgent — error handling', () => {
 
   it('should handle tool executor throwing an error', async () => {
     mockCreate.mockResolvedValueOnce(
-      mockToolCallResponse([
-        { name: 'readPrivateData', arguments: '{}', id: 'c1' },
-      ]),
+      mockToolCallResponse([{ name: 'readPrivateData', arguments: '{}', id: 'c1' }]),
     );
     mockCreate.mockResolvedValueOnce(mockStopResponse('Done despite error.'));
 
@@ -363,10 +347,12 @@ describe('runAgent — error handling', () => {
 
   it('should handle finish_reason=content_filter by stopping with error', async () => {
     mockCreate.mockResolvedValueOnce({
-      choices: [{
-        message: { role: 'assistant' as const, content: null, tool_calls: undefined },
-        finish_reason: 'content_filter',
-      }],
+      choices: [
+        {
+          message: { role: 'assistant' as const, content: null, tool_calls: undefined },
+          finish_reason: 'content_filter',
+        },
+      ],
       usage: { prompt_tokens: 100, completion_tokens: 0 },
     });
 
@@ -381,10 +367,12 @@ describe('runAgent — error handling', () => {
 
   it('should handle finish_reason=length by stopping with error', async () => {
     mockCreate.mockResolvedValueOnce({
-      choices: [{
-        message: { role: 'assistant' as const, content: 'truncated...', tool_calls: undefined },
-        finish_reason: 'length',
-      }],
+      choices: [
+        {
+          message: { role: 'assistant' as const, content: 'truncated...', tool_calls: undefined },
+          finish_reason: 'length',
+        },
+      ],
       usage: { prompt_tokens: 100, completion_tokens: 4096 },
     });
 
@@ -415,10 +403,12 @@ describe('runAgent — error handling', () => {
 
   it('should handle null usage in response', async () => {
     mockCreate.mockResolvedValueOnce({
-      choices: [{
-        message: { role: 'assistant' as const, content: 'Done.', tool_calls: undefined },
-        finish_reason: 'stop',
-      }],
+      choices: [
+        {
+          message: { role: 'assistant' as const, content: 'Done.', tool_calls: undefined },
+          finish_reason: 'stop',
+        },
+      ],
       usage: null,
     });
 
@@ -433,10 +423,12 @@ describe('runAgent — error handling', () => {
 
   it('should handle missing finish_reason (null)', async () => {
     mockCreate.mockResolvedValueOnce({
-      choices: [{
-        message: { role: 'assistant' as const, content: 'Done.', tool_calls: undefined },
-        finish_reason: null,
-      }],
+      choices: [
+        {
+          message: { role: 'assistant' as const, content: 'Done.', tool_calls: undefined },
+          finish_reason: null,
+        },
+      ],
       usage: { prompt_tokens: 50, completion_tokens: 25 },
     });
 

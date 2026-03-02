@@ -12,12 +12,12 @@ It ships as a single `guard()` function that wraps your existing tool executors.
 
 ### Detection Layers
 
-| Layer | Signal | What It Does |
-|-------|--------|-------------|
-| **L1** | `PRIVILEGED_DATA_ACCESSED` | Tags tool calls by data trust level, extracts PII from trusted sources |
-| **L2** | `UNTRUSTED_TOKENS_IN_CONTEXT` | Labels context tokens by origin, flags untrusted injection vectors |
-| **L3** | `EXFILTRATION_RISK` | Detects PII in outbound tool calls via substring correlation |
-| **L4** | `CONTAMINATED_MEMORY_ACTIVE` | Tracks cross-session taint through persistent memory (novel) |
+| Layer  | Signal                        | What It Does                                                           |
+| ------ | ----------------------------- | ---------------------------------------------------------------------- |
+| **L1** | `PRIVILEGED_DATA_ACCESSED`    | Tags tool calls by data trust level, extracts PII from trusted sources |
+| **L2** | `UNTRUSTED_TOKENS_IN_CONTEXT` | Labels context tokens by origin, flags untrusted injection vectors     |
+| **L3** | `EXFILTRATION_RISK`           | Detects PII in outbound tool calls via substring correlation           |
+| **L4** | `CONTAMINATED_MEMORY_ACTIVE`  | Tracks cross-session taint through persistent memory (novel)           |
 
 ### Correlation Engine
 
@@ -46,7 +46,7 @@ import { guard } from '@cerberus-ai/core';
 const { executors: secured, destroy } = guard(
   {
     readDatabase: async (args) => db.query(args.sql),
-    fetchUrl: async (args) => fetch(args.url).then(r => r.text()),
+    fetchUrl: async (args) => fetch(args.url).then((r) => r.text()),
     sendEmail: async (args) => mailer.send(args),
   },
   {

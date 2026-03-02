@@ -4,11 +4,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import {
-  PAYLOADS,
-  getPayloadsByCategory,
-  getPayloadById,
-} from '../../harness/payloads.js';
+import { PAYLOADS, getPayloadsByCategory, getPayloadById } from '../../harness/payloads.js';
 import type { PayloadCategory } from '../../harness/types.js';
 
 const ALL_CATEGORIES: readonly PayloadCategory[] = [

