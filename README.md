@@ -28,32 +28,40 @@ This is not theoretical. It is reproducible today with free-tier API access and 
 
 ## Architecture
 
-Cerberus is four independent detection layers sharing one correlation engine:
+Cerberus is four detection layers plus six advanced sub-classifiers, sharing one correlation engine:
 
 ```
-                         ┌─────────────────────────────────────┐
-                         │          AGENT RUNTIME              │
-                         │                                     │
-  ┌──────────┐          │  ┌─────┐   ┌─────┐   ┌─────┐      │
-  │ External │──fetch──▶│  │L1   │   │L2   │   │L3   │      │
-  │ Content  │          │  │Data │   │Token│   │Out- │      │
-  └──────────┘          │  │Class│   │Prov │   │bound│      │
-                         │  └──┬──┘   └──┬──┘   └──┬──┘      │
-  ┌──────────┐          │     │         │         │          │
-  │ Private  │──read──▶│     ▼         ▼         ▼          │
-  │ Data     │          │  ┌─────────────────────────────┐   │
-  └──────────┘          │  │    CORRELATION ENGINE       │   │
-                         │  │  Risk Vector: [L1,L2,L3,L4]│   │
-  ┌──────────┐          │  │  Score >= 3 → ALERT         │   │
-  │ Memory   │◀─r/w───▶│  │  Score  = 4 → INTERRUPT     │   │
-  │ Store    │          │  └──────────────┬──────────────┘   │
-  └──────────┘          │                 │                   │
-       ▲                │  ┌──────┐       │                   │
-       │                │  │L4    │       ▼                   │
-       └────taint──────▶│  │Memory│   ┌────────┐             │
-                         │  │Graph │   │Intercep│──▶ BLOCK    │
-                         │  └──────┘   └────────┘             │
-                         └─────────────────────────────────────┘
+                    ┌──────────────────────────────────────────────────────┐
+                    │                    AGENT RUNTIME                     │
+                    │                                                      │
+  ┌──────────┐     │  ┌──────────────┐   ┌──────────────┐   ┌─────────┐  │
+  │ External │─────│─▶│ L1 Data      │   │ L2 Token     │   │ L3 Out- │  │
+  │ Content  │     │  │ Classifier   │   │ Provenance   │   │ bound   │  │
+  └──────────┘     │  └──────┬───────┘   └──────┬───────┘   └────┬────┘  │
+                    │         │                   │                │       │
+  ┌──────────┐     │         ▼                   ▼                ▼       │
+  │ Private  │─────│─▶┌──────────────┐   ┌──────────────┐  ┌─────────┐  │
+  │ Data     │     │  │ Secrets      │   │ Injection    │  │ Domain  │  │
+  └──────────┘     │  │ Detector     │   │ Scanner      │  │ Class.  │  │
+                    │  └──────────────┘   ├──────────────┤  └─────────┘  │
+  ┌──────────┐     │                      │ Encoding     │               │
+  │ MCP Tool │─────│─▶┌──────────────┐   │ Detector     │               │
+  │ Registry │     │  │ MCP Poisoning│   ├──────────────┤               │
+  └──────────┘     │  │ Scanner      │   │ Drift        │               │
+                    │  └──────────────┘   │ Detector     │               │
+  ┌──────────┐     │                      └──────┬───────┘               │
+  │ Memory   │◀───▶│  ┌──────┐                   │                       │
+  │ Store    │     │  │ L4   │                   ▼                       │
+  └──────────┘     │  │Memory│    ┌────────────────────────────────┐     │
+       ▲           │  │Graph │───▶│      CORRELATION ENGINE        │     │
+       │           │  └──────┘    │  Risk Vector: [L1, L2, L3, L4] │     │
+       └───taint──▶│              │  Score >= 3 → ALERT/INTERRUPT  │     │
+                    │              └───────────────┬────────────────┘     │
+                    │                              ▼                      │
+                    │                        ┌──────────┐                 │
+                    │                        │Interceptor│──▶ BLOCK       │
+                    │                        └──────────┘                 │
+                    └──────────────────────────────────────────────────────┘
 ```
 
 ### Detection Layers
