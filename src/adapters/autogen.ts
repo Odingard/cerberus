@@ -1,8 +1,9 @@
 /**
  * AutoGen Adapter — Planned
  *
- * Framework-specific integration for AutoGen agents.
- * Will wrap AutoGen's tool calling interface to Cerberus guard().
+ * Framework-specific integration for Microsoft AutoGen agents.
+ * Will follow the same pattern as the LangChain adapter:
+ * accept AutoGen tool objects, call guard() internally, return wrapped tools.
  *
  * Status: Planned. Use guard() directly with custom ToolExecutorFn wrappers.
  *

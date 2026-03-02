@@ -35,3 +35,24 @@ export type { ToolExecutorFn } from './engine/interceptor.js';
 export type { MemoryToolConfig } from './layers/l4-memory.js';
 export type { ContaminationGraph, GraphNode, GraphEdge } from './graph/contamination.js';
 export type { ProvenanceLedger, ProvenanceRecord } from './graph/ledger.js';
+
+// Framework adapters
+export { guardLangChain } from './adapters/langchain.js';
+export type {
+  LangChainTool,
+  LangChainGuardConfig,
+  LangChainGuardResult,
+} from './adapters/langchain.js';
+export { guardVercelAI } from './adapters/vercel-ai.js';
+export type {
+  VercelAITool,
+  VercelAIToolMap,
+  VercelAIGuardConfig,
+  VercelAIGuardResult,
+} from './adapters/vercel-ai.js';
+export { createCerberusGuardrail } from './adapters/openai-agents.js';
+export type {
+  GuardrailFunctionOutput,
+  OpenAIAgentsGuardConfig,
+  OpenAIAgentsGuardrailResult,
+} from './adapters/openai-agents.js';
