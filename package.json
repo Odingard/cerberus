@@ -23,6 +23,9 @@
     "format:check": "prettier --check \"src/**/*.ts\" \"harness/**/*.ts\" \"tests/**/*.ts\"",
     "ci": "npm run typecheck && npm run lint && npm run test",
     "clean": "rm -rf dist",
+    "demo": "cd demo && npx vite",
+    "demo:build": "cd demo && npx vite build",
+    "demo:preview": "cd demo && npx vite preview",
     "prebuild": "npm run clean",
     "prepublishOnly": "npm run ci && npm run build",
     "prepare": "husky"

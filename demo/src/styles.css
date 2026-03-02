@@ -1,0 +1,365 @@
+/* ── Reset & Base ───────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --border: #30363d;
+  --text: #e6edf3;
+  --text-muted: #8b949e;
+  --green: #3fb950;
+  --yellow: #d29922;
+  --orange: #db6d28;
+  --red: #f85149;
+  --blue: #58a6ff;
+  --purple: #bc8cff;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, monospace;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* ── Header ─────────────────────────────────────────────────────── */
+.header {
+  text-align: center;
+  padding: 2rem 1rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.header h1 span { color: var(--red); }
+
+.header p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin-top: 0.5rem;
+}
+
+/* ── Layout ─────────────────────────────────────────────────────── */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.panels {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+@media (max-width: 900px) {
+  .panels { grid-template-columns: 1fr; }
+}
+
+/* ── Controls ───────────────────────────────────────────────────── */
+.controls {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.btn {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  padding: 0.6rem 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.btn:hover { border-color: var(--text-muted); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btn-primary {
+  background: var(--red);
+  border-color: var(--red);
+  color: #fff;
+  font-weight: 600;
+}
+
+.btn-primary:hover { opacity: 0.9; }
+
+/* ── Panel Card ─────────────────────────────────────────────────── */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.panel-header {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.panel-body {
+  padding: 1rem;
+}
+
+/* ── Steps (Agent Panel) ────────────────────────────────────────── */
+.steps { display: flex; flex-direction: column; gap: 1rem; }
+
+.step {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1rem;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: all 0.4s ease;
+}
+
+.step.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.step-number {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--border);
+  color: var(--text);
+  flex-shrink: 0;
+}
+
+.step-tool {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--blue);
+}
+
+.step-desc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.step-result {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  background: var(--bg);
+  border-radius: 4px;
+  padding: 0.75rem;
+  max-height: 120px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.4;
+}
+
+/* ── Layer badges ───────────────────────────────────────────────── */
+.badge {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-left: auto;
+}
+
+.badge-l1 { background: rgba(63, 185, 80, 0.2); color: var(--green); }
+.badge-l2 { background: rgba(210, 153, 34, 0.2); color: var(--yellow); }
+.badge-l3 { background: rgba(248, 81, 73, 0.2); color: var(--red); }
+
+.badge-blocked {
+  background: var(--red);
+  color: #fff;
+  animation: pulse 1s ease infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Step border colors based on detection */
+.step.l1 { border-color: var(--green); }
+.step.l2 { border-color: var(--yellow); }
+.step.l3 { border-color: var(--red); }
+.step.blocked { border-color: var(--red); background: rgba(248, 81, 73, 0.05); }
+
+/* ── Risk Dashboard ─────────────────────────────────────────────── */
+.risk-dashboard { display: flex; flex-direction: column; gap: 1.25rem; }
+
+.risk-vector {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.risk-cell {
+  flex: 1;
+  text-align: center;
+  padding: 0.75rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  transition: all 0.4s ease;
+}
+
+.risk-cell-label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 0.25rem;
+}
+
+.risk-cell-value {
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.risk-cell.active-l1 {
+  border-color: var(--green);
+  background: rgba(63, 185, 80, 0.1);
+}
+.risk-cell.active-l1 .risk-cell-value { color: var(--green); }
+
+.risk-cell.active-l2 {
+  border-color: var(--yellow);
+  background: rgba(210, 153, 34, 0.1);
+}
+.risk-cell.active-l2 .risk-cell-value { color: var(--yellow); }
+
+.risk-cell.active-l3 {
+  border-color: var(--red);
+  background: rgba(248, 81, 73, 0.1);
+}
+.risk-cell.active-l3 .risk-cell-value { color: var(--red); }
+
+.risk-cell.inactive .risk-cell-value { color: var(--border); }
+
+/* Score bar */
+.score-section { margin-top: 0.5rem; }
+
+.score-label {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+.score-bar {
+  height: 8px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.score-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 4px;
+  transition: width 0.6s ease, background 0.4s ease;
+}
+
+.score-0 { width: 0%; }
+.score-1 { width: 25%; background: var(--green); }
+.score-2 { width: 50%; background: var(--yellow); }
+.score-3 { width: 75%; background: var(--red); }
+.score-4 { width: 100%; background: var(--red); }
+
+/* Action badge */
+.action-display {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  text-align: center;
+  border: 1px solid var(--border);
+  transition: all 0.4s ease;
+}
+
+.action-none { color: var(--text-muted); }
+.action-log { color: var(--green); border-color: var(--green); }
+.action-alert { color: var(--yellow); border-color: var(--yellow); }
+.action-interrupt {
+  color: var(--red);
+  border-color: var(--red);
+  background: rgba(248, 81, 73, 0.1);
+  font-weight: 700;
+}
+
+/* ── Code Panel ─────────────────────────────────────────────────── */
+.code-block {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  line-height: 1.6;
+  background: var(--bg);
+  padding: 1rem;
+  border-radius: 4px;
+  overflow-x: auto;
+  white-space: pre;
+  color: var(--text-muted);
+}
+
+.code-block .kw { color: var(--purple); }
+.code-block .fn { color: var(--blue); }
+.code-block .str { color: var(--green); }
+.code-block .comment { color: #484f58; }
+.code-block .num { color: var(--orange); }
+
+/* ── Footer ─────────────────────────────────────────────────────── */
+.footer {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  border-top: 1px solid var(--border);
+  margin-top: 2rem;
+}
+
+.footer a {
+  color: var(--blue);
+  text-decoration: none;
+}
+
+.footer a:hover { text-decoration: underline; }
+
+/* ── Empty state ────────────────────────────────────────────────── */
+.empty-state {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 3rem 1rem;
+}

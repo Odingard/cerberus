@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cerberus Demo — Agentic AI Runtime Security</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <h1><span>Cerberus</span> — Agentic AI Runtime Security</h1>
+    <p>Watch the Lethal Trifecta attack unfold — and get blocked in real time</p>
+  </div>
+
+  <div class="container">
+
+    <!-- Controls -->
+    <div class="controls">
+      <button id="btn-run" class="btn btn-primary">Run Attack</button>
+      <button id="btn-reset" class="btn" disabled>Reset</button>
+    </div>
+
+    <!-- Main panels -->
+    <div class="panels">
+
+      <!-- Left: Agent simulation -->
+      <div class="panel">
+        <div class="panel-header">Agent Simulation</div>
+        <div class="panel-body">
+          <div id="steps" class="steps">
+            <div class="empty-state">Click "Run Attack" to start the simulation</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Risk dashboard + code -->
+      <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+
+        <!-- Risk vector -->
+        <div class="panel">
+          <div class="panel-header">Risk Vector</div>
+          <div class="panel-body risk-dashboard">
+            <div class="risk-vector">
+              <div id="risk-l1" class="risk-cell inactive">
+                <div class="risk-cell-label">L1</div>
+                <div id="risk-l1-val" class="risk-cell-value">0</div>
+              </div>
+              <div id="risk-l2" class="risk-cell inactive">
+                <div class="risk-cell-label">L2</div>
+                <div id="risk-l2-val" class="risk-cell-value">0</div>
+              </div>
+              <div id="risk-l3" class="risk-cell inactive">
+                <div class="risk-cell-label">L3</div>
+                <div id="risk-l3-val" class="risk-cell-value">0</div>
+              </div>
+              <div id="risk-l4" class="risk-cell inactive">
+                <div class="risk-cell-label">L4</div>
+                <div id="risk-l4-val" class="risk-cell-value">0</div>
+              </div>
+            </div>
+
+            <div class="score-section">
+              <div class="score-label">
+                <span>Risk Score</span>
+                <span id="score-value">0/4</span>
+              </div>
+              <div class="score-bar">
+                <div id="score-fill" class="score-fill score-0"></div>
+              </div>
+            </div>
+
+            <div id="action-display" class="action-display action-none">Waiting...</div>
+          </div>
+        </div>
+
+        <!-- Code snippet -->
+        <div class="panel">
+          <div class="panel-header">guard() — 3 Lines to Protect</div>
+          <div class="panel-body">
+            <div class="code-block"><span class="kw">import</span> { <span class="fn">guard</span> } <span class="kw">from</span> <span class="str">'@cerberus-ai/core'</span>;
+
+<span class="kw">const</span> guarded = <span class="fn">guard</span>(myTools, {
+  <span class="fn">alertMode</span>: <span class="str">'interrupt'</span>,
+  <span class="fn">threshold</span>: <span class="num">3</span>,
+  <span class="fn">trustOverrides</span>: [
+    { toolName: <span class="str">'readDB'</span>, trustLevel: <span class="str">'trusted'</span> },
+    { toolName: <span class="str">'fetch'</span>, trustLevel: <span class="str">'untrusted'</span> },
+  ],
+}, [<span class="str">'sendEmail'</span>]);
+
+<span class="comment">// Use guarded.executors instead of originals</span>
+<span class="comment">// Cerberus detects L1+L2+L3 = BLOCKED</span></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <a href="https://github.com/Odingard/cerberus">GitHub</a> &middot;
+    <a href="https://www.npmjs.com/package/@cerberus-ai/core">npm</a> &middot;
+    Built with Cerberus detection engine running in-browser
+  </div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
