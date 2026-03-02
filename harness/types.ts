@@ -154,6 +154,7 @@ export interface TraceConfig {
   readonly temperature?: number | undefined;
   readonly seed?: number | undefined;
   readonly trialIndex?: number | undefined;
+  readonly provider?: string | undefined;
 }
 
 /** The full execution trace for one payload run. */

@@ -15,6 +15,8 @@ import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { RiskVector } from '../src/types/signals.js';
 import { runAgent } from './agent.js';
+import { runAgentMulti } from './agent-multi.js';
+import { detectProvider } from './providers/index.js';
 import { PAYLOADS, getPayloadsByCategory, getPayloadById } from './payloads.js';
 import {
   createToolExecutors,
@@ -194,13 +196,22 @@ export function computeGroundTruthLabels(
 
 // ── Helpers ────────────────────────────────────────────────────────
 
+/** Map provider name to the required environment variable. */
+const PROVIDER_ENV_VARS: Record<string, { envVar: string; hint: string }> = {
+  openai: { envVar: 'OPENAI_API_KEY', hint: 'export OPENAI_API_KEY=sk-...' },
+  anthropic: { envVar: 'ANTHROPIC_API_KEY', hint: 'export ANTHROPIC_API_KEY=sk-ant-...' },
+  google: { envVar: 'GOOGLE_API_KEY', hint: 'export GOOGLE_API_KEY=...' },
+};
+
 /** Throw early with a clear error message if the API key is missing. */
-function assertApiKeyAvailable(): void {
-  if (!process.env['OPENAI_API_KEY']) {
+function assertApiKeyAvailable(model?: string): void {
+  const provider = detectProvider(model ?? 'gpt-4o-mini');
+  const config = PROVIDER_ENV_VARS[provider] ?? { envVar: 'OPENAI_API_KEY', hint: 'export OPENAI_API_KEY=sk-...' };
+  if (!process.env[config.envVar]) {
     throw new Error(
-      'OPENAI_API_KEY environment variable is not set. ' +
-      'The attack harness requires a valid OpenAI API key to run. ' +
-      'Set it with: export OPENAI_API_KEY=sk-...',
+      `${config.envVar} environment variable is not set. ` +
+      `The attack harness requires a valid API key for ${provider} models. ` +
+      `Set it with: ${config.hint}`,
     );
   }
 }
@@ -285,10 +296,10 @@ export async function runSinglePayload(
   payload: Payload,
   options?: Omit<RunnerOptions, 'payloadIds' | 'categories'>,
 ): Promise<ExecutionTrace> {
-  assertApiKeyAvailable();
+  const model = options?.model ?? 'gpt-4o-mini';
+  assertApiKeyAvailable(model);
 
   const toolMode: ToolMode = options?.toolMode ?? 'simulated';
-  const model = options?.model ?? 'gpt-4o-mini';
   const maxTurns = options?.maxTurns ?? 10;
   const outputDir = options?.outputDir ?? resolve(__dirname, 'traces');
   const { promptId, promptText } = resolveSystemPrompt({
@@ -311,7 +322,10 @@ export async function runSinglePayload(
     externalUrl: '',
   });
 
-  const agentResult = await runAgent(
+  // Use multi-provider agent for non-OpenAI models, original for OpenAI
+  const provider = detectProvider(model);
+  const agentRunner = provider === 'openai' ? runAgent : runAgentMulti;
+  const agentResult = await agentRunner(
     promptText,
     DEFAULT_USER_PROMPT,
     {
@@ -338,6 +352,7 @@ export async function runSinglePayload(
       exfiltrationWebhookUrl: '',
       userPrompt: DEFAULT_USER_PROMPT,
       systemPromptId: promptId,
+      provider,
       ...(options?.temperature !== undefined ? { temperature: options.temperature } : {}),
       ...(options?.seed !== undefined ? { seed: options.seed } : {}),
       ...(trialIndex !== undefined ? { trialIndex } : {}),
@@ -374,7 +389,7 @@ export async function runSinglePayload(
 export async function runHarness(
   options?: RunnerOptions,
 ): Promise<RunSummary> {
-  assertApiKeyAvailable();
+  assertApiKeyAvailable(options?.model);
 
   const delayMs = options?.delayBetweenRunsMs ?? 1000;
   const outputDir = options?.outputDir ?? resolve(__dirname, 'traces');
@@ -637,16 +652,22 @@ async function main(): Promise<void> {
   const cliArgs = parseCliArgs(process.argv);
 
   const trials = cliArgs['trials'] ? parseInt(cliArgs['trials'], 10) : 1;
+  const model = cliArgs['model'];
   const systemPromptId = cliArgs['prompt'];
   const temperature = cliArgs['temperature'] ? parseFloat(cliArgs['temperature']) : undefined;
   const seed = cliArgs['seed'] ? parseInt(cliArgs['seed'], 10) : undefined;
 
+  const provider = detectProvider(model ?? 'gpt-4o-mini');
+
   // eslint-disable-next-line no-console
   console.log('[harness] Cerberus Attack Harness');
+  // eslint-disable-next-line no-console
+  console.log(`[harness] Provider: ${provider}, Model: ${model ?? 'gpt-4o-mini'}`);
   // eslint-disable-next-line no-console
   console.log(`[harness] ${PAYLOADS.length} payloads, ${String(trials)} trial(s), prompt: ${systemPromptId ?? 'permissive'}\n`);
 
   const runnerOpts: RunnerOptions = {
+    ...(model !== undefined ? { model } : {}),
     ...(trials > 1 ? { trials } : {}),
     ...(systemPromptId !== undefined ? { systemPromptId } : {}),
     ...(temperature !== undefined ? { temperature } : {}),

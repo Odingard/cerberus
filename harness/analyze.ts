@@ -268,6 +268,32 @@ export function printTraceAnalysis(traces: readonly ExecutionTrace[]): void {
     }
   }
 
+  // Group by model/provider
+  const byModel = new Map<string, ExecutionTrace[]>();
+  for (const trace of traces) {
+    const model = trace.config.model ?? 'unknown';
+    if (!byModel.has(model)) byModel.set(model, []);
+    byModel.get(model)!.push(trace);
+  }
+
+  if (byModel.size > 1) {
+    // eslint-disable-next-line no-console
+    console.log('\n--- By Model ---\n');
+    // eslint-disable-next-line no-console
+    console.log(`${pad('Model', 25)} | ${rpad('Runs', 4)} | ${rpad('Success', 7)} | ${rpad('Rate', 5)}`);
+    // eslint-disable-next-line no-console
+    console.log(`${'─'.repeat(25)}─┼─${'─'.repeat(4)}─┼─${'─'.repeat(7)}─┼─${'─'.repeat(5)}`);
+
+    for (const [model, modelTraces] of byModel) {
+      const successes = modelTraces.filter((t) => t.labels.outcome === 'success').length;
+      const rate = modelTraces.length > 0 ? successes / modelTraces.length : 0;
+      // eslint-disable-next-line no-console
+      console.log(
+        `${pad(model, 25)} | ${rpad(String(modelTraces.length), 4)} | ${rpad(String(successes), 7)} | ${rpad(pct(rate), 5)}`,
+      );
+    }
+  }
+
   // Token usage summary
   const totalTokens = traces.reduce((sum, t) => sum + t.tokenUsage.totalTokens, 0);
   const avgTokens = traces.length > 0 ? Math.round(totalTokens / traces.length) : 0;

@@ -179,6 +179,12 @@ All execution traces are logged as structured JSON in [`harness/traces/`](harnes
 # Run the full payload suite (requires OPENAI_API_KEY)
 npx tsx harness/runner.ts
 
+# Run against Claude (requires ANTHROPIC_API_KEY)
+npx tsx harness/runner.ts --model claude-sonnet-4-6
+
+# Run against Gemini (requires GOOGLE_API_KEY)
+npx tsx harness/runner.ts --model gemini-2.0-flash
+
 # Stress test: 3 trials per payload with safety-hardened system prompt
 npx tsx harness/runner.ts --trials 3 --prompt safety --temperature 0 --seed 42
 
@@ -194,8 +200,8 @@ See [docs/research-results.md](docs/research-results.md) for full methodology, p
 
 - **Language**: TypeScript (strict mode)
 - **Runtime**: Node.js >= 20
-- **Primary Harness**: OpenAI Function Calling API
-- **Testing**: Vitest (326 tests, 99.7% coverage)
+- **Primary Harness**: OpenAI, Anthropic, Google Gemini (multi-provider)
+- **Testing**: Vitest (381 tests)
 - **Memory Store**: SQLite via better-sqlite3
 - **Validation**: Zod
 
@@ -212,9 +218,11 @@ cerberus/
 │   ├── middleware/        # Developer-facing guard() API
 │   ├── adapters/         # Framework integrations (planned)
 │   └── types/            # Shared TypeScript interfaces
-├── harness/              # Phase 1 attack research instrument
+├── harness/              # Attack research instrument
+│   ├── providers/        # Multi-provider abstraction (OpenAI, Anthropic, Google)
 │   ├── traces/           # Labeled execution logs (JSON)
-│   ├── agent.ts          # 3-tool attack agent
+│   ├── agent.ts          # 3-tool attack agent (OpenAI)
+│   ├── agent-multi.ts    # Multi-provider attack agent
 │   ├── tools.ts          # Tool A, B, C definitions
 │   ├── payloads.ts       # 21 injection payloads across 5 categories
 │   ├── runner.ts         # Automated attack executor + multi-trial stress
@@ -247,9 +255,10 @@ cerberus/
 |-----------|--------|
 | Generic tool executors | **Supported** |
 | OpenAI Function Calling | **Supported** (via harness) |
+| Anthropic Tool Use | **Supported** (via harness) |
+| Google Gemini | **Supported** (via harness) |
 | LangChain | Planned (adapter stub) |
 | AutoGen | Planned (adapter stub) |
-| Anthropic Tool Use | Planned |
 | Ollama (Local) | Future |
 
 ---
