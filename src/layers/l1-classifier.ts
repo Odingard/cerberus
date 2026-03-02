@@ -17,8 +17,9 @@ import type { DetectionSession } from '../engine/session.js';
 
 /** Regex patterns for extracting sensitive values from text. */
 const EMAIL_PATTERN = /[\w.+-]+@[\w.-]+\.\w+/gi;
-const SSN_PATTERN = /\d{3}-\d{2}-\d{4}/g;
+const SSN_PATTERN = /\d{3}[-\s]?\d{2}[-\s]?\d{4}/g;
 const PHONE_PATTERN = /\+?1?[-.\s]?\(?\d{3}\)?[-.\s]?(?:\d{3}[-.\s]?)?\d{4}/g;
+const CREDIT_CARD_PATTERN = /\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b/g;
 
 /**
  * Resolve the trust level for a tool name from config overrides.
@@ -47,7 +48,8 @@ export function extractFieldNames(resultText: string): readonly string[] {
     collectKeysFromValue(parsed, fields);
   } catch {
     // Fallback: regex for common field name patterns in non-JSON text
-    const fieldPattern = /\b(email|ssn|phone|name|address|balance|account|id|notes)\b/gi;
+    const fieldPattern =
+      /\b(email|ssn|phone|name|address|balance|account|id|notes|dob|birthday|credit_card|card_number|password|token|secret)\b/gi;
     let match: RegExpExecArray | null = fieldPattern.exec(resultText);
     while (match) {
       fields.add(match[1].toLowerCase());
@@ -102,6 +104,11 @@ export function extractSensitiveValues(resultText: string): readonly string[] {
   const phones = resultText.match(PHONE_PATTERN);
   if (phones) {
     for (const p of phones) values.add(p.trim());
+  }
+
+  const cards = resultText.match(CREDIT_CARD_PATTERN);
+  if (cards) {
+    for (const c of cards) values.add(c.trim());
   }
 
   return [...values];

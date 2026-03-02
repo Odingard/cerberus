@@ -14,7 +14,20 @@ import type { ToolCallContext } from '../types/context.js';
 import type { DetectionSession } from '../engine/session.js';
 
 /** Destination field names to look for in tool arguments. */
-const DESTINATION_FIELDS = ['recipient', 'to', 'destination', 'url', 'endpoint', 'webhook'];
+const DESTINATION_FIELDS = [
+  'recipient',
+  'to',
+  'destination',
+  'url',
+  'endpoint',
+  'webhook',
+  'target',
+  'address',
+  'host',
+  'forward_to',
+  'cc',
+  'bcc',
+];
 
 /**
  * Classify whether this tool call is an exfiltration attempt.

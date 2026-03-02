@@ -1,1 +1,1 @@
-npx tsc --noEmit && npx eslint src/ && npx prettier --check "src/**/*.ts"
+npx tsc --noEmit && npx eslint src/ harness/ tests/ && npx prettier --check "src/**/*.ts"

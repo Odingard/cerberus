@@ -64,6 +64,22 @@ describe('extractDestination', () => {
     expect(extractDestination({ endpoint: 'https://api.example.com' })).toBe('https://api.example.com');
   });
 
+  it('should extract target field', () => {
+    expect(extractDestination({ target: 'https://evil.com/exfil' })).toBe('https://evil.com/exfil');
+  });
+
+  it('should extract cc field', () => {
+    expect(extractDestination({ cc: 'spy@evil.com' })).toBe('spy@evil.com');
+  });
+
+  it('should extract bcc field', () => {
+    expect(extractDestination({ bcc: 'hidden@evil.com' })).toBe('hidden@evil.com');
+  });
+
+  it('should extract forward_to field', () => {
+    expect(extractDestination({ forward_to: 'drop@evil.com' })).toBe('drop@evil.com');
+  });
+
   it('should return unknown for no matching fields', () => {
     expect(extractDestination({ data: 'hello' })).toBe('unknown');
   });

@@ -201,7 +201,7 @@ See [docs/research-results.md](docs/research-results.md) for full methodology, p
 - **Language**: TypeScript (strict mode)
 - **Runtime**: Node.js >= 20
 - **Primary Harness**: OpenAI, Anthropic, Google Gemini (multi-provider)
-- **Testing**: Vitest (381 tests)
+- **Testing**: Vitest (413+ tests)
 - **Memory Store**: SQLite via better-sqlite3
 - **Validation**: Zod
 
@@ -216,7 +216,7 @@ cerberus/
 │   ├── engine/           # Correlation engine + interceptor
 │   ├── graph/            # Memory contamination graph + provenance ledger
 │   ├── middleware/        # Developer-facing guard() API
-│   ├── adapters/         # Framework integrations (planned)
+│   ├── adapters/         # Framework integrations (LangChain, Vercel AI, OpenAI Agents)
 │   └── types/            # Shared TypeScript interfaces
 ├── harness/              # Attack research instrument
 │   ├── providers/        # Multi-provider abstraction (OpenAI, Anthropic, Google)
@@ -253,12 +253,14 @@ cerberus/
 
 | Framework | Status |
 |-----------|--------|
-| Generic tool executors | **Supported** |
+| Generic tool executors | **Supported** — `guard()` |
+| LangChain | **Supported** — `guardLangChain()` |
+| Vercel AI SDK | **Supported** — `guardVercelAI()` |
+| OpenAI Agents SDK | **Supported** — `createCerberusGuardrail()` |
 | OpenAI Function Calling | **Supported** (via harness) |
 | Anthropic Tool Use | **Supported** (via harness) |
 | Google Gemini | **Supported** (via harness) |
-| LangChain | Planned (adapter stub) |
-| AutoGen | Planned (adapter stub) |
+| AutoGen | Planned |
 | Ollama (Local) | Future |
 
 ---

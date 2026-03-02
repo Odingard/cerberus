@@ -110,6 +110,36 @@ describe('extractSensitiveValues', () => {
     expect(values.length).toBeGreaterThanOrEqual(3);
   });
 
+  it('should extract credit card numbers with dashes', () => {
+    const text = 'Card: 4111-1111-1111-1111';
+    const values = extractSensitiveValues(text);
+    expect(values).toContain('4111-1111-1111-1111');
+  });
+
+  it('should extract credit card numbers with spaces', () => {
+    const text = 'Card: 4111 1111 1111 1111';
+    const values = extractSensitiveValues(text);
+    expect(values).toContain('4111 1111 1111 1111');
+  });
+
+  it('should extract credit card numbers without separators', () => {
+    const text = 'Card: 4111111111111111';
+    const values = extractSensitiveValues(text);
+    expect(values).toContain('4111111111111111');
+  });
+
+  it('should extract SSN with spaces', () => {
+    const text = 'SSN: 123 45 6789';
+    const values = extractSensitiveValues(text);
+    expect(values).toContain('123 45 6789');
+  });
+
+  it('should extract SSN without dashes', () => {
+    const text = 'SSN: 123456789';
+    const values = extractSensitiveValues(text);
+    expect(values).toContain('123456789');
+  });
+
   it('should return empty array for text with no PII', () => {
     const text = 'Hello world, no sensitive data here.';
     expect(extractSensitiveValues(text)).toHaveLength(0);
