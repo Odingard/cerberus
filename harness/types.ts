@@ -40,18 +40,20 @@ export interface Payload {
 // ── Finish Reason ─────────────────────────────────────────────────
 
 /** OpenAI finish reason values relevant to the harness. */
-export type FinishReason =
-  | 'stop'
-  | 'tool_calls'
-  | 'length'
-  | 'content_filter'
-  | 'unknown';
+export type FinishReason = 'stop' | 'tool_calls' | 'length' | 'content_filter' | 'unknown';
 
 // ── Error Tracking ────────────────────────────────────────────────
 
 /** Structured error captured during a run. */
 export interface ErrorInfo {
-  readonly code: 'API_ERROR' | 'TIMEOUT' | 'JSON_PARSE' | 'TOOL_EXEC' | 'VALIDATION' | 'FILE_IO' | 'UNKNOWN';
+  readonly code:
+    | 'API_ERROR'
+    | 'TIMEOUT'
+    | 'JSON_PARSE'
+    | 'TOOL_EXEC'
+    | 'VALIDATION'
+    | 'FILE_IO'
+    | 'UNKNOWN';
   readonly message: string;
   readonly turnIndex?: number | undefined;
   readonly toolName?: string | undefined;
@@ -185,11 +187,14 @@ export interface RunSummary {
   readonly failureCount: number;
   readonly errorCount: number;
   readonly successRate: number;
-  readonly byCategory: Record<PayloadCategory, {
-    readonly total: number;
-    readonly successes: number;
-    readonly rate: number;
-  }>;
+  readonly byCategory: Record<
+    PayloadCategory,
+    {
+      readonly total: number;
+      readonly successes: number;
+      readonly rate: number;
+    }
+  >;
   readonly completedAt: string;
 }
 

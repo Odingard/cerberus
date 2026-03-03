@@ -206,12 +206,15 @@ const PROVIDER_ENV_VARS: Record<string, { envVar: string; hint: string }> = {
 /** Throw early with a clear error message if the API key is missing. */
 function assertApiKeyAvailable(model?: string): void {
   const provider = detectProvider(model ?? 'gpt-4o-mini');
-  const config = PROVIDER_ENV_VARS[provider] ?? { envVar: 'OPENAI_API_KEY', hint: 'export OPENAI_API_KEY=sk-...' };
+  const config = PROVIDER_ENV_VARS[provider] ?? {
+    envVar: 'OPENAI_API_KEY',
+    hint: 'export OPENAI_API_KEY=sk-...',
+  };
   if (!process.env[config.envVar]) {
     throw new Error(
       `${config.envVar} environment variable is not set. ` +
-      `The attack harness requires a valid API key for ${provider} models. ` +
-      `Set it with: ${config.hint}`,
+        `The attack harness requires a valid API key for ${provider} models. ` +
+        `Set it with: ${config.hint}`,
     );
   }
 }
@@ -249,7 +252,11 @@ function isValidTraceFile(filePath: string): boolean {
 function buildErrorTrace(
   payload: Payload,
   errorMessage: string,
-  options?: { toolMode?: ToolMode | undefined; model?: string | undefined; maxTurns?: number | undefined },
+  options?: {
+    toolMode?: ToolMode | undefined;
+    model?: string | undefined;
+    maxTurns?: number | undefined;
+  },
 ): ExecutionTrace {
   const now = new Date();
   return {
@@ -325,17 +332,13 @@ export async function runSinglePayload(
   // Use multi-provider agent for non-OpenAI models, original for OpenAI
   const provider = detectProvider(model);
   const agentRunner = provider === 'openai' ? runAgent : runAgentMulti;
-  const agentResult = await agentRunner(
-    promptText,
-    DEFAULT_USER_PROMPT,
-    {
-      model,
-      maxTurns,
-      toolExecutors,
-      ...(options?.temperature !== undefined ? { temperature: options.temperature } : {}),
-      ...(options?.seed !== undefined ? { seed: options.seed } : {}),
-    },
-  );
+  const agentResult = await agentRunner(promptText, DEFAULT_USER_PROMPT, {
+    model,
+    maxTurns,
+    toolExecutors,
+    ...(options?.temperature !== undefined ? { temperature: options.temperature } : {}),
+    ...(options?.seed !== undefined ? { seed: options.seed } : {}),
+  });
 
   const completedAt = new Date();
   const labels = computeGroundTruthLabels(agentResult.turns, fixture);
@@ -386,9 +389,7 @@ export async function runSinglePayload(
  * Execute the attack harness against selected payloads.
  * Returns a summary of all runs.
  */
-export async function runHarness(
-  options?: RunnerOptions,
-): Promise<RunSummary> {
+export async function runHarness(options?: RunnerOptions): Promise<RunSummary> {
   assertApiKeyAvailable(options?.model);
 
   const delayMs = options?.delayBetweenRunsMs ?? 1000;
@@ -426,16 +427,25 @@ export async function runHarness(
   let errorCount = 0;
 
   // Track per-payload statistics for multi-trial mode
-  const perPayloadStats = new Map<string, {
-    successes: number;
-    partials: number;
-    failures: number;
-    errors: number;
-    total: number;
-  }>();
+  const perPayloadStats = new Map<
+    string,
+    {
+      successes: number;
+      partials: number;
+      failures: number;
+      errors: number;
+      total: number;
+    }
+  >();
 
   for (const payload of payloads) {
-    perPayloadStats.set(payload.id, { successes: 0, partials: 0, failures: 0, errors: 0, total: 0 });
+    perPayloadStats.set(payload.id, {
+      successes: 0,
+      partials: 0,
+      failures: 0,
+      errors: 0,
+      total: 0,
+    });
 
     for (let trial = 0; trial < trials; trial++) {
       // skipExisting only applies in single-trial mode
@@ -464,14 +474,18 @@ export async function runHarness(
       try {
         const trialLabel = trials > 1 ? ` trial ${String(trial + 1)}/${String(trials)}` : '';
         // eslint-disable-next-line no-console
-        console.log(`[harness] Running payload ${payload.id}${trialLabel} (${payload.category})...`);
+        console.log(
+          `[harness] Running payload ${payload.id}${trialLabel} (${payload.category})...`,
+        );
 
         const singleOpts: Omit<RunnerOptions, 'payloadIds' | 'categories'> = {
           outputDir,
           ...(options?.toolMode !== undefined ? { toolMode: options.toolMode } : {}),
           ...(options?.model !== undefined ? { model: options.model } : {}),
           ...(options?.maxTurns !== undefined ? { maxTurns: options.maxTurns } : {}),
-          ...(options?.systemPromptId !== undefined ? { systemPromptId: options.systemPromptId } : {}),
+          ...(options?.systemPromptId !== undefined
+            ? { systemPromptId: options.systemPromptId }
+            : {}),
           ...(options?.systemPrompt !== undefined ? { systemPrompt: options.systemPrompt } : {}),
           ...(options?.temperature !== undefined ? { temperature: options.temperature } : {}),
           ...(options?.seed !== undefined ? { seed: options.seed } : {}),
@@ -481,7 +495,9 @@ export async function runHarness(
         // Per-run timeout
         const tracePromise = runSinglePayload(payload, singleOpts);
         const timeoutPromise = new Promise<never>((_, reject) => {
-          setTimeout(() => { reject(new Error(`Run timed out after ${String(perRunTimeout)}ms`)); }, perRunTimeout);
+          setTimeout(() => {
+            reject(new Error(`Run timed out after ${String(perRunTimeout)}ms`));
+          }, perRunTimeout);
         });
         const trace = await Promise.race([tracePromise, timeoutPromise]);
 
@@ -493,22 +509,40 @@ export async function runHarness(
         if (stats) {
           stats.total++;
           switch (trace.labels.outcome) {
-            case 'success': stats.successes++; break;
-            case 'partial': stats.partials++; break;
-            case 'failure': stats.failures++; break;
-            case 'error': stats.errors++; break;
+            case 'success':
+              stats.successes++;
+              break;
+            case 'partial':
+              stats.partials++;
+              break;
+            case 'failure':
+              stats.failures++;
+              break;
+            case 'error':
+              stats.errors++;
+              break;
           }
         }
 
         switch (trace.labels.outcome) {
-          case 'success': successCount++; break;
-          case 'partial': partialCount++; break;
-          case 'failure': failureCount++; break;
-          case 'error': errorCount++; break;
+          case 'success':
+            successCount++;
+            break;
+          case 'partial':
+            partialCount++;
+            break;
+          case 'failure':
+            failureCount++;
+            break;
+          case 'error':
+            errorCount++;
+            break;
         }
 
         // eslint-disable-next-line no-console
-        console.log(`[harness]   → ${trace.labels.outcome} (risk: L1=${trace.labels.riskVector.l1} L2=${trace.labels.riskVector.l2} L3=${trace.labels.riskVector.l3})`);
+        console.log(
+          `[harness]   → ${trace.labels.outcome} (risk: L1=${trace.labels.riskVector.l1} L2=${trace.labels.riskVector.l2} L3=${trace.labels.riskVector.l3})`,
+        );
       } catch (err) {
         errorCount++;
         const message = err instanceof Error ? err.message : String(err);
@@ -533,7 +567,9 @@ export async function runHarness(
 
       // Rate limiting delay between runs
       if (delayMs > 0) {
-        await new Promise<void>((r) => { setTimeout(r, delayMs); });
+        await new Promise<void>((r) => {
+          setTimeout(r, delayMs);
+        });
       }
     }
   }
@@ -552,13 +588,19 @@ export async function runHarness(
     categories.map((cat) => {
       const catTraces = traces.filter((t) => t.payload.category === cat);
       const catSuccesses = catTraces.filter((t) => t.labels.outcome === 'success').length;
-      return [cat, {
-        total: catTraces.length,
-        successes: catSuccesses,
-        rate: catTraces.length > 0 ? catSuccesses / catTraces.length : 0,
-      }];
+      return [
+        cat,
+        {
+          total: catTraces.length,
+          successes: catSuccesses,
+          rate: catTraces.length > 0 ? catSuccesses / catTraces.length : 0,
+        },
+      ];
     }),
-  ) as Record<PayloadCategory, { readonly total: number; readonly successes: number; readonly rate: number }>;
+  ) as Record<
+    PayloadCategory,
+    { readonly total: number; readonly successes: number; readonly rate: number }
+  >;
 
   const summary: RunSummary = {
     totalRuns,
@@ -599,9 +641,8 @@ export async function runHarness(
     }
 
     const meanRate = rates.length > 0 ? rates.reduce((a, b) => a + b, 0) / rates.length : 0;
-    const variance = rates.length > 0
-      ? rates.reduce((a, b) => a + (b - meanRate) ** 2, 0) / rates.length
-      : 0;
+    const variance =
+      rates.length > 0 ? rates.reduce((a, b) => a + (b - meanRate) ** 2, 0) / rates.length : 0;
 
     const stressSummary: StressSummary = {
       ...summary,
@@ -622,7 +663,9 @@ export async function runHarness(
   }
 
   // eslint-disable-next-line no-console
-  console.log(`\n[harness] Complete: ${totalRuns} runs — ${successCount} success, ${partialCount} partial, ${failureCount} failure, ${errorCount} error`);
+  console.log(
+    `\n[harness] Complete: ${totalRuns} runs — ${successCount} success, ${partialCount} partial, ${failureCount} failure, ${errorCount} error`,
+  );
   // eslint-disable-next-line no-console
   console.log(`[harness] Success rate: ${(summary.successRate * 100).toFixed(1)}%`);
   // eslint-disable-next-line no-console
@@ -664,7 +707,9 @@ async function main(): Promise<void> {
   // eslint-disable-next-line no-console
   console.log(`[harness] Provider: ${provider}, Model: ${model ?? 'gpt-4o-mini'}`);
   // eslint-disable-next-line no-console
-  console.log(`[harness] ${PAYLOADS.length} payloads, ${String(trials)} trial(s), prompt: ${systemPromptId ?? 'permissive'}\n`);
+  console.log(
+    `[harness] ${PAYLOADS.length} payloads, ${String(trials)} trial(s), prompt: ${systemPromptId ?? 'permissive'}\n`,
+  );
 
   const runnerOpts: RunnerOptions = {
     ...(model !== undefined ? { model } : {}),
@@ -680,7 +725,9 @@ async function main(): Promise<void> {
   console.log('\n[harness] Category breakdown:');
   for (const [cat, stats] of Object.entries(summary.byCategory)) {
     // eslint-disable-next-line no-console
-    console.log(`[harness]   ${cat}: ${stats.successes}/${stats.total} (${(stats.rate * 100).toFixed(0)}%)`);
+    console.log(
+      `[harness]   ${cat}: ${stats.successes}/${stats.total} (${(stats.rate * 100).toFixed(0)}%)`,
+    );
   }
 }
 

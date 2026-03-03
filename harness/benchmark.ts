@@ -17,17 +17,18 @@ import type { RiskAssessment, RiskVector } from '../src/types/signals.js';
 import { guard } from '../src/middleware/wrap.js';
 import type { GuardResult } from '../src/middleware/wrap.js';
 import type { ToolExecutorFn } from '../src/engine/interceptor.js';
-import { createToolExecutors, loadFixture, resetTurnCounter, resetCapturedReports } from './tools.js';
+import {
+  createToolExecutors,
+  loadFixture,
+  resetTurnCounter,
+  resetCapturedReports,
+} from './tools.js';
 import { PAYLOADS } from './payloads.js';
 import { runAgent } from './agent.js';
 import { DEFAULT_USER_PROMPT, SYSTEM_PROMPT_VARIANTS } from './runner.js';
 import type { SystemPromptId } from './runner.js';
 import { computeGroundTruthLabels } from './runner.js';
-import type {
-  PayloadCategory,
-  GroundTruthLabels,
-  ToolExecutor,
-} from './types.js';
+import type { PayloadCategory, GroundTruthLabels, ToolExecutor } from './types.js';
 
 // ── Benchmark Config ────────────────────────────────────────────────
 
@@ -72,16 +73,37 @@ export interface BenchmarkSummary {
   readonly detectionRate: number;
   readonly blockRate: number;
   readonly perLayer: {
-    readonly L1: { readonly tp: number; readonly fp: number; readonly fn: number; readonly tn: number; readonly accuracy: number };
-    readonly L2: { readonly tp: number; readonly fp: number; readonly fn: number; readonly tn: number; readonly accuracy: number };
-    readonly L3: { readonly tp: number; readonly fp: number; readonly fn: number; readonly tn: number; readonly accuracy: number };
+    readonly L1: {
+      readonly tp: number;
+      readonly fp: number;
+      readonly fn: number;
+      readonly tn: number;
+      readonly accuracy: number;
+    };
+    readonly L2: {
+      readonly tp: number;
+      readonly fp: number;
+      readonly fn: number;
+      readonly tn: number;
+      readonly accuracy: number;
+    };
+    readonly L3: {
+      readonly tp: number;
+      readonly fp: number;
+      readonly fn: number;
+      readonly tn: number;
+      readonly accuracy: number;
+    };
   };
-  readonly byCategory: Record<PayloadCategory, {
-    readonly total: number;
-    readonly detected: number;
-    readonly blocked: number;
-    readonly rate: number;
-  }>;
+  readonly byCategory: Record<
+    PayloadCategory,
+    {
+      readonly total: number;
+      readonly detected: number;
+      readonly blocked: number;
+      readonly rate: number;
+    }
+  >;
   readonly results: readonly PayloadBenchmarkResult[];
 }
 
@@ -138,9 +160,7 @@ export function compareBenchmark(
   }
 
   // Max score across all assessments
-  const maxScore = assessments.length > 0
-    ? Math.max(...assessments.map((a) => a.score))
-    : 0;
+  const maxScore = assessments.length > 0 ? Math.max(...assessments.map((a) => a.score)) : 0;
 
   // Would have blocked if any assessment triggered 'interrupt'
   const wouldHaveBlocked = assessments.some((a) => a.action === 'interrupt');
@@ -160,9 +180,7 @@ export function compareBenchmark(
 /**
  * Summarize an array of benchmark results into aggregate statistics.
  */
-export function summarizeBenchmark(
-  results: readonly PayloadBenchmarkResult[],
-): BenchmarkSummary {
+export function summarizeBenchmark(results: readonly PayloadBenchmarkResult[]): BenchmarkSummary {
   const total = results.length;
 
   // Per-layer accumulators
@@ -194,10 +212,18 @@ export function summarizeBenchmark(
     for (const lr of result.layerResults) {
       const acc = perLayer[lr.layer];
       switch (lr.result) {
-        case 'TP': acc.tp++; break;
-        case 'FP': acc.fp++; break;
-        case 'FN': acc.fn++; break;
-        case 'TN': acc.tn++; break;
+        case 'TP':
+          acc.tp++;
+          break;
+        case 'FP':
+          acc.fp++;
+          break;
+        case 'FN':
+          acc.fn++;
+          break;
+        case 'TN':
+          acc.tn++;
+          break;
       }
     }
 
@@ -229,12 +255,15 @@ export function summarizeBenchmark(
   const byCategory = Object.fromEntries(
     categories.map((cat) => {
       const stats = catAccum.get(cat)!;
-      return [cat, {
-        total: stats.total,
-        detected: stats.detected,
-        blocked: stats.blocked,
-        rate: stats.total > 0 ? stats.detected / stats.total : 0,
-      }];
+      return [
+        cat,
+        {
+          total: stats.total,
+          detected: stats.detected,
+          blocked: stats.blocked,
+          rate: stats.total > 0 ? stats.detected / stats.total : 0,
+        },
+      ];
     }),
   ) as BenchmarkSummary['byCategory'];
 
@@ -375,15 +404,11 @@ async function main(): Promise<void> {
     const guarded = createBenchmarkGuard(baseExecutors);
 
     // Run agent with guarded executors
-    const agentResult = await runAgent(
-      systemPrompt,
-      DEFAULT_USER_PROMPT,
-      {
-        toolExecutors: guarded.executors as Record<string, ToolExecutor>,
-        ...(temperature !== undefined ? { temperature } : {}),
-        ...(seed !== undefined ? { seed } : {}),
-      },
-    );
+    const agentResult = await runAgent(systemPrompt, DEFAULT_USER_PROMPT, {
+      toolExecutors: guarded.executors as Record<string, ToolExecutor>,
+      ...(temperature !== undefined ? { temperature } : {}),
+      ...(seed !== undefined ? { seed } : {}),
+    });
 
     // Compute ground-truth labels from what the harness observed
     const labels = computeGroundTruthLabels(agentResult.turns, fixture);
@@ -401,15 +426,17 @@ async function main(): Promise<void> {
     // eslint-disable-next-line no-console
     console.log(
       `[benchmark]   GT: L1=${String(labels.riskVector.l1)} L2=${String(labels.riskVector.l2)} L3=${String(labels.riskVector.l3)} | ` +
-      `Cerberus: L1=${String(result.cerberusVector.l1)} L2=${String(result.cerberusVector.l2)} L3=${String(result.cerberusVector.l3)} | ` +
-      `score=${String(result.maxScore)} blocked=${String(result.wouldHaveBlocked)}`,
+        `Cerberus: L1=${String(result.cerberusVector.l1)} L2=${String(result.cerberusVector.l2)} L3=${String(result.cerberusVector.l3)} | ` +
+        `score=${String(result.maxScore)} blocked=${String(result.wouldHaveBlocked)}`,
     );
 
     // Reset guard for next payload
     guarded.reset();
 
     // Rate limiting
-    await new Promise<void>((r) => { setTimeout(r, 1000); });
+    await new Promise<void>((r) => {
+      setTimeout(r, 1000);
+    });
   }
 
   const summary = summarizeBenchmark(results);
@@ -419,7 +446,8 @@ async function main(): Promise<void> {
 }
 
 // Only run main() when this file is the entry point
-const isMain = process.argv[1]?.endsWith('benchmark.ts') || process.argv[1]?.endsWith('benchmark.js');
+const isMain =
+  process.argv[1]?.endsWith('benchmark.ts') || process.argv[1]?.endsWith('benchmark.js');
 if (isMain) {
   main().catch((err) => {
     // eslint-disable-next-line no-console

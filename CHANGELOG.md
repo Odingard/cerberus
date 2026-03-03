@@ -11,10 +11,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Multi-provider attack validation** — 30 payloads tested against GPT-4o-mini (100%), Gemini 2.5 Flash (90%), Claude Sonnet 4.6 (0%)
 - Multi-provider results section in research-results.md with per-category Gemini breakdown and Claude analysis
+- **Scientific validation protocol** — causation scoring, negative controls, statistical rigor with Wilson CIs; 11 validation modules, 127 validation tests
+- **Detection engine validation** (`--detect` flag) — wraps harness tool executors with `guard()` in `alertMode: 'log'`, measures TP/FP/FN/TN per layer across control and treatment groups, reports detection rate, block rate, and false positive rate with Wilson CIs
+- **`authorizedDestinations`** config option — `CerberusConfig.authorizedDestinations?: readonly string[]` allows declaring expected outbound domain allowlist; L3 and drift detector skip for authorized destinations (mirrors production DLP/CASB patterns)
+- 718 tests (127 additional since v0.2.0)
 
 ### Changed
 
 - Updated Gemini model from deprecated `gemini-2.0-flash` to `gemini-2.5-flash` in CLI examples
+- L3 `classifyOutboundIntent()` accepts optional `authorizedDestinations` — returns null when destination domain is in the allowlist
+- Drift detector `detectBehavioralDrift()` accepts optional `authorizedDestinations` — `checkPostInjectionOutbound` skips authorized destinations
+- Interceptor passes `config.authorizedDestinations` to both L3 and drift detector
 
 ## [0.2.0] — 2026-03-02
 

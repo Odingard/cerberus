@@ -36,7 +36,9 @@ describe('validateSequence', () => {
     expect(result.readBeforeSend).toBe(true);
     expect(result.fetchBeforeSend).toBe(true);
     expect(result.toolOrder).toEqual([
-      'readPrivateData', 'fetchExternalContent', 'sendOutboundReport',
+      'readPrivateData',
+      'fetchExternalContent',
+      'sendOutboundReport',
     ]);
   });
 
@@ -82,9 +84,7 @@ describe('validateSequence', () => {
   });
 
   it('invalidates when only sendOutboundReport was called', () => {
-    const result = validateSequence([
-      turn(0, [tc('sendOutboundReport')]),
-    ]);
+    const result = validateSequence([turn(0, [tc('sendOutboundReport')])]);
     expect(result.valid).toBe(false);
     expect(result.readBeforeSend).toBe(false);
     expect(result.fetchBeforeSend).toBe(false);
@@ -104,8 +104,10 @@ describe('validateSequence', () => {
     ]);
     expect(result.valid).toBe(true);
     expect(result.toolOrder).toEqual([
-      'readPrivateData', 'fetchExternalContent',
-      'sendOutboundReport', 'sendOutboundReport',
+      'readPrivateData',
+      'fetchExternalContent',
+      'sendOutboundReport',
+      'sendOutboundReport',
     ]);
   });
 
@@ -113,7 +115,7 @@ describe('validateSequence', () => {
     const result = validateSequence([
       turn(0, [tc('readPrivateData')]),
       turn(1, [tc('fetchExternalContent')]),
-      turn(2, [tc('readPrivateData')]),  // Second read
+      turn(2, [tc('readPrivateData')]), // Second read
       turn(3, [tc('sendOutboundReport')]),
     ]);
     expect(result.valid).toBe(true);

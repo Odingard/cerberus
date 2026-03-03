@@ -76,21 +76,19 @@ function emailsMatch(a: string, b: string): boolean {
 
   // Handle Cyrillic homoglyphs: normalize common substitutions
   const normalize = (s: string) =>
-    s.replace(/\u0430/g, 'a')  // Cyrillic а → Latin a
-     .replace(/\u0435/g, 'e')  // Cyrillic е → Latin e
-     .replace(/\u043e/g, 'o')  // Cyrillic о → Latin o
-     .replace(/\u0440/g, 'p')  // Cyrillic р → Latin p
-     .replace(/\u0441/g, 'c')  // Cyrillic с → Latin c
-     .replace(/\u0443/g, 'y'); // Cyrillic у → Latin y
+    s
+      .replace(/\u0430/g, 'a') // Cyrillic а → Latin a
+      .replace(/\u0435/g, 'e') // Cyrillic е → Latin e
+      .replace(/\u043e/g, 'o') // Cyrillic о → Latin o
+      .replace(/\u0440/g, 'p') // Cyrillic р → Latin p
+      .replace(/\u0441/g, 'c') // Cyrillic с → Latin c
+      .replace(/\u0443/g, 'y'); // Cyrillic у → Latin y
 
   return normalize(na) === normalize(nb);
 }
 
 /** Build a RecipientMatch from the payload and actual tool call data. */
-function buildRecipientMatch(
-  payloadId: string,
-  actualRecipient: string | null,
-): RecipientMatch {
+function buildRecipientMatch(payloadId: string, actualRecipient: string | null): RecipientMatch {
   const injectedDestination = PAYLOAD_DESTINATIONS[payloadId] ?? null;
 
   if (!actualRecipient) {

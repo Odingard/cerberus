@@ -9,6 +9,7 @@ import {
   computeSimilarityScore,
   extractDestination,
   serializeArguments,
+  isAuthorizedDestination,
 } from '../../src/layers/l3-classifier.js';
 import { createSession } from '../../src/engine/session.js';
 import type { ToolCallContext } from '../../src/types/context.js';
@@ -256,5 +257,108 @@ describe('classifyOutboundIntent', () => {
     expect(signal).not.toBeNull();
     expect(signal!.similarityScore).toBe(1);
     expect(signal!.matchedFields).toHaveLength(3);
+  });
+
+  it('should return null when destination is authorized', () => {
+    const session = createSession();
+    session.privilegedValues.add('alice@example.com');
+    session.privilegedValues.add('123-45-6789');
+
+    const ctx = makeCtx({
+      toolArguments: {
+        recipient: 'reports@acme.com',
+        subject: 'Summary',
+        body: 'alice@example.com 123-45-6789',
+      },
+    });
+
+    const signal = classifyOutboundIntent(ctx, session, OUTBOUND_TOOLS, ['acme.com']);
+    expect(signal).toBeNull();
+  });
+
+  it('should fire when destination is NOT authorized', () => {
+    const session = createSession();
+    session.privilegedValues.add('alice@example.com');
+
+    const ctx = makeCtx({
+      toolArguments: {
+        recipient: 'data-collector@exfil.net',
+        subject: 'Data',
+        body: 'alice@example.com',
+      },
+    });
+
+    const signal = classifyOutboundIntent(ctx, session, OUTBOUND_TOOLS, ['acme.com']);
+    expect(signal).not.toBeNull();
+    expect(signal!.destination).toBe('data-collector@exfil.net');
+  });
+
+  it('should fire when no authorizedDestinations configured', () => {
+    const session = createSession();
+    session.privilegedValues.add('alice@example.com');
+
+    const signal = classifyOutboundIntent(makeCtx(), session, OUTBOUND_TOOLS);
+    expect(signal).not.toBeNull();
+  });
+
+  it('should match subdomain against authorized domain', () => {
+    const session = createSession();
+    session.privilegedValues.add('alice@example.com');
+
+    const ctx = makeCtx({
+      toolArguments: {
+        recipient: 'reports@internal.acme.com',
+        subject: 'Summary',
+        body: 'alice@example.com',
+      },
+    });
+
+    const signal = classifyOutboundIntent(ctx, session, OUTBOUND_TOOLS, ['acme.com']);
+    expect(signal).toBeNull();
+  });
+});
+
+describe('isAuthorizedDestination', () => {
+  it('should return false for empty authorized list', () => {
+    expect(isAuthorizedDestination('user@evil.com', [])).toBe(false);
+  });
+
+  it('should return false for unknown destination', () => {
+    expect(isAuthorizedDestination('unknown', ['acme.com'])).toBe(false);
+  });
+
+  it('should match exact domain', () => {
+    expect(isAuthorizedDestination('reports@acme.com', ['acme.com'])).toBe(true);
+  });
+
+  it('should match subdomain', () => {
+    expect(isAuthorizedDestination('reports@internal.acme.com', ['acme.com'])).toBe(true);
+  });
+
+  it('should NOT match partial domain name', () => {
+    expect(isAuthorizedDestination('user@not-acme.com', ['acme.com'])).toBe(false);
+  });
+
+  it('should be case-insensitive', () => {
+    expect(isAuthorizedDestination('reports@ACME.COM', ['acme.com'])).toBe(true);
+  });
+
+  it('should handle URL destinations', () => {
+    expect(isAuthorizedDestination('https://api.acme.com/reports', ['acme.com'])).toBe(true);
+  });
+
+  it('should reject unauthorized URL destinations', () => {
+    expect(isAuthorizedDestination('https://evil.com/exfil', ['acme.com'])).toBe(false);
+  });
+
+  it('should handle multiple authorized domains', () => {
+    const authorized = ['acme.com', 'acme-corp.com'];
+    expect(isAuthorizedDestination('reports@acme.com', authorized)).toBe(true);
+    expect(isAuthorizedDestination('reports@acme-corp.com', authorized)).toBe(true);
+    expect(isAuthorizedDestination('data@evil.com', authorized)).toBe(false);
+  });
+
+  it('should return false for non-parseable destination', () => {
+    expect(isAuthorizedDestination('not-an-email-or-url', ['acme.com'])).toBe(false);
   });
 });

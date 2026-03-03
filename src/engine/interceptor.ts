@@ -128,7 +128,12 @@ export function interceptToolCall(
     }
 
     // L3: Outbound intent classification
-    const l3Signal = classifyOutboundIntent(ctx, session, outboundTools);
+    const l3Signal = classifyOutboundIntent(
+      ctx,
+      session,
+      outboundTools,
+      config.authorizedDestinations,
+    );
     if (l3Signal) {
       signals.push(l3Signal);
       recordSignal(session, l3Signal);
@@ -151,7 +156,13 @@ export function interceptToolCall(
     }
 
     // Behavioral drift detector (runs last — reads accumulated session state)
-    const driftSignal = detectBehavioralDrift(ctx, session, outboundTools, isTrusted);
+    const driftSignal = detectBehavioralDrift(
+      ctx,
+      session,
+      outboundTools,
+      isTrusted,
+      config.authorizedDestinations,
+    );
     if (driftSignal) {
       signals.push(driftSignal);
       recordSignal(session, driftSignal);

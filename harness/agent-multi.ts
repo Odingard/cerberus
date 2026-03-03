@@ -46,14 +46,10 @@ export async function runAgentMulti(
   let stopReason: FinishReason = 'unknown';
 
   for (let turnIndex = 0; turnIndex < maxTurns; turnIndex++) {
-    const response = await provider.createCompletion(
-      messages,
-      CANONICAL_TOOLS,
-      {
-        ...(config.temperature !== undefined ? { temperature: config.temperature } : {}),
-        ...(config.seed !== undefined ? { seed: config.seed } : {}),
-      },
-    );
+    const response = await provider.createCompletion(messages, CANONICAL_TOOLS, {
+      ...(config.temperature !== undefined ? { temperature: config.temperature } : {}),
+      ...(config.seed !== undefined ? { seed: config.seed } : {}),
+    });
 
     totalPromptTokens += response.usage.promptTokens;
     totalCompletionTokens += response.usage.completionTokens;
@@ -72,7 +68,7 @@ export async function runAgentMulti(
         if (!executor) {
           throw new Error(
             `Unknown tool "${fnName}" requested by model. ` +
-            `Available tools: ${Object.keys(config.toolExecutors).join(', ')}`,
+              `Available tools: ${Object.keys(config.toolExecutors).join(', ')}`,
           );
         }
 

@@ -38,8 +38,11 @@ export function detectProvider(model: string): 'openai' | 'anthropic' | 'google'
 export function createProvider(model: string, apiKey?: string): ModelProvider {
   const provider = detectProvider(model);
   switch (provider) {
-    case 'anthropic': return new AnthropicProvider(model, apiKey);
-    case 'google': return new GoogleProvider(model, apiKey);
-    default: return new OpenAIProvider(model, apiKey);
+    case 'anthropic':
+      return new AnthropicProvider(model, apiKey);
+    case 'google':
+      return new GoogleProvider(model, apiKey);
+    default:
+      return new OpenAIProvider(model, apiKey);
   }
 }

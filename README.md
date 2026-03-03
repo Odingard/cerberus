@@ -266,7 +266,7 @@ See [docs/research-results.md](docs/research-results.md) for full methodology, p
 - **Language**: TypeScript (strict mode)
 - **Runtime**: Node.js >= 20
 - **Primary Harness**: OpenAI, Anthropic, Google Gemini (multi-provider)
-- **Testing**: Vitest (591 tests, 98.69% coverage)
+- **Testing**: Vitest (718 tests, 98%+ coverage)
 - **Memory Store**: SQLite via better-sqlite3
 - **Validation**: Zod
 

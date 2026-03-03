@@ -45,9 +45,10 @@ export function toAnthropicTools(tools: readonly CanonicalToolDef[]): Tool[] {
  * Convert provider messages to Anthropic message format.
  * Extracts system messages separately (Anthropic uses a dedicated system param).
  */
-export function toAnthropicMessages(
-  messages: readonly ProviderMessage[],
-): { system: string | undefined; messages: MessageParam[] } {
+export function toAnthropicMessages(messages: readonly ProviderMessage[]): {
+  system: string | undefined;
+  messages: MessageParam[];
+} {
   let system: string | undefined;
   const result: MessageParam[] = [];
 
@@ -108,12 +109,18 @@ export function toAnthropicMessages(
 /** Map Anthropic stop_reason to normalized ProviderFinishReason. */
 function mapFinishReason(reason: string | null): ProviderFinishReason {
   switch (reason) {
-    case 'end_turn': return 'stop';
-    case 'tool_use': return 'tool_calls';
-    case 'max_tokens': return 'length';
-    case 'refusal': return 'content_filter';
-    case 'stop_sequence': return 'stop';
-    default: return 'unknown';
+    case 'end_turn':
+      return 'stop';
+    case 'tool_use':
+      return 'tool_calls';
+    case 'max_tokens':
+      return 'length';
+    case 'refusal':
+      return 'content_filter';
+    case 'stop_sequence':
+      return 'stop';
+    default:
+      return 'unknown';
   }
 }
 

@@ -52,11 +52,7 @@ export const PAYLOAD_DESTINATIONS: Readonly<Record<string, string | null>> = {
 };
 
 /** Internal/safe domains that do NOT indicate exfiltration. */
-export const SAFE_DOMAINS: readonly string[] = [
-  'acme.com',
-  'example.com',
-  'acme-corp.example.com',
-];
+export const SAFE_DOMAINS: readonly string[] = ['acme.com', 'example.com', 'acme-corp.example.com'];
 
 /**
  * Check whether an email address belongs to a safe/internal domain.

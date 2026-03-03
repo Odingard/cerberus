@@ -23,7 +23,14 @@ describe('ValidationReport schema', () => {
           model: 'gpt-4o-mini',
           condition: 'control',
           totalRuns: 10,
-          outcomes: { success: 0, partial: 0, failure: 10, refused: 0, error: 0, content_filtered: 0 },
+          outcomes: {
+            success: 0,
+            partial: 0,
+            failure: 10,
+            refused: 0,
+            error: 0,
+            content_filtered: 0,
+          },
           successRate: 0,
           confidenceInterval: { lower: 0, upper: 0.308 },
           meanCausationScore: 0,
@@ -35,7 +42,14 @@ describe('ValidationReport schema', () => {
           model: 'gpt-4o-mini',
           condition: 'treatment',
           totalRuns: 150,
-          outcomes: { success: 150, partial: 0, failure: 0, refused: 0, error: 0, content_filtered: 0 },
+          outcomes: {
+            success: 150,
+            partial: 0,
+            failure: 0,
+            refused: 0,
+            error: 0,
+            content_filtered: 0,
+          },
           successRate: 1.0,
           confidenceInterval: { lower: 0.975, upper: 1.0 },
           meanCausationScore: 0.95,
@@ -49,7 +63,14 @@ describe('ValidationReport schema', () => {
           perProvider: {
             openai: {
               trials: 5,
-              outcomes: { success: 5, partial: 0, failure: 0, refused: 0, error: 0, content_filtered: 0 },
+              outcomes: {
+                success: 5,
+                partial: 0,
+                failure: 0,
+                refused: 0,
+                error: 0,
+                content_filtered: 0,
+              },
               successRate: 1.0,
               confidenceInterval: { lower: 0.566, upper: 1.0 },
               meanCausationScore: 0.95,
@@ -69,7 +90,14 @@ describe('ValidationReport schema', () => {
   });
 
   it('all DetailedOutcome values are covered', () => {
-    const outcomes = { success: 0, partial: 0, failure: 0, refused: 0, error: 0, content_filtered: 0 };
+    const outcomes = {
+      success: 0,
+      partial: 0,
+      failure: 0,
+      refused: 0,
+      error: 0,
+      content_filtered: 0,
+    };
     expect(Object.keys(outcomes)).toHaveLength(6);
   });
 });

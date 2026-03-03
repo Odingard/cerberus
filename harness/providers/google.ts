@@ -11,10 +11,7 @@
  * - Roles: 'model' instead of 'assistant', 'function' for tool results
  */
 
-import {
-  GoogleGenerativeAI,
-  FunctionCallingMode,
-} from '@google/generative-ai';
+import { GoogleGenerativeAI, FunctionCallingMode } from '@google/generative-ai';
 import type {
   Content,
   Part,
@@ -52,9 +49,10 @@ export function toGeminiFunctionDeclarations(
  * Extracts system instruction separately.
  * Maps roles: assistant → model, tool → function.
  */
-export function toGeminiContents(
-  messages: readonly ProviderMessage[],
-): { systemInstruction: string | undefined; contents: Content[] } {
+export function toGeminiContents(messages: readonly ProviderMessage[]): {
+  systemInstruction: string | undefined;
+  contents: Content[];
+} {
   let systemInstruction: string | undefined;
   const contents: Content[] = [];
 
@@ -122,14 +120,22 @@ export function toGeminiContents(
 /** Map Gemini finish reason to normalized ProviderFinishReason. */
 function mapFinishReason(reason: string | undefined): ProviderFinishReason {
   switch (reason) {
-    case 'STOP': return 'stop';
-    case 'MAX_TOKENS': return 'length';
-    case 'SAFETY': return 'content_filter';
-    case 'RECITATION': return 'content_filter';
-    case 'BLOCKLIST': return 'content_filter';
-    case 'PROHIBITED_CONTENT': return 'content_filter';
-    case 'MALFORMED_FUNCTION_CALL': return 'unknown';
-    default: return 'unknown';
+    case 'STOP':
+      return 'stop';
+    case 'MAX_TOKENS':
+      return 'length';
+    case 'SAFETY':
+      return 'content_filter';
+    case 'RECITATION':
+      return 'content_filter';
+    case 'BLOCKLIST':
+      return 'content_filter';
+    case 'PROHIBITED_CONTENT':
+      return 'content_filter';
+    case 'MALFORMED_FUNCTION_CALL':
+      return 'unknown';
+    default:
+      return 'unknown';
   }
 }
 

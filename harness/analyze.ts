@@ -20,9 +20,7 @@ import type {
 // ── File Loading ──────────────────────────────────────────────────
 
 /** Type guard: is this a StressSummary (has perPayload field)? */
-export function isStressSummary(
-  summary: RunSummary | StressSummary,
-): summary is StressSummary {
+export function isStressSummary(summary: RunSummary | StressSummary): summary is StressSummary {
   return 'perPayload' in summary && Array.isArray(summary.perPayload);
 }
 
@@ -60,12 +58,17 @@ export function loadTracesFromDir(dir: string): ExecutionTrace[] {
 // ── Statistics ────────────────────────────────────────────────────
 
 /** Compute per-payload statistics from a set of traces. */
-export function computePerPayloadStats(
-  traces: readonly ExecutionTrace[],
-): PayloadTrialStats[] {
+export function computePerPayloadStats(traces: readonly ExecutionTrace[]): PayloadTrialStats[] {
   const grouped = new Map<
     string,
-    { category: PayloadCategory; successes: number; partials: number; failures: number; errors: number; total: number }
+    {
+      category: PayloadCategory;
+      successes: number;
+      partials: number;
+      failures: number;
+      errors: number;
+      total: number;
+    }
   >();
 
   for (const trace of traces) {
@@ -83,10 +86,18 @@ export function computePerPayloadStats(
     const stats = grouped.get(id)!;
     stats.total++;
     switch (trace.labels.outcome) {
-      case 'success': stats.successes++; break;
-      case 'partial': stats.partials++; break;
-      case 'failure': stats.failures++; break;
-      case 'error': stats.errors++; break;
+      case 'success':
+        stats.successes++;
+        break;
+      case 'partial':
+        stats.partials++;
+        break;
+      case 'failure':
+        stats.failures++;
+        break;
+      case 'error':
+        stats.errors++;
+        break;
     }
   }
 
@@ -147,22 +158,32 @@ export function printSingleRun(summary: RunSummary | StressSummary): void {
   // eslint-disable-next-line no-console
   console.log('\n--- Category Breakdown ---\n');
   // eslint-disable-next-line no-console
-  console.log(`${pad('Category', 22)} | ${rpad('Total', 5)} | ${rpad('Success', 7)} | ${rpad('Rate', 5)}`);
+  console.log(
+    `${pad('Category', 22)} | ${rpad('Total', 5)} | ${rpad('Success', 7)} | ${rpad('Rate', 5)}`,
+  );
   // eslint-disable-next-line no-console
   console.log(`${'─'.repeat(22)}─┼─${'─'.repeat(5)}─┼─${'─'.repeat(7)}─┼─${'─'.repeat(5)}`);
   for (const [cat, stats] of Object.entries(summary.byCategory)) {
     // eslint-disable-next-line no-console
-    console.log(`${pad(cat, 22)} | ${rpad(String(stats.total), 5)} | ${rpad(String(stats.successes), 7)} | ${rpad(pct(stats.rate), 5)}`);
+    console.log(
+      `${pad(cat, 22)} | ${rpad(String(stats.total), 5)} | ${rpad(String(stats.successes), 7)} | ${rpad(pct(stats.rate), 5)}`,
+    );
   }
 
   // Per-payload breakdown (stress summary only)
   if (isStressSummary(summary) && summary.perPayload.length > 0) {
     // eslint-disable-next-line no-console
-    console.log(`\n--- Per-Payload Breakdown (${String(summary.trialsPerPayload)} trials, prompt: ${summary.systemPromptId}) ---\n`);
+    console.log(
+      `\n--- Per-Payload Breakdown (${String(summary.trialsPerPayload)} trials, prompt: ${summary.systemPromptId}) ---\n`,
+    );
     // eslint-disable-next-line no-console
-    console.log(`${pad('Payload', 10)} | ${rpad('Trials', 6)} | ${rpad('Success', 7)} | ${rpad('Partial', 7)} | ${rpad('Failure', 7)} | ${rpad('Rate', 5)}`);
+    console.log(
+      `${pad('Payload', 10)} | ${rpad('Trials', 6)} | ${rpad('Success', 7)} | ${rpad('Partial', 7)} | ${rpad('Failure', 7)} | ${rpad('Rate', 5)}`,
+    );
     // eslint-disable-next-line no-console
-    console.log(`${'─'.repeat(10)}─┼─${'─'.repeat(6)}─┼─${'─'.repeat(7)}─┼─${'─'.repeat(7)}─┼─${'─'.repeat(7)}─┼─${'─'.repeat(5)}`);
+    console.log(
+      `${'─'.repeat(10)}─┼─${'─'.repeat(6)}─┼─${'─'.repeat(7)}─┼─${'─'.repeat(7)}─┼─${'─'.repeat(7)}─┼─${'─'.repeat(5)}`,
+    );
 
     for (const ps of summary.perPayload) {
       // eslint-disable-next-line no-console
@@ -190,23 +211,35 @@ export function printComparison(
   const deltaSign = deltaRate >= 0 ? '+' : '';
 
   // eslint-disable-next-line no-console
-  console.log(`${pad('Metric', 20)} | ${rpad('Run A', 10)} | ${rpad('Run B', 10)} | ${rpad('Delta', 10)}`);
+  console.log(
+    `${pad('Metric', 20)} | ${rpad('Run A', 10)} | ${rpad('Run B', 10)} | ${rpad('Delta', 10)}`,
+  );
   // eslint-disable-next-line no-console
   console.log(`${'─'.repeat(20)}─┼─${'─'.repeat(10)}─┼─${'─'.repeat(10)}─┼─${'─'.repeat(10)}`);
   // eslint-disable-next-line no-console
-  console.log(`${pad('Total runs', 20)} | ${rpad(String(a.totalRuns), 10)} | ${rpad(String(b.totalRuns), 10)} | ${rpad(String(b.totalRuns - a.totalRuns), 10)}`);
+  console.log(
+    `${pad('Total runs', 20)} | ${rpad(String(a.totalRuns), 10)} | ${rpad(String(b.totalRuns), 10)} | ${rpad(String(b.totalRuns - a.totalRuns), 10)}`,
+  );
   // eslint-disable-next-line no-console
-  console.log(`${pad('Success rate', 20)} | ${rpad(pct(a.successRate), 10)} | ${rpad(pct(b.successRate), 10)} | ${rpad(`${deltaSign}${pct(deltaRate)}`, 10)}`);
+  console.log(
+    `${pad('Success rate', 20)} | ${rpad(pct(a.successRate), 10)} | ${rpad(pct(b.successRate), 10)} | ${rpad(`${deltaSign}${pct(deltaRate)}`, 10)}`,
+  );
   // eslint-disable-next-line no-console
-  console.log(`${pad('Successes', 20)} | ${rpad(String(a.successCount), 10)} | ${rpad(String(b.successCount), 10)} | ${rpad(String(b.successCount - a.successCount), 10)}`);
+  console.log(
+    `${pad('Successes', 20)} | ${rpad(String(a.successCount), 10)} | ${rpad(String(b.successCount), 10)} | ${rpad(String(b.successCount - a.successCount), 10)}`,
+  );
   // eslint-disable-next-line no-console
-  console.log(`${pad('Failures', 20)} | ${rpad(String(a.failureCount), 10)} | ${rpad(String(b.failureCount), 10)} | ${rpad(String(b.failureCount - a.failureCount), 10)}`);
+  console.log(
+    `${pad('Failures', 20)} | ${rpad(String(a.failureCount), 10)} | ${rpad(String(b.failureCount), 10)} | ${rpad(String(b.failureCount - a.failureCount), 10)}`,
+  );
 
   // Category comparison
   // eslint-disable-next-line no-console
   console.log('\n--- Category Comparison ---\n');
   // eslint-disable-next-line no-console
-  console.log(`${pad('Category', 22)} | ${rpad('Rate A', 8)} | ${rpad('Rate B', 8)} | ${rpad('Delta', 8)}`);
+  console.log(
+    `${pad('Category', 22)} | ${rpad('Rate A', 8)} | ${rpad('Rate B', 8)} | ${rpad('Delta', 8)}`,
+  );
   // eslint-disable-next-line no-console
   console.log(`${'─'.repeat(22)}─┼─${'─'.repeat(8)}─┼─${'─'.repeat(8)}─┼─${'─'.repeat(8)}`);
 
@@ -219,7 +252,9 @@ export function printComparison(
     const d = bRate - aRate;
     const sign = d >= 0 ? '+' : '';
     // eslint-disable-next-line no-console
-    console.log(`${pad(cat, 22)} | ${rpad(pct(aRate), 8)} | ${rpad(pct(bRate), 8)} | ${rpad(`${sign}${pct(d)}`, 8)}`);
+    console.log(
+      `${pad(cat, 22)} | ${rpad(pct(aRate), 8)} | ${rpad(pct(bRate), 8)} | ${rpad(`${sign}${pct(d)}`, 8)}`,
+    );
   }
 }
 
@@ -231,9 +266,13 @@ export function printTraceAnalysis(traces: readonly ExecutionTrace[]): void {
   const stats = computePerPayloadStats(traces);
 
   // eslint-disable-next-line no-console
-  console.log(`${pad('Payload', 10)} | ${pad('Category', 22)} | ${rpad('Runs', 4)} | ${rpad('Success', 7)} | ${rpad('Rate', 5)}`);
+  console.log(
+    `${pad('Payload', 10)} | ${pad('Category', 22)} | ${rpad('Runs', 4)} | ${rpad('Success', 7)} | ${rpad('Rate', 5)}`,
+  );
   // eslint-disable-next-line no-console
-  console.log(`${'─'.repeat(10)}─┼─${'─'.repeat(22)}─┼─${'─'.repeat(4)}─┼─${'─'.repeat(7)}─┼─${'─'.repeat(5)}`);
+  console.log(
+    `${'─'.repeat(10)}─┼─${'─'.repeat(22)}─┼─${'─'.repeat(4)}─┼─${'─'.repeat(7)}─┼─${'─'.repeat(5)}`,
+  );
 
   for (const ps of stats) {
     // eslint-disable-next-line no-console
@@ -254,7 +293,9 @@ export function printTraceAnalysis(traces: readonly ExecutionTrace[]): void {
     // eslint-disable-next-line no-console
     console.log('\n--- By System Prompt ---\n');
     // eslint-disable-next-line no-console
-    console.log(`${pad('Prompt', 15)} | ${rpad('Runs', 4)} | ${rpad('Success', 7)} | ${rpad('Rate', 5)}`);
+    console.log(
+      `${pad('Prompt', 15)} | ${rpad('Runs', 4)} | ${rpad('Success', 7)} | ${rpad('Rate', 5)}`,
+    );
     // eslint-disable-next-line no-console
     console.log(`${'─'.repeat(15)}─┼─${'─'.repeat(4)}─┼─${'─'.repeat(7)}─┼─${'─'.repeat(5)}`);
 
@@ -280,7 +321,9 @@ export function printTraceAnalysis(traces: readonly ExecutionTrace[]): void {
     // eslint-disable-next-line no-console
     console.log('\n--- By Model ---\n');
     // eslint-disable-next-line no-console
-    console.log(`${pad('Model', 25)} | ${rpad('Runs', 4)} | ${rpad('Success', 7)} | ${rpad('Rate', 5)}`);
+    console.log(
+      `${pad('Model', 25)} | ${rpad('Runs', 4)} | ${rpad('Success', 7)} | ${rpad('Rate', 5)}`,
+    );
     // eslint-disable-next-line no-console
     console.log(`${'─'.repeat(25)}─┼─${'─'.repeat(4)}─┼─${'─'.repeat(7)}─┼─${'─'.repeat(5)}`);
 
@@ -297,9 +340,10 @@ export function printTraceAnalysis(traces: readonly ExecutionTrace[]): void {
   // Token usage summary
   const totalTokens = traces.reduce((sum, t) => sum + t.tokenUsage.totalTokens, 0);
   const avgTokens = traces.length > 0 ? Math.round(totalTokens / traces.length) : 0;
-  const avgDuration = traces.length > 0
-    ? Math.round(traces.reduce((sum, t) => sum + t.durationMs, 0) / traces.length)
-    : 0;
+  const avgDuration =
+    traces.length > 0
+      ? Math.round(traces.reduce((sum, t) => sum + t.durationMs, 0) / traces.length)
+      : 0;
 
   // eslint-disable-next-line no-console
   console.log(`\nTotal tokens:     ${String(totalTokens)}`);

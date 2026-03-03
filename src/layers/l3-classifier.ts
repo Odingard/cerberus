@@ -33,11 +33,17 @@ const DESTINATION_FIELDS = [
  * Classify whether this tool call is an exfiltration attempt.
  * Only runs for tools listed in outboundTools. Checks correlation
  * between tool arguments and previously accessed privileged data.
+ *
+ * When authorizedDestinations is provided, destinations matching an
+ * authorized domain are considered expected business behavior and
+ * L3 does NOT fire. This prevents false positives for agents that
+ * legitimately report on customer data to authorized recipients.
  */
 export function classifyOutboundIntent(
   ctx: ToolCallContext,
   session: DetectionSession,
   outboundTools: readonly string[],
+  authorizedDestinations?: readonly string[],
 ): ExfiltrationRiskSignal | null {
   if (!isOutboundTool(ctx.toolName, outboundTools)) {
     return null;
@@ -47,14 +53,19 @@ export function classifyOutboundIntent(
     return null;
   }
 
+  const destination = extractDestination(ctx.toolArguments);
+
+  // Skip L3 for authorized destinations — PII flow is expected
+  if (isAuthorizedDestination(destination, authorizedDestinations ?? [])) {
+    return null;
+  }
+
   const outboundText = serializeArguments(ctx.toolArguments);
   const { score, matchedFields } = computeSimilarityScore(outboundText, session.privilegedValues);
 
   if (matchedFields.length === 0) {
     return null;
   }
-
-  const destination = extractDestination(ctx.toolArguments);
 
   return {
     layer: 'L3',
@@ -125,6 +136,49 @@ export function serializeArguments(args: Record<string, unknown>): string {
   const parts: string[] = [];
   collectStrings(args, parts);
   return parts.join(' ');
+}
+
+/**
+ * Check if a destination matches an authorized domain.
+ * Entries are matched as domain suffixes (e.g., 'acme.com' matches
+ * 'user@acme.com' and 'user@sub.acme.com').
+ */
+export function isAuthorizedDestination(
+  destination: string,
+  authorizedDestinations: readonly string[],
+): boolean {
+  if (authorizedDestinations.length === 0 || destination === 'unknown') {
+    return false;
+  }
+
+  const domain = extractDomainFromDestination(destination);
+  if (!domain) {
+    return false;
+  }
+
+  return authorizedDestinations.some((auth) => {
+    const authLower = auth.toLowerCase();
+    return domain === authLower || domain.endsWith(`.${authLower}`);
+  });
+}
+
+/**
+ * Extract the domain portion from a destination (email or URL).
+ */
+function extractDomainFromDestination(destination: string): string | null {
+  // Email address
+  const atIndex = destination.indexOf('@');
+  if (atIndex > 0) {
+    return destination.slice(atIndex + 1).toLowerCase();
+  }
+
+  // URL
+  try {
+    const url = new URL(destination);
+    return url.hostname.toLowerCase();
+  } catch {
+    return null;
+  }
 }
 
 /** Recursively collect string values from a nested structure. */

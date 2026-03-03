@@ -75,11 +75,16 @@ export function toOpenAIMessages(
 /** Map OpenAI finish_reason to normalized ProviderFinishReason. */
 function mapFinishReason(reason: string | null): ProviderFinishReason {
   switch (reason) {
-    case 'stop': return 'stop';
-    case 'tool_calls': return 'tool_calls';
-    case 'length': return 'length';
-    case 'content_filter': return 'content_filter';
-    default: return 'unknown';
+    case 'stop':
+      return 'stop';
+    case 'tool_calls':
+      return 'tool_calls';
+    case 'length':
+      return 'length';
+    case 'content_filter':
+      return 'content_filter';
+    default:
+      return 'unknown';
   }
 }
 

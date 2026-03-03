@@ -60,6 +60,9 @@ export interface CerberusConfig {
   /** MCP tool descriptions for poisoning detection. */
   readonly toolDescriptions?: readonly ToolDescription[];
 
+  /** Authorized outbound destination domains. L3 skips when destination matches. */
+  readonly authorizedDestinations?: readonly string[];
+
   /** Callback invoked on every risk assessment. */
   readonly onAssessment?: (assessment: {
     readonly turnId: string;

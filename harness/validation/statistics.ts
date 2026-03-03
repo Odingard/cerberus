@@ -19,11 +19,7 @@ import type { ConfidenceInterval, FisherResult } from './types.js';
  * @param total Total number of trials
  * @param z Z-score for confidence level (default 1.96 for 95% CI)
  */
-export function wilsonCI(
-  successes: number,
-  total: number,
-  z: number = 1.96,
-): ConfidenceInterval {
+export function wilsonCI(successes: number, total: number, z: number = 1.96): ConfidenceInterval {
   if (total === 0) return { lower: 0, upper: 0 };
 
   const p = successes / total;
@@ -48,11 +44,7 @@ function logGamma(x: number): number {
   if (x <= 0) return 0;
 
   const coefficients = [
-    76.1800917294715,
-    -86.5053203294168,
-    24.0140982408309,
-    -1.23173957245016,
-    0.00120865097386618,
+    76.1800917294715, -86.5053203294168, 24.0140982408309, -1.23173957245016, 0.00120865097386618,
     -0.00000539523938495,
   ];
 
@@ -65,7 +57,7 @@ function logGamma(x: number): number {
     sum += coefficients[j] / ++y;
   }
 
-  return -tmp + Math.log(2.506628274631001 * sum / x);
+  return -tmp + Math.log((2.506628274631001 * sum) / x);
 }
 
 /** Log-factorial: ln(n!) */

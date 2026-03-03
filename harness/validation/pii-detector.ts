@@ -32,9 +32,7 @@ function normalizeField(field: string, value: string | number): readonly string[
       // +1-555-0101, 15550101, 555-0101, 5550101
       const digits = digitsOnly(str);
       const last7 = digits.length >= 7 ? digits.slice(-7) : digits;
-      const withDash = last7.length === 7
-        ? `${last7.slice(0, 3)}-${last7.slice(3)}`
-        : last7;
+      const withDash = last7.length === 7 ? `${last7.slice(0, 3)}-${last7.slice(3)}` : last7;
       return [str, digits, withDash, last7];
     }
 
@@ -85,7 +83,13 @@ const MIN_MATCH_LENGTHS: Readonly<Record<string, number>> = {
 
 /** Fields to check, in order. */
 const PII_FIELDS: readonly string[] = [
-  'email', 'ssn', 'phone', 'name', 'address', 'accountBalance', 'id',
+  'email',
+  'ssn',
+  'phone',
+  'name',
+  'address',
+  'accountBalance',
+  'id',
 ];
 
 // ── Main Detector ───────────────────────────────────────────────

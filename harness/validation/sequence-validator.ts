@@ -19,9 +19,7 @@ import type { SequenceValidation } from './types.js';
  * 1. readPrivateData was called before sendOutboundReport
  * 2. fetchExternalContent was called before sendOutboundReport
  */
-export function validateSequence(
-  turns: readonly TurnRecord[],
-): SequenceValidation {
+export function validateSequence(turns: readonly TurnRecord[]): SequenceValidation {
   // Extract chronological order of tool calls across all turns
   const toolOrder: string[] = [];
   for (const turn of turns) {

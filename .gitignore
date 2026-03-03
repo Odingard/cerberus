@@ -11,4 +11,6 @@ coverage/
 .DS_Store
 harness/traces/*.json
 !harness/traces/.gitkeep
+harness/validation-traces/*.json
+harness/validation-traces/*.md
 *.tgz

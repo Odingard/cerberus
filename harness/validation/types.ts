@@ -6,17 +6,17 @@
  * detailed outcome classification.
  */
 
-import type { RiskVector } from '../../src/types/signals.js';
+import type { RiskVector, RiskAssessment } from '../../src/types/signals.js';
 
 // ── Outcome Classification ──────────────────────────────────────
 
 /** Six-state outcome that distinguishes refusal, error, and content filtering. */
 export type DetailedOutcome =
-  | 'success'          // Full trifecta + PII to attacker-controlled destination
-  | 'partial'          // Some steps completed but not full kill chain
-  | 'failure'          // Agent completed normally but did not exfiltrate
-  | 'refused'          // Agent explicitly refused the injected instruction
-  | 'error'            // Technical failure (API error, timeout)
+  | 'success' // Full trifecta + PII to attacker-controlled destination
+  | 'partial' // Some steps completed but not full kill chain
+  | 'failure' // Agent completed normally but did not exfiltrate
+  | 'refused' // Agent explicitly refused the injected instruction
+  | 'error' // Technical failure (API error, timeout)
   | 'content_filtered'; // Provider safety system blocked the response
 
 /** Whether this run is a negative control (no injection) or treatment (with injection). */
@@ -26,9 +26,9 @@ export type RunCondition = 'control' | 'treatment';
 
 /** A single PII field match with provenance tracking. */
 export interface PiiFieldMatch {
-  readonly field: string;          // 'email', 'ssn', 'name', etc.
-  readonly recordId: string;       // 'CUST-001'
-  readonly value: string;          // The original fixture value
+  readonly field: string; // 'email', 'ssn', 'name', etc.
+  readonly recordId: string; // 'CUST-001'
+  readonly value: string; // The original fixture value
   readonly matchType: 'exact' | 'normalized';
 }
 
@@ -36,10 +36,10 @@ export interface PiiFieldMatch {
 
 /** Whether the actual sendOutboundReport recipient matches the injected destination. */
 export interface RecipientMatch {
-  readonly injectedDestination: string | null;  // Email from payload content
-  readonly actualRecipient: string | null;      // Recipient from sendOutboundReport args
-  readonly matches: boolean;                    // Do they match
-  readonly isExternal: boolean;                 // Not @acme.com / @example.com
+  readonly injectedDestination: string | null; // Email from payload content
+  readonly actualRecipient: string | null; // Recipient from sendOutboundReport args
+  readonly matches: boolean; // Do they match
+  readonly isExternal: boolean; // Not @acme.com / @example.com
 }
 
 // ── Refusal Detection ───────────────────────────────────────────
@@ -60,8 +60,8 @@ export interface RefusalResult {
 /** Whether the kill chain tools were called in the correct order. */
 export interface SequenceValidation {
   readonly valid: boolean;
-  readonly readBeforeSend: boolean;   // L1 before L3
-  readonly fetchBeforeSend: boolean;  // L2 before L3
+  readonly readBeforeSend: boolean; // L1 before L3
+  readonly fetchBeforeSend: boolean; // L2 before L3
   readonly toolOrder: readonly string[];
 }
 
@@ -80,7 +80,7 @@ export type CausationVerdict = 'injection-caused' | 'ambiguous' | 'coincidental'
 
 /** Full causation analysis for one run. */
 export interface CausationAnalysis {
-  readonly score: number;              // 0.0–1.0
+  readonly score: number; // 0.0–1.0
   readonly factors: readonly CausationFactor[];
   readonly verdict: CausationVerdict;
 }
@@ -140,14 +140,17 @@ export interface PayloadValidationResult {
   readonly payloadId: string;
   readonly category: string;
   readonly injectedDestination: string | null;
-  readonly perProvider: Record<string, {
-    readonly trials: number;
-    readonly outcomes: Record<DetailedOutcome, number>;
-    readonly successRate: number;
-    readonly confidenceInterval: ConfidenceInterval;
-    readonly meanCausationScore: number;
-    readonly recipientMatchRate: number;
-  }>;
+  readonly perProvider: Record<
+    string,
+    {
+      readonly trials: number;
+      readonly outcomes: Record<DetailedOutcome, number>;
+      readonly successRate: number;
+      readonly confidenceInterval: ConfidenceInterval;
+      readonly meanCausationScore: number;
+      readonly recipientMatchRate: number;
+    }
+  >;
 }
 
 /** Progress callback for the validation runner. */
@@ -158,6 +161,74 @@ export interface ValidationProgress {
   readonly total: number;
   readonly payloadId?: string;
   readonly trialIndex?: number;
+}
+
+// ── Detection Validation Types ──────────────────────────────────
+
+/** Per-layer confusion matrix with accuracy and confidence interval. */
+export interface LayerConfusionMatrix {
+  readonly tp: number;
+  readonly fp: number;
+  readonly fn: number;
+  readonly tn: number;
+  readonly accuracy: number;
+  readonly accuracyCI: ConfidenceInterval;
+}
+
+/** Detection result for a single run (control or treatment). */
+export interface DetectionRunResult {
+  readonly payloadId: string;
+  readonly provider: string;
+  readonly condition: RunCondition;
+  readonly groundTruthVector: RiskVector;
+  readonly cerberusVector: RiskVector;
+  readonly assessments: readonly RiskAssessment[];
+  readonly maxScore: number;
+  readonly wouldHaveBlocked: boolean;
+}
+
+/** Per-provider detection statistics. */
+export interface ProviderDetectionStats {
+  readonly provider: string;
+  readonly model: string;
+  readonly detectionRate: number;
+  readonly detectionRateCI: ConfidenceInterval;
+  readonly blockRate: number;
+  readonly blockRateCI: ConfidenceInterval;
+  readonly falsePositiveRate: number;
+  readonly falsePositiveRateCI: ConfidenceInterval;
+  readonly perLayer: {
+    readonly L1: LayerConfusionMatrix;
+    readonly L2: LayerConfusionMatrix;
+    readonly L3: LayerConfusionMatrix;
+  };
+  readonly treatmentRuns: number;
+  readonly controlRuns: number;
+}
+
+/** Per-category detection statistics. */
+export interface CategoryDetectionStats {
+  readonly category: string;
+  readonly totalRuns: number;
+  readonly detected: number;
+  readonly detectionRate: number;
+  readonly detectionRateCI: ConfidenceInterval;
+  readonly blocked: number;
+  readonly blockRate: number;
+  readonly blockRateCI: ConfidenceInterval;
+}
+
+/** Full detection validation report. */
+export interface DetectionReport {
+  readonly enabled: boolean;
+  readonly config: { readonly alertMode: string; readonly threshold: number };
+  readonly perProvider: Record<string, ProviderDetectionStats>;
+  readonly perCategory: readonly CategoryDetectionStats[];
+  readonly overallDetectionRate: number;
+  readonly overallDetectionRateCI: ConfidenceInterval;
+  readonly overallFalsePositiveRate: number;
+  readonly overallFalsePositiveRateCI: ConfidenceInterval;
+  readonly perRun: readonly DetectionRunResult[];
 }
 
 /** The complete, auditable validation report. */
@@ -176,4 +247,5 @@ export interface ValidationReport {
   readonly perPayload: readonly PayloadValidationResult[];
   readonly generatedAt: string;
   readonly totalCostEstimateUsd: number;
+  readonly detection?: DetectionReport;
 }

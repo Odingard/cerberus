@@ -16,7 +16,7 @@ const FIXTURE: PrivateDataFixture = {
       phone: '+1-555-0101',
       ssn: '123-45-6789',
       address: '742 Evergreen Terrace, Springfield, IL 62704',
-      accountBalance: 15234.50,
+      accountBalance: 15234.5,
       notes: 'VIP customer since 2020',
     },
     {
@@ -26,7 +26,7 @@ const FIXTURE: PrivateDataFixture = {
       phone: '+1-555-0102',
       ssn: '987-65-4321',
       address: '123 Maple Avenue, Portland, OR 97201',
-      accountBalance: 8750.00,
+      accountBalance: 8750.0,
       notes: 'Preferred contact: email',
     },
   ],
@@ -38,17 +38,21 @@ describe('detectPiiDetailed', () => {
   });
 
   it('returns empty array for text with no PII', () => {
-    expect(detectPiiDetailed('This is a normal report about quarterly sales.', FIXTURE)).toEqual([]);
+    expect(detectPiiDetailed('This is a normal report about quarterly sales.', FIXTURE)).toEqual(
+      [],
+    );
   });
 
   it('detects exact email match', () => {
     const result = detectPiiDetailed('Contact: alice.thornton@example.com', FIXTURE);
-    expect(result).toContainEqual(expect.objectContaining({
-      field: 'email',
-      recordId: 'CUST-001',
-      value: 'alice.thornton@example.com',
-      matchType: 'exact',
-    }));
+    expect(result).toContainEqual(
+      expect.objectContaining({
+        field: 'email',
+        recordId: 'CUST-001',
+        value: 'alice.thornton@example.com',
+        matchType: 'exact',
+      }),
+    );
   });
 
   it('detects email case-insensitively', () => {
@@ -58,61 +62,75 @@ describe('detectPiiDetailed', () => {
 
   it('detects exact SSN match', () => {
     const result = detectPiiDetailed('SSN: 123-45-6789', FIXTURE);
-    expect(result).toContainEqual(expect.objectContaining({
-      field: 'ssn',
-      recordId: 'CUST-001',
-    }));
+    expect(result).toContainEqual(
+      expect.objectContaining({
+        field: 'ssn',
+        recordId: 'CUST-001',
+      }),
+    );
   });
 
   it('detects normalized SSN without dashes', () => {
     const result = detectPiiDetailed('SSN: 123456789', FIXTURE);
-    expect(result).toContainEqual(expect.objectContaining({
-      field: 'ssn',
-      recordId: 'CUST-001',
-      matchType: 'normalized',
-    }));
+    expect(result).toContainEqual(
+      expect.objectContaining({
+        field: 'ssn',
+        recordId: 'CUST-001',
+        matchType: 'normalized',
+      }),
+    );
   });
 
   it('detects normalized SSN with spaces', () => {
     const result = detectPiiDetailed('SSN: 123 45 6789', FIXTURE);
-    expect(result).toContainEqual(expect.objectContaining({
-      field: 'ssn',
-      recordId: 'CUST-001',
-      matchType: 'normalized',
-    }));
+    expect(result).toContainEqual(
+      expect.objectContaining({
+        field: 'ssn',
+        recordId: 'CUST-001',
+        matchType: 'normalized',
+      }),
+    );
   });
 
   it('detects exact phone match', () => {
     const result = detectPiiDetailed('Phone: +1-555-0101', FIXTURE);
-    expect(result).toContainEqual(expect.objectContaining({
-      field: 'phone',
-      recordId: 'CUST-001',
-    }));
+    expect(result).toContainEqual(
+      expect.objectContaining({
+        field: 'phone',
+        recordId: 'CUST-001',
+      }),
+    );
   });
 
   it('detects normalized phone (digits only)', () => {
     const result = detectPiiDetailed('Phone: 15550101', FIXTURE);
-    expect(result).toContainEqual(expect.objectContaining({
-      field: 'phone',
-      recordId: 'CUST-001',
-      matchType: 'normalized',
-    }));
+    expect(result).toContainEqual(
+      expect.objectContaining({
+        field: 'phone',
+        recordId: 'CUST-001',
+        matchType: 'normalized',
+      }),
+    );
   });
 
   it('detects full name', () => {
     const result = detectPiiDetailed('Customer: Alice Thornton', FIXTURE);
-    expect(result).toContainEqual(expect.objectContaining({
-      field: 'name',
-      recordId: 'CUST-001',
-    }));
+    expect(result).toContainEqual(
+      expect.objectContaining({
+        field: 'name',
+        recordId: 'CUST-001',
+      }),
+    );
   });
 
   it('detects individual last name (min 4 chars)', () => {
     const result = detectPiiDetailed('Contact Thornton for details.', FIXTURE);
-    expect(result).toContainEqual(expect.objectContaining({
-      field: 'name',
-      recordId: 'CUST-001',
-    }));
+    expect(result).toContainEqual(
+      expect.objectContaining({
+        field: 'name',
+        recordId: 'CUST-001',
+      }),
+    );
   });
 
   it('does not match short name parts (under 4 chars)', () => {
@@ -129,26 +147,32 @@ describe('detectPiiDetailed', () => {
       'Lives at 742 Evergreen Terrace, Springfield, IL 62704',
       FIXTURE,
     );
-    expect(result).toContainEqual(expect.objectContaining({
-      field: 'address',
-      recordId: 'CUST-001',
-    }));
+    expect(result).toContainEqual(
+      expect.objectContaining({
+        field: 'address',
+        recordId: 'CUST-001',
+      }),
+    );
   });
 
   it('detects account balance as number string', () => {
     const result = detectPiiDetailed('Balance: 15234.5', FIXTURE);
-    expect(result).toContainEqual(expect.objectContaining({
-      field: 'accountBalance',
-      recordId: 'CUST-001',
-    }));
+    expect(result).toContainEqual(
+      expect.objectContaining({
+        field: 'accountBalance',
+        recordId: 'CUST-001',
+      }),
+    );
   });
 
   it('detects customer ID', () => {
     const result = detectPiiDetailed('Record CUST-001 retrieved.', FIXTURE);
-    expect(result).toContainEqual(expect.objectContaining({
-      field: 'id',
-      recordId: 'CUST-001',
-    }));
+    expect(result).toContainEqual(
+      expect.objectContaining({
+        field: 'id',
+        recordId: 'CUST-001',
+      }),
+    );
   });
 
   it('deduplicates matches (same field+record matched via multiple variants)', () => {

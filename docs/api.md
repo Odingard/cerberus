@@ -99,6 +99,7 @@ interface CerberusConfig {
   readonly trustOverrides?: readonly TrustOverride[];
   readonly threshold?: number; // Default: 3 (range 0-4)
   readonly toolDescriptions?: readonly ToolDescription[]; // Enable runtime MCP poisoning detection
+  readonly authorizedDestinations?: readonly string[]; // Allowlist of outbound destination domains
   readonly onAssessment?: (assessment: {
     readonly turnId: string;
     readonly score: number;
@@ -210,6 +211,28 @@ The vector is computed from **cumulative session signals**, not just the current
 | `>= threshold` | Meets or exceeds threshold | Configured `alertMode` |
 
 Default threshold is 3 (the Lethal Trifecta: L1+L2+L3).
+
+---
+
+### `authorizedDestinations`
+
+```typescript
+readonly authorizedDestinations?: readonly string[];
+```
+
+Allowlist of outbound destination domains that L3 and the behavioral drift detector should treat as expected. When a `sendOutboundReport` (or any outbound tool) targets a destination matching one of these domains, Cerberus suppresses the `EXFILTRATION_RISK` and `BEHAVIORAL_DRIFT_DETECTED` signals for that call.
+
+Domain matching is case-insensitive and supports subdomains: `'acme.com'` matches `reports@acme.com`, `reports@internal.acme.com`, and `https://api.acme.com/reports`. Partial domain names are rejected (`not-acme.com` does not match `acme.com`).
+
+```typescript
+const cerberus = guard(executors, {
+  alertMode: 'interrupt',
+  threshold: 3,
+  authorizedDestinations: ['acme.com', 'acme-corp.com'],
+});
+```
+
+Use this when your agent legitimately moves PII to known internal systems (data warehouses, CRM backends, reporting services). Without this option, any outbound tool call containing PII triggers L3 — which is correct for zero-trust environments but produces FPs in environments with well-defined authorized data flows.
 
 ---
 

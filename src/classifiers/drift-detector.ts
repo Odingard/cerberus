@@ -9,6 +9,19 @@
 import type { BehavioralDriftSignal } from '../types/signals.js';
 import type { ToolCallContext } from '../types/context.js';
 import type { DetectionSession } from '../engine/session.js';
+import { isAuthorizedDestination, extractDestination } from '../layers/l3-classifier.js';
+
+/**
+ * Check if the outbound tool call targets an authorized destination.
+ */
+function isAuthorizedOutbound(
+  args: Record<string, unknown>,
+  authorizedDestinations: readonly string[],
+): boolean {
+  if (authorizedDestinations.length === 0) return false;
+  const destination = extractDestination(args);
+  return isAuthorizedDestination(destination, authorizedDestinations);
+}
 
 /** Maximum turn gap to consider "post-injection" behavior. */
 const POST_INJECTION_WINDOW = 3;
@@ -16,11 +29,15 @@ const POST_INJECTION_WINDOW = 3;
 /**
  * Check for post-injection outbound drift.
  * Agent calls an outbound tool within N turns of untrusted content.
+ *
+ * Authorized destinations are skipped — sending to a known-good domain
+ * is expected behavior, not drift.
  */
 function checkPostInjectionOutbound(
   ctx: ToolCallContext,
   session: DetectionSession,
   outboundTools: readonly string[],
+  authorizedDestinations: readonly string[],
 ): BehavioralDriftSignal | null {
   if (!outboundTools.includes(ctx.toolName)) {
     return null;
@@ -33,6 +50,11 @@ function checkPostInjectionOutbound(
 
   // Must also have accessed privileged data
   if (session.privilegedValues.size === 0) {
+    return null;
+  }
+
+  // Skip for authorized destinations — PII flow to known-good domains is expected
+  if (isAuthorizedOutbound(ctx.toolArguments, authorizedDestinations)) {
     return null;
   }
 
@@ -141,9 +163,15 @@ export function detectBehavioralDrift(
   session: DetectionSession,
   outboundTools: readonly string[],
   isTrusted: boolean,
+  authorizedDestinations?: readonly string[],
 ): BehavioralDriftSignal | null {
   // Check drift patterns in priority order (before recording current call)
-  const postInjection = checkPostInjectionOutbound(ctx, session, outboundTools);
+  const postInjection = checkPostInjectionOutbound(
+    ctx,
+    session,
+    outboundTools,
+    authorizedDestinations ?? [],
+  );
   const repeated = !postInjection ? checkRepeatedExfiltration(ctx, session, outboundTools) : null;
   const escalation =
     !postInjection && !repeated ? checkPrivilegeEscalation(ctx, session, isTrusted) : null;

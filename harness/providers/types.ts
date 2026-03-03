@@ -38,12 +38,7 @@ export interface ProviderMessage {
 // ── Provider Response ────────────────────────────────────────────
 
 /** Normalized finish reason across all providers. */
-export type ProviderFinishReason =
-  | 'stop'
-  | 'tool_calls'
-  | 'length'
-  | 'content_filter'
-  | 'unknown';
+export type ProviderFinishReason = 'stop' | 'tool_calls' | 'length' | 'content_filter' | 'unknown';
 
 /** Provider-agnostic response from a completion call. */
 export interface ProviderResponse {

@@ -10,9 +10,7 @@
  */
 
 import OpenAI from 'openai';
-import type {
-  ChatCompletionMessageParam,
-} from 'openai/resources/chat/completions';
+import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
 import { TOOL_DEFINITIONS } from './tools.js';
 import type {
   AgentConfig,
@@ -115,7 +113,7 @@ export async function runAgent(
         if (!executor) {
           throw new Error(
             `Unknown tool "${fnName}" requested by model. ` +
-            `Available tools: ${Object.keys(config.toolExecutors).join(', ')}`,
+              `Available tools: ${Object.keys(config.toolExecutors).join(', ')}`,
           );
         }
 

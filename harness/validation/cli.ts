@@ -62,7 +62,9 @@ function assertApiKeys(providers: readonly ProviderConfig[]): void {
     // eslint-disable-next-line no-console
     console.error('\nMissing API keys:\n' + missing.join('\n'));
     // eslint-disable-next-line no-console
-    console.error('\nEither:\n  1. Create a .env file in the project root with the keys\n  2. Export them: export OPENAI_API_KEY=sk-...\n');
+    console.error(
+      '\nEither:\n  1. Create a .env file in the project root with the keys\n  2. Export them: export OPENAI_API_KEY=sk-...\n',
+    );
     process.exit(1);
   }
 }
@@ -78,6 +80,7 @@ interface CliArgs {
   payloads?: string[];
   outputDir: string;
   delay: number;
+  detect: boolean;
 }
 
 function parseArgs(argv: string[]): CliArgs {
@@ -87,6 +90,7 @@ function parseArgs(argv: string[]): CliArgs {
     prompt: 'permissive',
     outputDir: resolve(process.cwd(), 'harness', 'validation-traces'),
     delay: 1000,
+    detect: false,
   };
 
   for (let i = 2; i < argv.length; i++) {
@@ -126,6 +130,9 @@ function parseArgs(argv: string[]): CliArgs {
         args.delay = parseInt(next, 10);
         i++;
         break;
+      case '--detect':
+        args.detect = true;
+        break;
       case '--help':
         printHelp();
         process.exit(0);
@@ -156,6 +163,7 @@ Options:
   --payloads <ids>        Comma-separated payload IDs (default: all 30)
   --output-dir <path>     Output directory (default: harness/validation-traces/)
   --delay <ms>            Delay between runs in ms (default: 1000)
+  --detect                Enable Cerberus detection validation (observe-only)
   --help                  Show this help
 
 Examples:
@@ -217,8 +225,9 @@ async function main(): Promise<void> {
   console.log('╚══════════════════════════════════════════════════════════╝\n');
 
   const payloadCount = args.payloads ? args.payloads.length : 30;
-  const totalRuns = providers.length * payloadCount * args.trials + providers.length * args.controlTrials;
-  const estimatedMinutes = Math.ceil(totalRuns * (args.delay + 3000) / 60000); // ~3s per API call + delay
+  const totalRuns =
+    providers.length * payloadCount * args.trials + providers.length * args.controlTrials;
+  const estimatedMinutes = Math.ceil((totalRuns * (args.delay + 3000)) / 60000); // ~3s per API call + delay
 
   console.log(`  Providers:      ${providers.map((p) => `${p.provider} (${p.model})`).join(', ')}`);
   console.log(`  Trials/payload: ${String(args.trials)}`);
@@ -228,6 +237,9 @@ async function main(): Promise<void> {
     console.log(`  Payloads:       ${args.payloads.join(', ')}`);
   } else {
     console.log(`  Payloads:       all 30`);
+  }
+  if (args.detect) {
+    console.log(`  Detection:      ENABLED (observe-only, alertMode=log, authorized: acme.com)`);
   }
   console.log(`  Total runs:     ${String(totalRuns)}`);
   console.log(`  Est. time:      ~${String(estimatedMinutes)} minutes`);
@@ -242,10 +254,12 @@ async function main(): Promise<void> {
     outputDir: args.outputDir,
     delayBetweenRunsMs: args.delay,
     ...(args.payloads ? { payloadIds: args.payloads } : {}),
+    ...(args.detect ? { detectMode: true } : {}),
     onProgress: (progress) => {
       const phase = progress.phase === 'control' ? 'CTRL' : 'TREAT';
       const payload = progress.payloadId ? ` ${progress.payloadId}` : '';
-      const trial = progress.trialIndex !== undefined ? ` trial ${String(progress.trialIndex + 1)}` : '';
+      const trial =
+        progress.trialIndex !== undefined ? ` trial ${String(progress.trialIndex + 1)}` : '';
       process.stdout.write(
         `\r  [${phase}] ${progress.provider} ${String(progress.current)}/${String(progress.total)}${payload}${trial}    `,
       );
@@ -255,16 +269,19 @@ async function main(): Promise<void> {
   console.log('\n');
 
   // Check for errors
-  const allErrorCounts = Object.values(report.treatmentResults)
-    .map((s) => s.outcomes.error)
-    .reduce((a, b) => a + b, 0)
-    + Object.values(report.controlResults)
-    .map((s) => s.outcomes.error)
-    .reduce((a, b) => a + b, 0);
+  const allErrorCounts =
+    Object.values(report.treatmentResults)
+      .map((s) => s.outcomes.error)
+      .reduce((a, b) => a + b, 0) +
+    Object.values(report.controlResults)
+      .map((s) => s.outcomes.error)
+      .reduce((a, b) => a + b, 0);
 
   if (allErrorCounts > 0) {
     // eslint-disable-next-line no-console
-    console.log(`  ⚠ ${String(allErrorCounts)}/${String(totalRuns)} runs errored — check API keys and network connectivity.\n`);
+    console.log(
+      `  ⚠ ${String(allErrorCounts)}/${String(totalRuns)} runs errored — check API keys and network connectivity.\n`,
+    );
   }
 
   // Print summary to console
