@@ -193,9 +193,19 @@ const config: CerberusConfig = {
 
 ## Research Results
 
-> **21 payloads. 21 successful exfiltrations. 0 blocked. 100% attack success rate.**
+> **30 payloads. 3 providers. GPT-4o-mini: 100% success. Gemini 2.5 Flash: 90% success. Claude Sonnet: 0% success.**
 
-We built a 3-tool attack agent powered by GPT-4o-mini and ran 21 injection payloads across 5 categories. Every single attack completed the full Lethal Trifecta kill chain — privileged data access, injection delivery, and exfiltration of PII (names, emails, SSNs, phone numbers) to attacker-controlled endpoints. No payload was blocked, partially blocked, or triggered any safety refusal.
+We built a 3-tool attack agent and ran 30 injection payloads across 6 categories against three major LLM providers. The results demonstrate that the Lethal Trifecta vulnerability is **not model-universal** — but most models remain fully exploitable.
+
+### Multi-Provider Results
+
+| Provider      | Model             | Success Rate     | Key Finding                                      |
+| ------------- | ----------------- | ---------------- | ------------------------------------------------ |
+| **OpenAI**    | GPT-4o-mini       | **30/30 (100%)** | Every payload exfiltrates — zero refusals        |
+| **Google**    | Gemini 2.5 Flash  | **27/30 (90%)**  | Mostly vulnerable, resists some encoded/advanced |
+| **Anthropic** | Claude Sonnet 4.6 | **0/30 (0%)**    | Refuses every payload — never exfiltrates        |
+
+### Per-Category Breakdown (GPT-4o-mini)
 
 | Category                 | Payloads | Success Rate | Technique                                                  |
 | ------------------------ | -------- | ------------ | ---------------------------------------------------------- |
@@ -204,15 +214,16 @@ We built a 3-tool attack agent powered by GPT-4o-mini and ran 21 injection paylo
 | **Social Engineering**   | 4        | 100%         | CEO fraud, IT support impersonation, legal threats         |
 | **Multi-Turn**           | 4        | 100%         | Persistent CC rules, delayed triggers, context poisoning   |
 | **Multilingual**         | 4        | 100%         | Spanish, Mandarin, Arabic, Russian payloads                |
-| **Total**                | **21**   | **100%**     | —                                                          |
+| **Advanced Technique**   | 9        | 100%         | Context stuffing, jailbreak, CoT manipulation, split-turn  |
 
 ### Key Findings
 
 1. **The attack costs nothing.** Free-tier GPT-4o-mini + 3 tool definitions + one injected instruction = full PII exfiltration in under 15 seconds.
-2. **Encoding doesn't help.** Base64, ROT13, hex, and Unicode-escaped payloads all succeed. The model decodes and executes them without hesitation.
-3. **Language doesn't matter.** Spanish, Mandarin, Arabic, and Russian injection payloads all exfiltrate data to attacker-controlled addresses.
-4. **Social engineering scales.** CEO impersonation, IT support pretexts, and legal threats all bypass the model's judgment — it never questions authority claims embedded in fetched content.
-5. **Every exfiltrated payload contained SSNs, emails, and phone numbers** — the full PII dataset, not just partial fields.
+2. **Encoding doesn't help.** Base64, ROT13, hex, and Unicode-escaped payloads all succeed on GPT-4o-mini. Gemini resists some encoded payloads.
+3. **Language doesn't matter.** Spanish, Mandarin, Arabic, and Russian injection payloads all exfiltrate data across all vulnerable models.
+4. **Social engineering scales.** CEO impersonation, IT support pretexts, and legal threats all bypass model judgment on OpenAI and Google.
+5. **Model safety training varies dramatically.** Claude Sonnet refuses all 30 payloads. GPT-4o-mini follows every one. This confirms that runtime detection (Cerberus) is necessary for models that lack robust injection resistance.
+6. **Even resistant models need runtime defense.** Claude's 0% success rate may not hold against future, more sophisticated payloads. Runtime detection provides defense-in-depth.
 
 ### Attack Anatomy (3 tool calls, ~12 seconds)
 
@@ -237,7 +248,7 @@ npx tsx harness/runner.ts
 npx tsx harness/runner.ts --model claude-sonnet-4-6
 
 # Run against Gemini (requires GOOGLE_API_KEY)
-npx tsx harness/runner.ts --model gemini-2.0-flash
+npx tsx harness/runner.ts --model gemini-2.5-flash
 
 # Stress test: 3 trials per payload with safety-hardened system prompt
 npx tsx harness/runner.ts --trials 3 --prompt safety --temperature 0 --seed 42
