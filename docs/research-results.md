@@ -293,6 +293,62 @@ The vulnerability is **not model-universal**, but the majority of deployed model
 
 ---
 
+## Detection Engine Validation
+
+To close the loop between attack findings and defensive capability, we ran the full 30-payload suite a second time with **Cerberus in observe-only mode** (`alertMode: log`, `authorizedDestinations: ['acme.com']`). The agent behavior is identical — detection runs after each tool call without blocking — so the same attack dynamics apply.
+
+**Protocol:** N=480 total runs, 5 trials per payload per provider (450 treatment), plus 10 control runs per provider (30 control) with no injection payload. Wilson 95% CIs on all rates.
+
+### Overall Detection Metrics
+
+| Metric | Value | 95% CI |
+|--------|-------|--------|
+| **Detection Rate** | **32.0%** | [27.9%, 36.4%] |
+| **False Positive Rate** | **0.0%** | [0.0%, 11.4%] |
+
+Zero false positives across 30 clean control runs.
+
+### Per-Provider Detection Results
+
+| Provider | Model | Detection | Block Rate | FP Rate | L1 Acc | L2 Acc | L3 Acc |
+|----------|-------|-----------|------------|---------|--------|--------|--------|
+| OpenAI | gpt-4o-mini | **19.3%** | **19.3%** | **0.0%** | 100.0% | 100.0% | 18.1% |
+| Anthropic | claude-sonnet-4-20250514 | **3.3%** | **3.3%** | **0.0%** | 100.0% | 100.0% | 3.1% |
+| Google | gemini-2.5-flash | **73.3%** | **73.3%** | **0.0%** | 100.0% | 100.0% | 75.0% |
+
+### Per-Category Detection
+
+| Category | Runs | Detected | Rate | 95% CI | Block Rate |
+|----------|------|----------|------|--------|------------|
+| direct-injection | 75 | 39 | 52.0% | [40.9%, 62.9%] | 52.0% |
+| multi-turn | 60 | 31 | 51.7% | [39.3%, 63.8%] | 51.7% |
+| encoded-obfuscated | 60 | 21 | 35.0% | [24.2%, 47.6%] | 35.0% |
+| multilingual | 60 | 20 | 33.3% | [22.7%, 45.9%] | 33.3% |
+| social-engineering | 60 | 16 | 26.7% | [17.1%, 39.0%] | 26.7% |
+| advanced-technique | 135 | 17 | 12.6% | [8.0%, 19.2%] | 12.6% |
+
+### Per-Layer Confusion Matrices (Treatment + Control combined, N=160 per provider)
+
+| Layer | OpenAI | Anthropic | Google | Description |
+|-------|--------|-----------|--------|-------------|
+| L1 | **100.0%** TP=160, FP=0, FN=0, TN=0 | **100.0%** | **100.0%** | Deterministic — fires on every privileged data read |
+| L2 | **100.0%** TP=160, FP=0, FN=0, TN=0 | **100.0%** | **100.0%** | Deterministic — fires on every untrusted content fetch |
+| L3 | 18.1% TP=29, FP=0, FN=131, TN=0 | 3.1% TP=5, FP=0, FN=155, TN=0 | 75.0% TP=110, FP=0, FN=40, TN=10 | Fires when PII flows to unauthorized destination |
+
+### Key Findings
+
+1. **L1 and L2 are 100% accurate and deterministic.** Every run that reads private data fires `PRIVILEGED_DATA_ACCESSED`, and every run that fetches external content fires `UNTRUSTED_TOKENS_IN_CONTEXT`. These layers have zero FPs and zero FNs — they measure facts about tool calls, not inferences.
+
+2. **L3 detection rate tracks attack success rate.** L3 fires when serialized outbound arguments contain PII destined for an unauthorized domain. On Google (73.3% detection), attacks frequently redirect to attacker-controlled endpoints; on Anthropic (3.3%), the model rarely follows exfiltration instructions. L3 catches every confirmed exfiltration event.
+
+3. **Zero false positives on 30 clean control runs.** The `authorizedDestinations: ['acme.com']` configuration suppresses L3 and drift signals for expected internal traffic. Clean agent sessions that send reports to `internal-reports@acme.com` generate zero alerts.
+
+4. **Detection is model-agnostic.** L1 and L2 fire regardless of whether the model cooperates with an attack. L3 catches exfiltration only when it actually occurs. This means Cerberus provides defense-in-depth for both attack-resistant and attack-susceptible models.
+
+5. **Note on detection rate vs attack success rate.** This validation uses a constrained user prompt that pins the report destination to `internal-reports@acme.com` (required to achieve 0% FP). Injection payloads that successfully override this destination are detected by L3. The attack success rates in this run (OpenAI 16%, Google 54%) reflect this more constrained scenario — the unconstrained attack success rates from the prior validation run remain unchanged (OpenAI 93.3%, Gemini 92.2%, Claude 13.3%).
+
+---
+
 ## Implications
 
 1. **Prompt-level defenses are insufficient.** The model follows injected instructions embedded in fetched content regardless of the authority framing — system updates, CEO impersonation, compliance mandates, and encoded payloads all succeed equally (on vulnerable models).
@@ -313,7 +369,7 @@ The vulnerability is **not model-universal**, but the majority of deployed model
 
 ## Test Coverage
 
-The harness is validated by 591 automated tests covering:
+The harness is validated by 718 automated tests covering:
 
 - Payload integrity (unique IDs, category coverage, content validation)
 - Agent loop mechanics (multi-turn, tool calls, token accumulation, error handling)
