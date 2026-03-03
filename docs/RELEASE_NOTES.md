@@ -1,14 +1,58 @@
-# Cerberus v0.1.0 — Release Notes
+# Cerberus — Release Notes
+
+## v0.2.0 — 2026-03-02
+
+> Advanced sub-classifiers + MCP runtime security — 6 detection modules enhancing L1/L2/L3.
+
+### Highlights
+
+- **6 new sub-classifiers** that deepen heuristic coverage without changing the correlation engine or risk vector
+- **MCP Tool Poisoning Scanner** — standalone + runtime defense against tool description manipulation
+- **Behavioral Drift Detector** — catches post-injection behavioral pattern changes
+- **591 tests** at 98.69% statement coverage, 94.7% branch, 100% function
+
+### New Detection Modules
+
+| Sub-Classifier            | Enhances | Signal                        | Function                                                                |
+| ------------------------- | -------- | ----------------------------- | ----------------------------------------------------------------------- |
+| **Secrets Detector**      | L1       | `SECRETS_DETECTED`            | Detects AWS keys, GitHub tokens, JWTs, private keys, connection strings |
+| **Injection Scanner**     | L2       | `INJECTION_PATTERNS_DETECTED` | Weighted heuristic detection of prompt injection patterns               |
+| **Encoding Detector**     | L2       | `ENCODING_DETECTED`           | Detects base64, hex, unicode, URL encoding, ROT13 bypass attempts       |
+| **MCP Poisoning Scanner** | L2       | `TOOL_POISONING_DETECTED`     | Scans MCP tool descriptions for hidden instructions and manipulation    |
+| **Domain Classifier**     | L3       | `SUSPICIOUS_DESTINATION`      | Flags disposable emails, webhook services, IP addresses, URL shorteners |
+| **Drift Detector**        | L2/L3    | `BEHAVIORAL_DRIFT_DETECTED`   | Detects post-injection outbound calls and privilege escalation patterns |
+
+### New APIs
+
+- **`scanToolDescriptions(tools)`** — Standalone MCP tool description scanner for registration-time scanning
+- **`toolDescriptions`** config option — Enables runtime per-call MCP poisoning detection
+
+### Pipeline
+
+Sub-classifiers are wired after their parent layers in the interceptor pipeline:
+
+```
+L1 → Secrets → L2 → Injection + Encoding + MCP → L3 → Domain → L4 → Drift → Correlation
+```
+
+All sub-classifiers emit signals with existing layer tags (L1/L2/L3), so the correlation engine and 4-bit risk vector are unchanged.
+
+### Testing
+
+- 5-phase integration test suite covering baseline, adversarial, stress, edge cases, and maximum-hardness regression
+- 591 total tests (up from 326 in v0.1.0)
+
+---
+
+## v0.1.0 — 2026-03-01
 
 > First public release of the Cerberus Agentic AI Runtime Security Platform.
 
-## What Is Cerberus?
+### What Is Cerberus?
 
 Cerberus detects, correlates, and interrupts the **Lethal Trifecta** attack pattern — the fundamental vulnerability in every AI agent that can access private data, process external content, and take outbound actions.
 
 It ships as a single `guard()` function that wraps your existing tool executors. No agent framework changes. No model swaps. One function call.
-
-## What's Included
 
 ### Detection Layers
 
@@ -32,13 +76,13 @@ Default threshold: **3** (the Lethal Trifecta — L1+L2+L3 firing together).
 - Every payload completes the full kill chain in ~12 seconds at $0 cost
 - Structured JSON traces with ground-truth labels
 
-## Installation
+### Installation
 
 ```bash
 npm install @cerberus-ai/core
 ```
 
-## Quick Usage
+### Quick Usage
 
 ```typescript
 import { guard } from '@cerberus-ai/core';
@@ -66,7 +110,7 @@ const { executors: secured, destroy } = guard(
 destroy(); // Clean up when done
 ```
 
-## Key Research Findings
+### Key Research Findings
 
 1. **The attack costs nothing.** Free-tier GPT-4o-mini + 3 tool definitions + one injected instruction = full PII exfiltration.
 2. **Encoding doesn't help.** Base64, ROT13, hex, and Unicode-escaped payloads all succeed.
@@ -74,32 +118,28 @@ destroy(); // Clean up when done
 4. **Social engineering scales.** CEO impersonation, IT support pretexts, and legal threats all bypass model judgment.
 5. **Layer 4 is novel.** No existing tool detects cross-session memory contamination attacks. Cerberus ships the first deployable defense.
 
-## Documentation
+### Documentation
 
-- [API Reference](docs/api.md)
-- [Architecture](docs/architecture.md)
-- [Research Results](docs/research-results.md)
-- [Security Policy](SECURITY.md)
-- [Contributing](CONTRIBUTING.md)
+- [API Reference](api.md)
+- [Architecture](architecture.md)
+- [Research Results](research-results.md)
+- [Security Policy](../SECURITY.md)
+- [Contributing](../CONTRIBUTING.md)
 
-## Examples
+### Examples
 
 ```bash
 npx tsx examples/basic-guard.ts       # Lethal Trifecta detection demo
 npx tsx examples/memory-tracking.ts   # L4 cross-session contamination demo
 ```
 
-## Tech Stack
+### Tech Stack
 
 - TypeScript (strict mode), Node.js >= 20
 - 326 tests, 99.7% coverage (Vitest)
 - SQLite via better-sqlite3 (L4 provenance ledger)
 - Zero runtime dependencies beyond better-sqlite3
 
-## Breaking Changes
-
-N/A — first release.
-
 ## License
 
-[MIT](LICENSE)
+[MIT](../LICENSE)

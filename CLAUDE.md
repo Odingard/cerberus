@@ -17,6 +17,9 @@ When modifying source code, update ALL relevant docs in the SAME commit:
 - **CHANGELOG.md** — add entries under the current version section
 - **docs/api.md** — new/changed types, config options, signal interfaces, exported functions
 - **docs/architecture.md** — module map tables, data flow diagram, design decisions
+- **docs/RELEASE_NOTES.md** — new version section with highlights, detection modules, APIs, test counts
+- **docs/cfp-draft.md** — test counts, coverage numbers, feature descriptions
+- **docs/research-results.md** — test counts, coverage breakdown
 
 Never commit code without updating docs. Never leave test counts or coverage numbers stale.
 

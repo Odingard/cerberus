@@ -273,13 +273,17 @@ npx tsx harness/analyze.ts traces/_summary-A.json traces/_summary-B.json
 
 ## Test Coverage
 
-The harness is validated by 111 automated tests covering:
+The harness is validated by 591 automated tests covering:
 
 - Payload integrity (unique IDs, category coverage, content validation)
 - Agent loop mechanics (multi-turn, tool calls, token accumulation, error handling)
 - Runner orchestration (multi-trial, prompt variants, temperature/seed forwarding)
 - System prompt variants (all 4 variants, content validation)
 - Analysis tooling (per-payload stats, type guards, trace grouping)
+- Detection layers (L1-L4 unit tests)
+- Sub-classifiers (secrets, injection, encoding, domain, MCP, drift)
+- Engine (correlation, interceptor, session)
+- Integration (5-phase severity test suite)
 
 ```bash
 npm run typecheck && npm run lint && npm run test

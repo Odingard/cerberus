@@ -14,7 +14,7 @@ We constructed a minimal 3-tool attack agent and validated this vulnerability wi
 
 We further identify a novel **Layer 4 attack vector**: memory contamination across sessions. Building on MINJA (NeurIPS 2025), we demonstrate that an attacker can inject malicious content into an agent's persistent memory in Session 1, which triggers exfiltration when retrieved in Session 3. No existing defensive tool detects this cross-session attack.
 
-We present **Cerberus**, a runtime security platform that addresses these vulnerabilities through four independent detection layers sharing one correlation engine. Cerberus operates at the tool-call level, is model-agnostic, and requires no changes to agent frameworks — a single `guard()` function wraps existing tool executors. The system builds a 4-bit risk vector per turn, correlates signals cumulatively across the session, and interrupts tool calls that exceed a configurable risk threshold. We release Cerberus as open-source developer tooling with 326 tests at 99.7% coverage.
+We present **Cerberus**, a runtime security platform that addresses these vulnerabilities through four independent detection layers sharing one correlation engine. Cerberus operates at the tool-call level, is model-agnostic, and requires no changes to agent frameworks — a single `guard()` function wraps existing tool executors. The system builds a 4-bit risk vector per turn, correlates signals cumulatively across the session, and interrupts tool calls that exceed a configurable risk threshold. We release Cerberus as open-source developer tooling with 591 tests at 98.69% coverage, featuring four core detection layers and six advanced sub-classifiers covering secrets detection, prompt injection scanning, encoding/obfuscation detection, MCP tool poisoning defense, suspicious domain classification, and behavioral drift analysis.
 
 ---
 
@@ -53,17 +53,19 @@ We present **Cerberus**, a runtime security platform that addresses these vulner
 
 ### 4. Cerberus: Runtime Detection (15 min)
 
-- L1: Data source classification — tag trust at access time
-- L2: Token provenance — label every token by origin
-- L3: Outbound intent — substring correlation catches exfiltration
+- L1: Data source classification — tag trust at access time + secrets detection
+- L2: Token provenance — label every token by origin + injection scanning, encoding detection, MCP poisoning defense
+- L3: Outbound intent — substring correlation catches exfiltration + suspicious domain classification
 - L4: Memory contamination graph — BFS taint propagation across sessions
+- Behavioral drift detector — catches post-injection pattern changes across turns
 - Correlation engine: 4-bit risk vector, cumulative scoring, configurable threshold
 - Live demo: same 3 attacks, now intercepted
 
 ### 5. Deployment & Open Source (5 min)
 
 - `npm install @cerberus-ai/core` — one function call integration
-- 326 tests, 99.7% coverage
+- 591 tests, 98.69% coverage
+- 6 sub-classifiers: secrets, injection, encoding, MCP poisoning, domain, drift
 - Call to action: test your agents, contribute detection layers
 
 ---
@@ -80,7 +82,7 @@ Cerberus is an open-source runtime security platform that detects and interrupts
 
 The tool wraps existing tool executors with four detection layers: (1) data source classification, (2) token provenance tracking, (3) outbound intent classification, and (4) cross-session memory contamination detection. A correlation engine aggregates signals into a 4-bit risk vector and interrupts tool calls that exceed a configurable threshold.
 
-Validated against 21 attack payloads with 100% baseline attack success rate. TypeScript/Node.js, MIT licensed, 326 tests at 99.7% coverage.
+Validated against 21 attack payloads with 100% baseline attack success rate. Features four core detection layers and six advanced sub-classifiers including MCP tool poisoning defense. TypeScript/Node.js, MIT licensed, 591 tests at 98.69% coverage.
 
 **Demo Plan:** Live 3-tool agent attack followed by Cerberus integration showing real-time interception.
 
