@@ -188,8 +188,8 @@ The tool wraps existing tool executors with four detection layers: (1) data sour
 
 ## Metadata
 
-- **Authors:** [To be filled]
-- **Affiliation:** [To be filled]
+- **Authors:** Andre Byrd
+- **Affiliation:** Six Sense Enterprise Services
 - **Contact:** security@cerberus.dev
 - **Repository:** https://github.com/Odingard/cerberus
 - **License:** MIT
