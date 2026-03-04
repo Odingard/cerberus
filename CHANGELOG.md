@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-03-04
+
 ### Added
 
 - **OpenTelemetry instrumentation** — opt-in via `opentelemetry: true` in `CerberusConfig`; emits one `cerberus.tool_call` span per tool call with attributes (tool name, session/turn IDs, risk score, action, blocked flag, signals detected, duration ms) and updates three metrics (`cerberus.tool_calls.total`, `cerberus.tool_calls.blocked` counters; `cerberus.risk_score` histogram); zero overhead when disabled; `@opentelemetry/api` is a no-op singleton when no SDK is configured; 14 new tests (747 total)

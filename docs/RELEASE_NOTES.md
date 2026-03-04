@@ -1,5 +1,62 @@
 # Cerberus — Release Notes
 
+## v0.3.0 — 2026-03-04
+
+> Platform integration release — HTTP proxy/gateway mode, OpenTelemetry instrumentation, Docker demo, and getting-started guide. Zero-code-change integration path; plug Cerberus into any observability stack.
+
+### Highlights
+
+- **HTTP proxy/gateway mode** (`createProxy`) — run Cerberus as a standalone HTTP server; agents route tool calls to `POST /tool/:toolName`; no changes to agent source code; session state tracked via `X-Cerberus-Session` header; cumulative L1+L2+L3 scoring across multi-turn HTTP sessions
+- **OpenTelemetry instrumentation** — `opentelemetry: true` in config; one `cerberus.tool_call` span + 3 metrics per tool call; works with any OTel-compatible backend (Jaeger, Grafana, Datadog, etc.); zero overhead when disabled
+- **Docker one-liner demo** — two-phase terminal visualization: attack unblocked → attack blocked; no API keys required
+- **Getting-started guide** — `npm install` to first blocked attack in under 5 minutes
+- **747 tests**, 98%+ coverage
+
+### New APIs
+
+#### `createProxy(config: ProxyConfig): ProxyServer`
+
+```typescript
+import { createProxy } from '@cerberus-ai/core';
+
+const proxy = createProxy({
+  port: 4000,
+  cerberus: { alertMode: 'interrupt', threshold: 3 },
+  tools: {
+    readCustomerData: { target: 'http://tools:3001/read', trustLevel: 'trusted' },
+    fetchWebpage:     { target: 'http://tools:3001/fetch', trustLevel: 'untrusted' },
+    sendEmail:        { target: 'http://tools:3001/email', outbound: true },
+  },
+});
+await proxy.listen();
+```
+
+Responses: `200 { "result": "..." }` or `403 { "blocked": true, "message": "[Cerberus]..." }` + `X-Cerberus-Blocked: true`. Health check: `GET /health`.
+
+#### `opentelemetry: true` config flag
+
+```typescript
+const config: CerberusConfig = {
+  alertMode: 'interrupt',
+  opentelemetry: true,  // spans + metrics → your OTel backend
+};
+```
+
+Span `cerberus.tool_call` attributes: `cerberus.tool_name`, `cerberus.risk_score`, `cerberus.blocked`, `cerberus.signals_detected`, `cerberus.duration_ms`, `cerberus.session_id`, `cerberus.turn_id`, `cerberus.action`.
+
+Metrics: `cerberus.tool_calls.total`, `cerberus.tool_calls.blocked`, `cerberus.risk_score` histogram.
+
+### Test Count
+
+| Category | Count |
+|----------|-------|
+| Proxy/gateway | 15 |
+| OTel instrumentation | 14 |
+| All other (layers, classifiers, engine, adapters, harness) | 718 |
+| **Total** | **747** |
+
+---
+
 ## v0.2.1 — 2026-03-03
 
 > Scientific validation + real-world attack demonstrations — N=285 API calls, live HTTP interception, LangChain integration, and performance benchmarks.

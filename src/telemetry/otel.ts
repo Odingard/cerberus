@@ -37,7 +37,7 @@ import { trace, metrics, SpanStatusCode } from '@opentelemetry/api';
 import type { Attributes, Counter, Histogram } from '@opentelemetry/api';
 
 const INSTRUMENTATION_NAME = '@cerberus-ai/core';
-const INSTRUMENTATION_VERSION = '0.2.1';
+const INSTRUMENTATION_VERSION = '0.3.0';
 
 // Metric instruments — lazily created on first tool call with OTel enabled.
 // Using module-level variables means they're created once per process.
