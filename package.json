@@ -24,6 +24,7 @@
     "ci": "npm run typecheck && npm run lint && npm run test",
     "bench": "npx tsx harness/bench.ts",
     "demo:langchain": "npx tsx examples/langchain-rag-demo.ts",
+    "demo:live": "npx tsx examples/live-attack-demo.ts",
     "clean": "rm -rf dist",
     "demo": "cd demo && npx vite",
     "demo:build": "cd demo && npx vite build",

@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 718 tests (127 additional since v0.2.0)
 - **CFP draft updated** — Black Hat Arsenal abstract, DEF CON talk outline, and academic paper structure updated with multi-provider attack results (N=285 runs, Wilson 95% CIs), detection engine validation results (N=480 runs, 0% FP, L1/L2 100%), and 718 test count; status table added with March 13 Black Hat deadline
 
+- **Live attack demo with real HTTP interception** (`examples/live-attack-demo.ts` + `harness/demo-servers.ts`) — spawns local injection server (attacker page with payload) and capture server (records exfiltration attempts); Phase 1 unguarded: 2 real HTTP POSTs captured including SSN+email; Phase 2 guarded: Cerberus pre-blocks outbound call via accumulated risk score — 0 requests reach capture server; confirmed with real GPT-4o-mini API calls
+- **`demo:live` script** — `npm run demo:live` / `OPENAI_API_KEY=sk-... npx tsx examples/live-attack-demo.ts`
 - **LangChain RAG agent demo** (`examples/langchain-rag-demo.ts`) — real-target integration using `@langchain/core` DynamicStructuredTool + `@langchain/openai` ChatOpenAI; demonstrates guard() intercepting a live GPT-4o-mini agent following an injection payload; `--no-guard` flag shows unguarded attack succeeding; confirmed on real API call: L1+L2+L3+drift → score 3/4 → BLOCKED
 - **Performance benchmark harness** (`harness/bench.ts`) — measures Cerberus detection overhead vs raw tool execution across all 3 tools and the full 3-call L1→L2→L3 sequence; 1000 iterations + 100 warmup; results: p50=52μs overhead per session, p99=0.23ms, 0.01% of typical LLM call latency
 
