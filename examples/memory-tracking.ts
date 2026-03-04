@@ -20,16 +20,16 @@ import type { CerberusConfig, MemoryToolConfig } from '../src/index.js';
 const memoryStore = new Map<string, string>();
 
 const executors = {
-  writeMemory: async (args: Record<string, unknown>): Promise<string> => {
+  writeMemory: (args: Record<string, unknown>): Promise<string> => {
     const key = String(args.key);
     const value = String(args.value);
     memoryStore.set(key, value);
-    return 'ok';
+    return Promise.resolve('ok');
   },
 
-  readMemory: async (args: Record<string, unknown>): Promise<string> => {
+  readMemory: (args: Record<string, unknown>): Promise<string> => {
     const key = String(args.key);
-    return memoryStore.get(key) ?? '';
+    return Promise.resolve(memoryStore.get(key) ?? '');
   },
 };
 
@@ -39,9 +39,7 @@ const config: CerberusConfig = {
   alertMode: 'interrupt',
   threshold: 1,
   memoryTracking: true,
-  trustOverrides: [
-    { toolName: 'writeMemory', trustLevel: 'untrusted' },
-  ],
+  trustOverrides: [{ toolName: 'writeMemory', trustLevel: 'untrusted' }],
   onAssessment: ({ turnId, score, action }) => {
     console.log(`  [Assessment] ${turnId}: score=${String(score)}/4, action=${action}`);
   },
@@ -70,7 +68,9 @@ async function main(): Promise<void> {
     value: 'injected malicious payload from external source',
   });
   console.log(`  Graph size: ${String(result.graph!.size())} node(s)`);
-  console.log(`  Ledger history: ${String(result.ledger!.getNodeHistory('user-preferences').length)} record(s)\n`);
+  console.log(
+    `  Ledger history: ${String(result.ledger!.getNodeHistory('user-preferences').length)} record(s)\n`,
+  );
 
   // Reset simulates a new session
   console.log('--- reset() → new session ---\n');
