@@ -250,6 +250,117 @@ When provided, the MCP Tool Poisoning Scanner runs per-tool-call, checking the c
 
 ---
 
+## `createProxy()`
+
+HTTP proxy/gateway mode. Run Cerberus as a standalone HTTP server between an AI agent and its tool backends — no changes to agent source code required.
+
+```typescript
+import { createProxy } from '@cerberus-ai/core';
+
+function createProxy(config: ProxyConfig): ProxyServer;
+```
+
+### `ProxyConfig`
+
+```typescript
+interface ProxyConfig {
+  /** Port to listen on. Default: 4000. */
+  readonly port?: number;
+
+  /** Cerberus detection config (alertMode, threshold, trustOverrides, etc.). */
+  readonly cerberus: CerberusConfig;
+
+  /** Tool map: toolName → ProxyToolConfig. Each key becomes POST /tool/:toolName. */
+  readonly tools: Readonly<Record<string, ProxyToolConfig>>;
+
+  /** Session TTL in ms. Idle sessions are destroyed. Default: 1_800_000 (30 min). */
+  readonly sessionTtlMs?: number;
+}
+```
+
+### `ProxyToolConfig`
+
+```typescript
+interface ProxyToolConfig {
+  /** HTTP upstream URL. Proxy POSTs { "args": {...} } and expects a string response. */
+  readonly target?: string;
+
+  /** Local executor (alternative to target — useful in tests or co-located tools). */
+  readonly handler?: ToolExecutorFn;
+
+  /** Trust level for L1/L2 detection. */
+  readonly trustLevel?: 'trusted' | 'untrusted';
+
+  /** Mark as outbound tool — enables L3 exfiltration detection. Default: false. */
+  readonly outbound?: boolean;
+}
+```
+
+Exactly one of `target` or `handler` must be provided. `target` and `handler` are mutually exclusive.
+
+### `ProxyServer`
+
+```typescript
+interface ProxyServer {
+  /** Start listening on the configured port. Resolves when bound. */
+  listen(): Promise<void>;
+
+  /** Shut down: close HTTP server, destroy all sessions. */
+  close(): Promise<void>;
+}
+```
+
+### HTTP Protocol
+
+**Tool call request:**
+```
+POST /tool/:toolName
+Content-Type: application/json
+X-Cerberus-Session: <session-id>   (optional — defaults to "default")
+
+{ "args": { ... } }
+```
+
+**Allowed response (200):**
+```json
+{ "result": "tool output string" }
+```
+
+**Blocked response (403):**
+```json
+{ "blocked": true, "message": "[Cerberus] Tool call blocked — risk score 3/4" }
+```
+Header: `X-Cerberus-Blocked: true`
+
+**Health check:**
+```
+GET /health → 200 { "status": "ok", "sessions": <count> }
+```
+
+### Session Management
+
+Session state (L1+L2+L3 cumulative scoring) is tracked per `X-Cerberus-Session` header value. Each unique session ID maintains independent detection state so multi-turn attacks are detected across multiple HTTP requests. Sessions without activity beyond `sessionTtlMs` are automatically destroyed.
+
+### Example
+
+```typescript
+const proxy = createProxy({
+  port: 4000,
+  cerberus: { alertMode: 'interrupt', threshold: 3 },
+  tools: {
+    readCustomerData: { target: 'http://tools:3001/read', trustLevel: 'trusted' },
+    fetchWebpage:     { target: 'http://tools:3001/fetch', trustLevel: 'untrusted' },
+    sendEmail:        { target: 'http://tools:3001/email', outbound: true },
+  },
+});
+
+await proxy.listen();
+// Agent tool calls → POST http://localhost:4000/tool/:toolName
+// Cerberus detects Lethal Trifecta across all requests in a session
+```
+
+---
+
 ## `scanToolDescriptions()`
 
 Standalone MCP tool description scanner — call at tool registration time before wiring tools into your agent.

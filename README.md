@@ -207,6 +207,40 @@ const config: CerberusConfig = {
 
 ---
 
+## Proxy/Gateway Mode — Zero Code Change
+
+No `guard()` wrapper needed. Run Cerberus as an HTTP proxy and route agent tool calls through it. Detection runs transparently; the agent's source code is unchanged.
+
+```typescript
+import { createProxy } from '@cerberus-ai/core';
+
+const proxy = createProxy({
+  port: 4000,
+  cerberus: { alertMode: 'interrupt', threshold: 3 },
+  tools: {
+    readCustomerData: {
+      target: 'http://localhost:3001/readCustomerData',
+      trustLevel: 'trusted',
+    },
+    fetchWebpage: {
+      target: 'http://localhost:3001/fetchWebpage',
+      trustLevel: 'untrusted',
+    },
+    sendEmail: {
+      target: 'http://localhost:3001/sendEmail',
+      outbound: true,
+    },
+  },
+});
+
+await proxy.listen();
+// Agent routes tool calls to http://localhost:4000/tool/:toolName
+```
+
+Each tool call hits `POST /tool/:toolName` with `{ "args": {...} }`. The proxy returns `200 { "result": "..." }` for allowed calls or `403 { "blocked": true, "message": "[Cerberus]..." }` when the Lethal Trifecta fires. Session state is tracked via the `X-Cerberus-Session` header — cumulative L1+L2+L3 scoring works across multiple HTTP requests in the same agent run.
+
+---
+
 ## Live Attack Demo — Real HTTP Interception
 
 Demonstrates Cerberus blocking a real HTTP POST to an attacker-controlled endpoint. Uses local servers — no external accounts or network access required.
@@ -377,7 +411,7 @@ npx tsx harness/bench.ts
 - **Language**: TypeScript (strict mode)
 - **Runtime**: Node.js >= 20
 - **Primary Harness**: OpenAI, Anthropic, Google Gemini (multi-provider)
-- **Testing**: Vitest (718 tests, 98%+ coverage)
+- **Testing**: Vitest (733 tests, 98%+ coverage)
 - **Memory Store**: SQLite via better-sqlite3
 - **Validation**: Zod
 
@@ -394,6 +428,7 @@ cerberus/
 │   ├── graph/            # Memory contamination graph + provenance ledger
 │   ├── middleware/       # Developer-facing guard() API
 │   ├── adapters/         # Framework integrations (LangChain, Vercel AI, OpenAI Agents)
+│   ├── proxy/            # HTTP proxy/gateway mode (createProxy)
 │   └── types/            # Shared TypeScript interfaces
 ├── harness/              # Attack research instrument
 │   ├── providers/        # Multi-provider abstraction (OpenAI, Anthropic, Google)
@@ -435,6 +470,7 @@ cerberus/
 | Framework               | Status                                      |
 | ----------------------- | ------------------------------------------- |
 | Generic tool executors  | **Supported** — `guard()`                   |
+| HTTP proxy/gateway      | **Supported** — `createProxy()`             |
 | LangChain               | **Supported** — `guardLangChain()`          |
 | Vercel AI SDK           | **Supported** — `guardVercelAI()`           |
 | OpenAI Agents SDK       | **Supported** — `createCerberusGuardrail()` |

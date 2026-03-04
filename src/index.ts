@@ -47,6 +47,10 @@ export type { MemoryToolConfig } from './layers/l4-memory.js';
 export type { ContaminationGraph, GraphNode, GraphEdge } from './graph/contamination.js';
 export type { ProvenanceLedger, ProvenanceRecord } from './graph/ledger.js';
 
+// Proxy/gateway mode
+export { createProxy } from './proxy/server.js';
+export type { ProxyConfig, ProxyToolConfig, ProxyServer } from './proxy/types.js';
+
 // Framework adapters
 export { guardLangChain } from './adapters/langchain.js';
 export type {

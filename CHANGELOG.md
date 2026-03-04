@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Proxy/gateway mode** (`createProxy`) — HTTP server that wraps tool backends with Cerberus detection; agents route calls to `POST /tool/:toolName` with no changes to agent source code; session state tracked via `X-Cerberus-Session` header; supports both HTTP upstream targets and local handler functions; `GET /health` endpoint; `X-Cerberus-Blocked: true` response header on 403 blocked responses; 15 new tests (733 total)
+
 ## [0.2.1] — 2026-03-03
 
 ### Added
