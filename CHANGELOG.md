@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Proxy/gateway mode** (`createProxy`) — HTTP server that wraps tool backends with Cerberus detection; agents route calls to `POST /tool/:toolName` with no changes to agent source code; session state tracked via `X-Cerberus-Session` header; supports both HTTP upstream targets and local handler functions; `GET /health` endpoint; `X-Cerberus-Blocked: true` response header on 403 blocked responses; 15 new tests (733 total)
+- **OpenTelemetry instrumentation** — opt-in via `opentelemetry: true` in `CerberusConfig`; emits one `cerberus.tool_call` span per tool call with attributes (tool name, session/turn IDs, risk score, action, blocked flag, signals detected, duration ms) and updates three metrics (`cerberus.tool_calls.total`, `cerberus.tool_calls.blocked` counters; `cerberus.risk_score` histogram); zero overhead when disabled; `@opentelemetry/api` is a no-op singleton when no SDK is configured; 14 new tests (747 total)
+- **Proxy/gateway mode** (`createProxy`) — HTTP server that wraps tool backends with Cerberus detection; agents route calls to `POST /tool/:toolName` with no changes to agent source code; session state tracked via `X-Cerberus-Session` header; supports both HTTP upstream targets and local handler functions; `GET /health` endpoint; `X-Cerberus-Blocked: true` response header on 403 blocked responses; 15 new tests
 
 ## [0.2.1] — 2026-03-03
 

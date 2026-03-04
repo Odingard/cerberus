@@ -207,6 +207,39 @@ const config: CerberusConfig = {
 
 ---
 
+## OpenTelemetry — Plug Into Your Observability Stack
+
+Add `opentelemetry: true` to your config. That's it. Cerberus emits one span per tool call and updates three metrics — everything flows into whatever OTel SDK and exporter you already have configured.
+
+```typescript
+// 1. Register your OTel SDK once at app startup
+import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
+import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
+
+const provider = new NodeTracerProvider();
+provider.addSpanProcessor(new BatchSpanProcessor(new OTLPTraceExporter()));
+provider.register();
+
+// 2. Enable in your Cerberus config — no other changes needed
+const config: CerberusConfig = {
+  alertMode: 'interrupt',
+  threshold: 3,
+  opentelemetry: true,  // spans + metrics flow to your backend automatically
+};
+```
+
+**Span:** `cerberus.tool_call` with attributes: `cerberus.tool_name`, `cerberus.session_id`, `cerberus.turn_id`, `cerberus.risk_score`, `cerberus.action`, `cerberus.blocked`, `cerberus.signals_detected`, `cerberus.duration_ms`. Status is `ERROR` when blocked.
+
+**Metrics:**
+- `cerberus.tool_calls.total` — counter, all tool calls
+- `cerberus.tool_calls.blocked` — counter, blocked calls only
+- `cerberus.risk_score` — histogram (0–4)
+
+Works with any OTel-compatible backend: Jaeger, Grafana Tempo, Honeycomb, Datadog, AWS X-Ray. Zero overhead when disabled — `@opentelemetry/api` is a no-op singleton when no SDK is configured.
+
+---
+
 ## Proxy/Gateway Mode — Zero Code Change
 
 No `guard()` wrapper needed. Run Cerberus as an HTTP proxy and route agent tool calls through it. Detection runs transparently; the agent's source code is unchanged.
@@ -411,7 +444,7 @@ npx tsx harness/bench.ts
 - **Language**: TypeScript (strict mode)
 - **Runtime**: Node.js >= 20
 - **Primary Harness**: OpenAI, Anthropic, Google Gemini (multi-provider)
-- **Testing**: Vitest (733 tests, 98%+ coverage)
+- **Testing**: Vitest (747 tests, 98%+ coverage)
 - **Memory Store**: SQLite via better-sqlite3
 - **Validation**: Zod
 
@@ -429,6 +462,7 @@ cerberus/
 │   ├── middleware/       # Developer-facing guard() API
 │   ├── adapters/         # Framework integrations (LangChain, Vercel AI, OpenAI Agents)
 │   ├── proxy/            # HTTP proxy/gateway mode (createProxy)
+│   ├── telemetry/        # OpenTelemetry instrumentation (spans + metrics)
 │   └── types/            # Shared TypeScript interfaces
 ├── harness/              # Attack research instrument
 │   ├── providers/        # Multi-provider abstraction (OpenAI, Anthropic, Google)

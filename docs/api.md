@@ -250,6 +250,72 @@ When provided, the MCP Tool Poisoning Scanner runs per-tool-call, checking the c
 
 ---
 
+## `opentelemetry` config option
+
+Enable with `opentelemetry: true` in `CerberusConfig`. No other code changes required — spans and metrics flow to whatever OTel SDK + exporter is registered in your app.
+
+```typescript
+const config: CerberusConfig = {
+  alertMode: 'interrupt',
+  threshold: 3,
+  opentelemetry: true,
+};
+```
+
+### Span: `cerberus.tool_call`
+
+One span emitted per tool call. Attributes:
+
+| Attribute | Type | Description |
+|---|---|---|
+| `cerberus.tool_name` | string | Name of the tool called |
+| `cerberus.session_id` | string | Cerberus session identifier |
+| `cerberus.turn_id` | string | Turn identifier (`turn-000`, `turn-001`, …) |
+| `cerberus.risk_score` | number | Cumulative session risk score (0–4) |
+| `cerberus.action` | string | `'log'` \| `'alert'` \| `'interrupt'` \| `'none'` |
+| `cerberus.blocked` | boolean | `true` when `action === 'interrupt'` |
+| `cerberus.signals_detected` | string | Comma-separated signal names (e.g. `PRIVILEGED_DATA_SOURCE,UNTRUSTED_TOKEN_FLOW`) |
+| `cerberus.duration_ms` | number | Wall time in ms including tool execution |
+
+Span status is `ERROR` when blocked, `OK` otherwise.
+
+### Metrics
+
+| Metric | Type | Description |
+|---|---|---|
+| `cerberus.tool_calls.total` | Counter | All tool calls processed |
+| `cerberus.tool_calls.blocked` | Counter | Tool calls blocked (score ≥ threshold) |
+| `cerberus.risk_score` | Histogram | Risk score distribution (0–4) |
+
+Metric attributes: `cerberus.tool_name`, `cerberus.action`.
+
+### `ToolCallRecord` type
+
+Exported for advanced use (e.g. building custom exporters):
+
+```typescript
+interface ToolCallRecord {
+  readonly toolName: string;
+  readonly sessionId: string;
+  readonly turnId: string;
+  readonly score: number;
+  readonly action: string;
+  readonly blocked: boolean;
+  readonly signals: readonly string[];
+  readonly durationMs: number;
+}
+```
+
+### Zero-overhead guarantee
+
+`@opentelemetry/api` uses a global no-op `ProxyTracerProvider` / `ProxyMeterProvider` by default. When `opentelemetry: true` but no SDK is registered, all span/metric operations are no-ops with negligible overhead (~nanoseconds). When `opentelemetry` is `false` or omitted, the OTel code path is skipped entirely (single boolean check).
+
+### Compatible backends
+
+Any OTel-compatible exporter works: Jaeger, Grafana Tempo, Honeycomb, Datadog, AWS X-Ray, Google Cloud Trace, Azure Monitor.
+
+---
+
 ## `createProxy()`
 
 HTTP proxy/gateway mode. Run Cerberus as a standalone HTTP server between an AI agent and its tool backends — no changes to agent source code required.

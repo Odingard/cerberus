@@ -47,6 +47,10 @@ export type { MemoryToolConfig } from './layers/l4-memory.js';
 export type { ContaminationGraph, GraphNode, GraphEdge } from './graph/contamination.js';
 export type { ProvenanceLedger, ProvenanceRecord } from './graph/ledger.js';
 
+// OpenTelemetry instrumentation
+export { recordToolCall } from './telemetry/otel.js';
+export type { ToolCallRecord } from './telemetry/otel.js';
+
 // Proxy/gateway mode
 export { createProxy } from './proxy/server.js';
 export type { ProxyConfig, ProxyToolConfig, ProxyServer } from './proxy/types.js';

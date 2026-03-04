@@ -63,6 +63,15 @@ export interface CerberusConfig {
   /** Authorized outbound destination domains. L3 skips when destination matches. */
   readonly authorizedDestinations?: readonly string[];
 
+  /**
+   * Enable OpenTelemetry instrumentation.
+   * When true, Cerberus emits one span (`cerberus.tool_call`) and updates
+   * three metrics per tool call. Requires `@opentelemetry/api` (already a
+   * dependency) and an OTel SDK + exporter registered in your app.
+   * Default: false.
+   */
+  readonly opentelemetry?: boolean;
+
   /** Callback invoked on every risk assessment. */
   readonly onAssessment?: (assessment: {
     readonly turnId: string;

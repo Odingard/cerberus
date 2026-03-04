@@ -25,6 +25,7 @@ import { detectEncodingInResult } from '../classifiers/encoding-detector.js';
 import { classifyOutboundDomain } from '../classifiers/domain-classifier.js';
 import { checkToolCallPoisoning } from '../classifiers/mcp-scanner.js';
 import { detectBehavioralDrift } from '../classifiers/drift-detector.js';
+import { recordToolCall } from '../telemetry/otel.js';
 
 /** Generic tool executor function signature. */
 export type ToolExecutorFn = (args: Record<string, unknown>) => Promise<string>;
@@ -64,6 +65,9 @@ export function interceptToolCall(
     const turnIndex = session.turnCounter;
     session.turnCounter += 1;
     const turnId = `turn-${String(turnIndex).padStart(3, '0')}`;
+
+    // Record wall time including tool execution (used for OTel span)
+    const startMs = Date.now();
 
     // Execute the tool
     const result = await executor(args);
@@ -184,6 +188,20 @@ export function interceptToolCall(
       score: assessment.score,
       action: assessment.action,
     });
+
+    // OpenTelemetry instrumentation
+    if (config.opentelemetry === true) {
+      recordToolCall({
+        toolName,
+        sessionId: session.sessionId,
+        turnId,
+        score: assessment.score,
+        action: assessment.action,
+        blocked: assessment.action === 'interrupt',
+        signals: signals.map((s) => s.signal),
+        durationMs: Date.now() - startMs,
+      });
+    }
 
     // If action is interrupt, return blocked message
     if (assessment.action === 'interrupt') {
