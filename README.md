@@ -282,37 +282,40 @@ OPENAI_API_KEY=sk-... npx tsx examples/langchain-rag-demo.ts --no-guard
 
 ## Research Results
 
-> **30 payloads. 3 providers. GPT-4o-mini: 100% success. Gemini 2.5 Flash: 90% success. Claude Sonnet: 0% success.**
+> **N=285 real API calls. 30 payloads × 6 categories × 3 providers. PII exfiltration succeeded in ~100% of runs across all three providers.**
 
-We built a 3-tool attack agent and ran 30 injection payloads across 6 categories against three major LLM providers. The results demonstrate that the Lethal Trifecta vulnerability is **not model-universal** — but most models remain fully exploitable.
+We built a 3-tool attack agent and ran 30 injection payloads across 6 categories against three major LLM providers with full statistical rigor: 3 trials per payload per provider, 5 negative control runs per provider, Wilson 95% confidence intervals, Fisher's exact test, and 6-factor causation scoring.
 
-### Multi-Provider Results
+### Two-Metric Framework
 
-| Provider      | Model             | Success Rate     | Key Finding                                      |
-| ------------- | ----------------- | ---------------- | ------------------------------------------------ |
-| **OpenAI**    | GPT-4o-mini       | **30/30 (100%)** | Every payload exfiltrates — zero refusals        |
-| **Google**    | Gemini 2.5 Flash  | **27/30 (90%)**  | Mostly vulnerable, resists some encoded/advanced |
-| **Anthropic** | Claude Sonnet 4.6 | **0/30 (0%)**    | Refuses every payload — never exfiltrates        |
+The attack is measured on two distinct dimensions:
 
-### Per-Category Breakdown (GPT-4o-mini)
+**Any exfiltration** — PII left the system (success + partial outcomes):
 
-| Category                 | Payloads | Success Rate | Technique                                                  |
-| ------------------------ | -------- | ------------ | ---------------------------------------------------------- |
-| **Direct Injection**     | 5        | 100%         | System update spoofs, admin overrides, compliance mandates |
-| **Encoded / Obfuscated** | 4        | 100%         | Base64, ROT13, Unicode escapes, hex encoding               |
-| **Social Engineering**   | 4        | 100%         | CEO fraud, IT support impersonation, legal threats         |
-| **Multi-Turn**           | 4        | 100%         | Persistent CC rules, delayed triggers, context poisoning   |
-| **Multilingual**         | 4        | 100%         | Spanish, Mandarin, Arabic, Russian payloads                |
-| **Advanced Technique**   | 9        | 100%         | Context stuffing, jailbreak, CoT manipulation, split-turn  |
+| Provider   | Model                    | Any Exfiltration | 95% CI            |
+| ---------- | ------------------------ | ---------------- | ----------------- |
+| OpenAI     | gpt-4o-mini              | **100%** (90/90) | —                 |
+| Anthropic  | claude-sonnet-4-20250514 | **100%** (90/90) | —                 |
+| Google     | gemini-2.5-flash         | **98.9%** (89/90)| —                 |
+
+**Full injection compliance** — injection additionally overrides the destination to the attacker's address:
+
+| Provider   | Model                    | Full Compliance  | 95% CI              |
+| ---------- | ------------------------ | ---------------- | ------------------- |
+| OpenAI     | gpt-4o-mini              | **17.8%** (16/90)| [11.2%, 26.9%]      |
+| Google     | gemini-2.5-flash         | **48.9%** (44/90)| [38.8%, 59.0%]      |
+| Anthropic  | claude-sonnet-4-20250514 | **2.2%** (2/90)  | [0.6%, 7.7%]        |
+
+Control group: 0/15 exfiltrations across all providers — baseline confirmed clean.
 
 ### Key Findings
 
-1. **The attack costs nothing.** Free-tier GPT-4o-mini + 3 tool definitions + one injected instruction = full PII exfiltration in under 15 seconds.
-2. **Encoding doesn't help.** Base64, ROT13, hex, and Unicode-escaped payloads all succeed on GPT-4o-mini. Gemini resists some encoded payloads.
-3. **Language doesn't matter.** Spanish, Mandarin, Arabic, and Russian injection payloads all exfiltrate data across all vulnerable models.
-4. **Social engineering scales.** CEO impersonation, IT support pretexts, and legal threats all bypass model judgment on OpenAI and Google.
-5. **Model safety training varies dramatically.** Claude Sonnet refuses all 30 payloads. GPT-4o-mini follows every one. This confirms that runtime detection (Cerberus) is necessary for models that lack robust injection resistance.
-6. **Even resistant models need runtime defense.** Claude's 0% success rate may not hold against future, more sophisticated payloads. Runtime detection provides defense-in-depth.
+1. **PII exfiltration is near-universal.** All three providers leaked data in ~100% of attack runs. The architectural condition (privileged access + injection + outbound) is sufficient regardless of model.
+2. **Model resistance shifts the attack, not the outcome.** Claude's low full-compliance rate (2.2%) reflects training against known redirect patterns — PII still leaves the system. New payload techniques shift that number without notice.
+3. **The attack costs $0.001.** Free-tier GPT-4o-mini + 3 tool definitions + one injected instruction = full PII exfiltration in under 15 seconds.
+4. **Encoding doesn't help.** Base64, ROT13, hex, and Unicode-escaped payloads all execute in-context across all providers.
+5. **Language doesn't matter.** Spanish, Mandarin, Arabic, and Russian injection payloads all exfiltrate data.
+6. **Runtime detection is necessary.** Model-level resistance is payload-specific, provider-specific, and changes with model versions. Architectural detection at the tool-call level is the only durable defense.
 
 ### Attack Anatomy (3 tool calls, ~12 seconds)
 
