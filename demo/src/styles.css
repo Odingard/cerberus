@@ -776,6 +776,50 @@ a:hover { text-decoration: underline; }
   font-weight: 700;
 }
 
+/* ── Research Banner ────────────────────────────────────────────── */
+.research-banner {
+  padding: 3rem 1.5rem;
+  background: linear-gradient(135deg, rgba(248, 81, 73, 0.05), rgba(219, 109, 40, 0.05));
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.research-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2rem;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .research-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 480px) {
+  .research-grid { grid-template-columns: 1fr; }
+}
+
+.research-stat {
+  padding: 1.25rem;
+  border: 1px solid rgba(248, 81, 73, 0.2);
+  border-radius: 10px;
+  background: rgba(13, 17, 23, 0.6);
+}
+
+.research-value {
+  font-family: var(--font-mono);
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--red);
+  margin-bottom: 0.5rem;
+}
+
+.research-label {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
 /* ── Stats Grid ─────────────────────────────────────────────────── */
 .stats-grid {
   display: grid;
