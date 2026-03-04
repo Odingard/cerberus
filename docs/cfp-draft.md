@@ -14,7 +14,7 @@ We constructed a minimal 3-tool attack agent and validated this vulnerability wi
 
 We further identify a novel **Layer 4 attack vector**: memory contamination across sessions. Building on MINJA (NeurIPS 2025), we demonstrate that an attacker can inject malicious content into an agent's persistent memory in Session 1, which triggers exfiltration when retrieved in Session 3. No existing defensive tool detects this cross-session attack.
 
-We present **Cerberus**, a runtime security platform that closes this gap through four independent detection layers sharing one correlation engine. We do not merely claim detection — we prove it. Running the full 30-payload suite in observe-only mode across all three providers (N=480 runs), Cerberus achieves **0.0% false positive rate** [0.0%, 11.4%] on 30 clean control runs, **100% accuracy on L1 and L2** (deterministic layers that fire on every privileged data read and untrusted content fetch), and **L3 detection that tracks confirmed exfiltration** — catching every instance where the model actually follows injected instructions. Cerberus is released as open-source developer tooling with 718 tests at 98%+ coverage. Integration requires a single function call: `guard(executors, config, outboundTools)`.
+We present **Cerberus**, a runtime security platform that closes this gap through four independent detection layers sharing one correlation engine. We do not merely claim detection — we prove it. Running the full 30-payload suite in observe-only mode across all three providers (N=480 runs), Cerberus achieves **0.0% false positive rate** [0.0%, 11.4%] on 30 clean control runs, **100% accuracy on L1 and L2** (deterministic layers that fire on every privileged data read and untrusted content fetch), and **L3 (outbound intent) detection that tracks confirmed exfiltration** — catching every instance where the model actually follows injected instructions. Cerberus is released as open-source developer tooling with 718 tests at 98%+ coverage. Integration requires a single function call: `guard(executors, config, outboundTools)`.
 
 ---
 
@@ -28,7 +28,7 @@ We present **Cerberus**, a runtime security platform that closes this gap throug
 
 4. **Cerberus: Open-Source Runtime Defense** — A model-agnostic, framework-agnostic detection platform that operates at the tool-call level with four independent detection layers and six advanced sub-classifiers (secrets detection, injection scanning, encoding/obfuscation detection, MCP tool poisoning defense, suspicious domain classification, behavioral drift analysis).
 
-5. **Closed-Loop Detection Validation** — We prove the defense with the same scientific rigor used to prove the attack. N=480 detection runs, 3 providers, Wilson CIs: 0% FP rate, 100% deterministic accuracy on L1/L2, L3 detection that tracks confirmed exfiltration with no false alerts on clean sessions.
+5. **Closed-Loop Detection Validation** — We prove the defense with the same scientific rigor used to prove the attack. No prior prompt injection study has paired attack measurement with defensive validation in the same experimental framework. N=480 detection runs, 3 providers, Wilson CIs: 0% FP rate, 100% deterministic accuracy on L1/L2, L3 (outbound intent) detection that tracks confirmed exfiltration with no false alerts on clean sessions.
 
 ---
 
@@ -39,7 +39,7 @@ We present **Cerberus**, a runtime security platform that closes this gap throug
 - Live demo: 3 tool calls, 12 seconds, full PII exfiltration from a GPT-4o-mini agent
 - Show the attack anatomy — `readPrivateData` → `fetchExternalContent` (injected) → `sendOutboundReport`
 - Audience participation: guess which payload category succeeds (trick question — on GPT-4o-mini, they all do)
-- Cost: ~$0.001 per exfiltration. At scale: steal a million customer records for under $1,000.
+- Cost: ~$0.001 per exfiltration (at current GPT-4o-mini API rates). At scale: steal a million customer records for under $1,000.
 
 ### 2. Why Everything You've Tried Doesn't Work (10 min)
 
@@ -85,9 +85,9 @@ We present **Cerberus**, a runtime security platform that closes this gap throug
 
 Cerberus is an open-source runtime security platform that detects and interrupts prompt injection attacks in agentic AI systems. It addresses the **Lethal Trifecta** — the fundamental attack pattern where AI agents with privileged data access, external content processing, and outbound action capabilities are exploited through injected instructions.
 
-**The attack is real and cheap.** We validated 30 injection payloads across 6 categories against three major LLM providers with full statistical rigor (N=285 runs, Wilson 95% CIs): GPT-4o-mini 93.3% attack success [86.2%, 96.9%], Gemini 2.5 Flash 92.2% [84.8%, 96.2%]. Two of the three most widely deployed AI providers are fully exploitable today. The attack costs $0.001 per exfiltration using free-tier API access.
+**The attack is real and cheap.** We validated 30 injection payloads across 6 categories against three major LLM providers with full statistical rigor (N=285 runs, Wilson 95% CIs): GPT-4o-mini 93.3% [86.2%, 96.9%], Gemini 2.5 Flash 92.2% [84.8%, 96.2%], Claude Sonnet 13.3% [7.8%, 21.9%]. Two of the three most widely deployed providers are fully exploitable today; Claude's partial resistance does not eliminate the risk — developers cannot guarantee which model their downstream integrations will run on, and its safety training targets current payload patterns, not the underlying architectural condition. The attack costs approximately $0.001 per exfiltration (at current GPT-4o-mini API rates), requiring only free-tier access.
 
-**The defense is proven.** We ran the full payload suite a second time in observe-only mode across all three providers (N=480 runs) to validate detection accuracy with the same statistical rigor used to measure the attack. Results: **0.0% false positive rate** [0.0%, 11.4%] on 30 clean control runs; **100% accuracy on L1 and L2** (deterministic layers — every privileged data read and every untrusted content fetch is tagged); **L3 tracks confirmed exfiltration** with zero false alerts on clean agent sessions.
+**The defense is proven.** We ran the full payload suite a second time in observe-only mode across all three providers (N=480 runs) to validate detection accuracy with the same statistical rigor used to measure the attack. Results: **0.0% false positive rate** [0.0%, 11.4%] on 30 clean control runs; **100% accuracy on L1 and L2** (deterministic layers — every privileged data read and every untrusted content fetch is tagged); **L3 (outbound intent classification) tracks confirmed exfiltration** with zero false alerts on clean agent sessions.
 
 The tool wraps existing tool executors with four detection layers: (1) data source classification, (2) token provenance tracking, (3) outbound intent classification, and (4) cross-session memory contamination detection (the first deployable defense against the MINJA NeurIPS 2025 attack class). A correlation engine aggregates signals into a 4-bit risk vector and interrupts tool calls that exceed a configurable threshold.
 
