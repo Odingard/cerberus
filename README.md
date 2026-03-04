@@ -217,8 +217,9 @@ import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
 
-const provider = new NodeTracerProvider();
-provider.addSpanProcessor(new BatchSpanProcessor(new OTLPTraceExporter()));
+const provider = new NodeTracerProvider({
+  spanProcessors: [new BatchSpanProcessor(new OTLPTraceExporter())],
+});
 provider.register();
 
 // 2. Enable in your Cerberus config — no other changes needed
@@ -237,6 +238,17 @@ const config: CerberusConfig = {
 - `cerberus.risk_score` — histogram (0–4)
 
 Works with any OTel-compatible backend: Jaeger, Grafana Tempo, Honeycomb, Datadog, AWS X-Ray. Zero overhead when disabled — `@opentelemetry/api` is a no-op singleton when no SDK is configured.
+
+### Pre-Built Grafana Dashboard
+
+Spin up the full monitoring stack — OTel Collector, Prometheus, and a pre-built Grafana dashboard — in one command:
+
+```bash
+docker compose -f monitoring/docker-compose.yml up -d
+open http://localhost:3000
+```
+
+No login required. The dashboard auto-provisions with panels for call rate, block rate, risk score distribution, per-tool breakdown, and action classification. See [monitoring/README.md](monitoring/README.md) for connection instructions.
 
 ---
 
@@ -478,6 +490,11 @@ cerberus/
 │   ├── classifiers/      # Sub-classifier unit tests
 │   ├── integration/      # 5-phase severity test suite
 │   └── ...               # Mirrors src/ structure
+├── monitoring/           # Grafana + Prometheus + OTel Collector stack
+│   ├── docker-compose.yml
+│   ├── otel-collector.yml
+│   ├── prometheus.yml
+│   └── grafana/          # Auto-provisioned datasource + dashboard
 ├── docs/                 # Architecture, research, API reference
 └── examples/             # Runnable demo integrations
 ```
@@ -524,6 +541,7 @@ cerberus/
 | [API Reference](docs/api.md) | `guard()`, config options, signal types, framework adapters |
 | [Architecture](docs/architecture.md) | Detection pipeline, layer design, correlation engine |
 | [Research Results](docs/research-results.md) | N=285 validation, per-payload breakdown, statistical methodology |
+| [Monitoring](monitoring/README.md) | Grafana dashboard — OTel metrics, block rates, risk scores |
 
 ---
 

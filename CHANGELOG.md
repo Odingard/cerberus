@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] — 2026-03-04
+
+### Added
+
+- **Grafana monitoring dashboard** — pre-built dashboard with 14 panels covering call rate, block rate, risk score distribution, per-tool breakdown, and action classification; auto-provisioned via `monitoring/docker-compose.yml` (OTel Collector + Prometheus + Grafana); no login required; one-command start: `docker compose -f monitoring/docker-compose.yml up -d`
+
 ## [0.3.0] — 2026-03-04
 
 ### Added
