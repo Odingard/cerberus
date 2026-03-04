@@ -427,6 +427,17 @@ cerberus/
 
 ---
 
+## Documentation
+
+| Doc | Contents |
+|-----|----------|
+| [Getting Started](docs/getting-started.md) | `npm install` → first blocked attack in under 5 min |
+| [API Reference](docs/api.md) | `guard()`, config options, signal types, framework adapters |
+| [Architecture](docs/architecture.md) | Detection pipeline, layer design, correlation engine |
+| [Research Results](docs/research-results.md) | N=285 validation, per-payload breakdown, statistical methodology |
+
+---
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and guidelines.
