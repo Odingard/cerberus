@@ -245,7 +245,7 @@ Spin up the full monitoring stack — OTel Collector, Prometheus, and a pre-buil
 
 ```bash
 docker compose -f monitoring/docker-compose.yml up -d
-open http://localhost:3000
+open http://localhost:3030
 ```
 
 No login required. The dashboard auto-provisions with panels for call rate, block rate, risk score distribution, per-tool breakdown, and action classification. See [monitoring/README.md](monitoring/README.md) for connection instructions.

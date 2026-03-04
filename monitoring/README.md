@@ -8,7 +8,7 @@ Pre-built Grafana dashboard for real-time Cerberus threat detection metrics.
 |---------|------|---------|
 | OTel Collector | 4317 (gRPC), 4318 (HTTP) | Receives OTLP spans/metrics from your app |
 | Prometheus | 9090 | Scrapes metrics from the OTel Collector |
-| Grafana | 3000 | Pre-built Cerberus dashboard |
+| Grafana | 3030 | Pre-built Cerberus dashboard |
 
 ## Quick Start
 
@@ -17,10 +17,10 @@ Pre-built Grafana dashboard for real-time Cerberus threat detection metrics.
 docker compose -f monitoring/docker-compose.yml up -d
 
 # 2. Open Grafana (no login required)
-open http://localhost:3000
+open http://localhost:3030
 ```
 
-The Cerberus dashboard opens automatically at `http://localhost:3000`.
+The Cerberus dashboard opens automatically at `http://localhost:3030`.
 
 ## Connecting Your App
 
