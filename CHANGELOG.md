@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Landing page** (`docs/index.html`) — cerberus.dev; dark security aesthetic; hero with live terminal demo, stats bar (N=285, 52μs, 747 tests, 0% FP), research validation tables, code quickstart, feature grid; GitHub Pages via `.github/workflows/pages.yml`
+
 ## [0.3.1] — 2026-03-04
 <!-- Grafana dashboard + Prometheus alerting + Alertmanager -->
 
