@@ -7,7 +7,8 @@ Pre-built Grafana dashboard for real-time Cerberus threat detection metrics.
 | Service | Port | Purpose |
 |---------|------|---------|
 | OTel Collector | 4317 (gRPC), 4318 (HTTP) | Receives OTLP spans/metrics from your app |
-| Prometheus | 9090 | Scrapes metrics from the OTel Collector |
+| Prometheus | 9090 | Scrapes metrics, evaluates alert rules |
+| Alertmanager | 9093 | Routes alerts to Slack/PagerDuty/email |
 | Grafana | 3030 | Pre-built Cerberus dashboard |
 
 ## Quick Start
@@ -104,6 +105,23 @@ Cerberus emits three OTel metrics when `opentelemetry: true`:
 | `cerberus.risk_score` | Histogram | Risk score per call (0–4) |
 
 Labels on every metric: `cerberus.tool_name`, `cerberus.action`.
+
+## Alerting
+
+Six Prometheus alert rules ship in `alerts.yml`, evaluated every 30 seconds:
+
+| Alert | Severity | Condition |
+|-------|----------|-----------|
+| `CerberusLethalTrifectaDetected` | critical | Any call blocked in last 5 min |
+| `CerberusBlockRateCritical` | critical | Block rate > 50% for 1 min |
+| `CerberusBlockRateHigh` | warning | Block rate > 10% for 2 min |
+| `CerberusRiskScoreElevated` | warning | Avg risk score ≥ 2 for 10 min |
+| `CerberusHighCallVolume` | warning | Call rate > 100/sec for 5 min |
+| `CerberusMetricsMissing` | warning | No metrics received for 5 min |
+
+Alerts fire in Prometheus and are visible in Grafana's Alerting tab. To route to Slack, PagerDuty, or email, edit `alertmanager.yml` — the receivers section has commented-out templates for each.
+
+Alertmanager UI: `http://localhost:9093`
 
 ## Stopping
 

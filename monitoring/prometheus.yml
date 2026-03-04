@@ -4,6 +4,14 @@ global:
   external_labels:
     monitor: cerberus
 
+rule_files:
+  - /etc/prometheus/alerts.yml
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['alertmanager:9093']
+
 scrape_configs:
   # Cerberus metrics via OTel Collector Prometheus exporter
   - job_name: cerberus

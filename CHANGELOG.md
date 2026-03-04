@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Prometheus alerting rules** (`monitoring/alerts.yml`) — 6 rules: `CerberusLethalTrifectaDetected` (critical, any blocked call), `CerberusBlockRateCritical` (critical, >50% for 1 min), `CerberusBlockRateHigh` (warning, >10% for 2 min), `CerberusRiskScoreElevated` (warning, avg score ≥2 for 10 min), `CerberusHighCallVolume` (warning, >100 calls/sec for 5 min), `CerberusMetricsMissing` (warning, no metrics for 5 min)
+- **Alertmanager** (`monitoring/alertmanager.yml`) — routes alerts; log-only by default; commented templates for Slack, PagerDuty, email; severity-based routing; critical security alerts repeat every hour
+- **Alertmanager datasource** auto-provisioned in Grafana — alerts visible in Grafana Alerting tab
 - **Grafana monitoring dashboard** — pre-built dashboard with 14 panels covering call rate, block rate, risk score distribution, per-tool breakdown, and action classification; auto-provisioned via `monitoring/docker-compose.yml` (OTel Collector + Prometheus + Grafana); no login required; one-command start: `docker compose -f monitoring/docker-compose.yml up -d`
 
 ## [0.3.0] — 2026-03-04
