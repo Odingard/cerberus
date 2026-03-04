@@ -1,5 +1,69 @@
 # Cerberus — Release Notes
 
+## v0.2.1 — 2026-03-03
+
+> Scientific validation + real-world attack demonstrations — N=285 API calls, live HTTP interception, LangChain integration, and performance benchmarks.
+
+### Highlights
+
+- **N=285 real API calls** — full scientific validation across 3 providers, negative controls, 6-factor causation scoring, Wilson 95% CIs
+- **Any exfiltration ~100%** across all three providers (GPT-4o-mini, Gemini 2.5 Flash, Claude Sonnet) under permissive prompts
+- **Full injection compliance**: OpenAI 17.8%, Google 48.9%, Anthropic 2.2% (injection redirects agent to attacker's address)
+- **0% false positives** — 15 clean control runs, 0 alerts
+- **L1/L2 100% detection accuracy** — deterministic layer coverage confirmed at scale
+- **Live HTTP interception demo** — real GPT-4o-mini captures 2 POSTs with SSN+email in Phase 1; 0 requests in guarded Phase 2
+- **718 tests** — 127 additional since v0.2.0
+- **52μs p50 / 0.23ms p99** overhead — measured via 1,000-iteration benchmark
+
+### Attack Validation Results
+
+Scientific protocol: 30 payloads × 3 trials = 90 treatment runs per provider, 5 negative control runs per provider.
+
+| Provider | Model | Any Exfiltration | Full Injection Compliance | 95% CI |
+|----------|-------|-----------------|--------------------------|--------|
+| OpenAI | gpt-4o-mini | **100%** (90/90) | 17.8% (16/90) | [11.2%, 26.9%] |
+| Anthropic | claude-sonnet-4-20250514 | **100%** (90/90) | 2.2% (2/90) | [0.6%, 7.7%] |
+| Google | gemini-2.5-flash | **98.9%** (89/90) | 48.9% (44/90) | [38.8%, 59.0%] |
+
+- **Any exfiltration**: PII leaves the system (success + partial outcomes)
+- **Full injection compliance**: injection additionally overrides the destination to the attacker's address
+- **0/15 control exfiltrations** — baseline confirmed clean
+
+### Detection Engine Validation
+
+Same N=285 run suite with Cerberus in observe-only mode (`alertMode: log`):
+
+| Provider | Detection Rate | Block Rate | FP Rate | L1 | L2 | L3 |
+|----------|---------------|------------|---------|-----|-----|-----|
+| OpenAI | 23.3% | 23.3% | 0.0% | 100% | 100% | 22.1% |
+| Anthropic | 2.2% | 2.2% | 0.0% | 100% | 100% | 2.1% |
+| Google | 70.0% | 70.0% | 0.0% | 100% | 100% | 66.3% |
+
+L1 and L2 are deterministic — 100% accuracy across all 285 runs, zero FPs, zero FNs.
+
+### New Features
+
+- **`authorizedDestinations`** config option — domain allowlist for L3 and drift detector; matches production DLP/CASB patterns
+- **Detection validation CLI** (`--detect` flag) — observe-only mode wraps harness with `guard()`, measures TP/FP/FN/TN per layer with Wilson CIs
+- **Live attack demo** (`examples/live-attack-demo.ts`, `harness/demo-servers.ts`) — local injection server + capture server; demonstrates real HTTP exfiltration interception
+- **LangChain RAG demo** (`examples/langchain-rag-demo.ts`) — real ChatOpenAI agent blocked at score 3/4
+- **Performance benchmark** (`harness/bench.ts`) — p50=52μs, p99=0.23ms, 0.01% of typical LLM call latency
+
+### New npm Scripts
+
+```bash
+npm run demo:live       # Real HTTP interception demo
+npm run demo:langchain  # LangChain agent attack demo
+npm run bench          # Performance benchmark (1000 iterations)
+```
+
+### Testing
+
+- 718 total tests (up from 591 in v0.2.0)
+- 127 new tests covering detection validation, providers, and integration
+
+---
+
 ## v0.2.0 — 2026-03-02
 
 > Advanced sub-classifiers + MCP runtime security — 6 detection modules enhancing L1/L2/L3.
