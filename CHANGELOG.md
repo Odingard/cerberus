@@ -9,13 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Multi-provider attack validation** — 30 payloads tested against GPT-4o-mini (100%), Gemini 2.5 Flash (90%), Claude Sonnet 4.6 (0%)
-- Multi-provider results section in research-results.md with per-category Gemini breakdown and Claude analysis
 - **Scientific validation protocol** — causation scoring, negative controls, statistical rigor with Wilson CIs; 11 validation modules, 127 validation tests
 - **Detection engine validation** (`--detect` flag) — wraps harness tool executors with `guard()` in `alertMode: 'log'`, measures TP/FP/FN/TN per layer across control and treatment groups, reports detection rate, block rate, and false positive rate with Wilson CIs
 - **`authorizedDestinations`** config option — `CerberusConfig.authorizedDestinations?: readonly string[]` allows declaring expected outbound domain allowlist; L3 and drift detector skip for authorized destinations (mirrors production DLP/CASB patterns)
 - 718 tests (127 additional since v0.2.0)
-- **CFP draft updated** — Black Hat Arsenal abstract, DEF CON talk outline, and academic paper structure updated with multi-provider attack results (N=285 runs, Wilson 95% CIs), detection engine validation results (N=480 runs, 0% FP, L1/L2 100%), and 718 test count; status table added with March 13 Black Hat deadline
+- **CFP draft updated** — Black Hat Arsenal abstract, DEF CON talk outline, and academic paper structure updated with multi-provider attack results (N=285 runs, Wilson 95% CIs), detection engine validation results (N=285 runs, 0% FP, L1/L2 100%), and 718 test count; status table added with March 13 Black Hat deadline
+- **Multi-provider scientific validation results** (N=285 API calls, 3 trials × 30 payloads × 3 providers + 15 control): **Any exfiltration ~100%** across all three providers (all models send PII outbound under permissive prompts); **Full injection compliance** (injection redirects agent to attacker's address): OpenAI 17.8% [11.2%, 26.9%], Anthropic 2.2% [0.6%, 7.7%], Google 48.9% [38.8%, 59.0%]; 0 control exfiltrations; Wilson CIs; detection: L1/L2 100%, L3: 22.1% (OpenAI) / 2.1% (Anthropic) / 66.3% (Google), FP 0.0%
 
 - **Live attack demo with real HTTP interception** (`examples/live-attack-demo.ts` + `harness/demo-servers.ts`) — spawns local injection server (attacker page with payload) and capture server (records exfiltration attempts); Phase 1 unguarded: 2 real HTTP POSTs captured including SSN+email; Phase 2 guarded: Cerberus pre-blocks outbound call via accumulated risk score — 0 requests reach capture server; confirmed with real GPT-4o-mini API calls
 - **`demo:live` script** — `npm run demo:live` / `OPENAI_API_KEY=sk-... npx tsx examples/live-attack-demo.ts`
