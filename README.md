@@ -93,6 +93,24 @@ Sub-classifiers emit signals with existing layer tags (L1/L2/L3), so they contri
 
 ---
 
+## Try It Now
+
+**Docker one-liner** — see the attack and the block, no install required:
+
+```bash
+docker run --rm ghcr.io/odingard/cerberus-demo
+```
+
+Or build from source:
+
+```bash
+npm run demo:docker:build && npm run demo:docker:run
+```
+
+You'll see Phase 1 (PII exfiltrated in 3 tool calls) followed by Phase 2 (same attack, blocked by Cerberus). No API keys. No config.
+
+---
+
 ## Quickstart
 
 ```bash

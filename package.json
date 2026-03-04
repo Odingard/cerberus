@@ -29,6 +29,8 @@
     "demo": "cd demo && npx vite",
     "demo:build": "cd demo && npx vite build",
     "demo:preview": "cd demo && npx vite preview",
+    "demo:docker:build": "docker build -t cerberus-demo .",
+    "demo:docker:run": "docker run --rm cerberus-demo",
     "prebuild": "npm run clean",
     "prepublishOnly": "npm run ci && npm run build",
     "prepare": "husky"

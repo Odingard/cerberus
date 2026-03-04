@@ -1,0 +1,15 @@
+node_modules
+dist
+coverage
+traces
+demo
+examples
+harness
+tests
+docs
+*.md
+.git
+.gitignore
+.eslintrc*
+.prettierrc*
+.husky
