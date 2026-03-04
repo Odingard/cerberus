@@ -261,6 +261,25 @@ See [docs/research-results.md](docs/research-results.md) for full methodology, p
 
 ---
 
+## Performance
+
+Cerberus detection overhead is measured against raw tool execution — no LLM or network calls involved, pure classification pipeline cost.
+
+```
+npx tsx harness/bench.ts
+```
+
+| Scenario                    | Baseline p50 | Guarded p50 | Overhead p50 | Overhead p99 |
+| --------------------------- | ------------ | ----------- | ------------ | ------------ |
+| readPrivateData (L1)        | 4μs          | 36μs        | +32μs        | <0.12ms      |
+| fetchExternalContent (L2)   | 2μs          | 19μs        | +17μs        | <0.05ms      |
+| sendOutboundReport (L3)     | 3μs          | 4μs         | +0μs         | <0.03ms      |
+| **Full 3-call session**     | 6μs          | 58μs        | **+52μs**    | **+0.23ms**  |
+
+**Key number**: the full Lethal Trifecta detection session (L1 → L2 → L3) adds **52μs (p50)** and **0.23ms (p99)** of overhead — **0.01% of a typical 600ms LLM API call**.
+
+---
+
 ## Tech Stack
 
 - **Language**: TypeScript (strict mode)
@@ -290,8 +309,9 @@ cerberus/
 │   ├── agent.ts          # 3-tool attack agent (OpenAI)
 │   ├── agent-multi.ts    # Multi-provider attack agent
 │   ├── tools.ts          # Tool A, B, C definitions
-│   ├── payloads.ts       # 21 injection payloads across 5 categories
+│   ├── payloads.ts       # 30 injection payloads across 6 categories
 │   ├── runner.ts         # Automated attack executor + multi-trial stress
+│   ├── bench.ts          # Performance benchmark — Cerberus overhead vs raw execution
 │   └── analyze.ts        # Run comparison + trace analysis CLI
 ├── tests/
 │   ├── classifiers/      # Sub-classifier unit tests

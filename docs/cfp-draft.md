@@ -137,7 +137,7 @@ The tool wraps existing tool executors with four detection layers: (1) data sour
 
 - TypeScript/Node.js, single-function API (`guard()`)
 - SQLite-backed provenance ledger for audit trail
-- Performance characteristics: latency overhead per tool call
+- Performance characteristics: 52μs overhead p50 per full 3-call session (L1→L2→L3), 0.23ms p99 — 0.01% of a typical 600ms LLM API call (N=1000 iterations, Node.js, simulated tools, no network I/O)
 - Framework adapters: LangChain, Vercel AI SDK, OpenAI Agents SDK
 
 ### 6. Evaluation
