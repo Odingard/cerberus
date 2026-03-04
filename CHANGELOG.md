@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Detection engine validation** (`--detect` flag) — wraps harness tool executors with `guard()` in `alertMode: 'log'`, measures TP/FP/FN/TN per layer across control and treatment groups, reports detection rate, block rate, and false positive rate with Wilson CIs
 - **`authorizedDestinations`** config option — `CerberusConfig.authorizedDestinations?: readonly string[]` allows declaring expected outbound domain allowlist; L3 and drift detector skip for authorized destinations (mirrors production DLP/CASB patterns)
 - 718 tests (127 additional since v0.2.0)
+- **CFP draft updated** — Black Hat Arsenal abstract, DEF CON talk outline, and academic paper structure updated with multi-provider attack results (N=285 runs, Wilson 95% CIs), detection engine validation results (N=480 runs, 0% FP, L1/L2 100%), and 718 test count; status table added with March 13 Black Hat deadline
 
 ### Changed
 
