@@ -6,13 +6,21 @@
 
 ## Prefer Docker?
 
-No Node.js required:
+No API keys or config required:
+
+```bash
+git clone https://github.com/Odingard/cerberus
+cd cerberus
+npm run demo:docker:build && npm run demo:docker:run
+```
+
+Or, once the registry image is available (published automatically on each release):
 
 ```bash
 docker run --rm ghcr.io/odingard/cerberus-demo
 ```
 
-Shows the full Lethal Trifecta attack then the blocked version — no config, no API keys.
+Shows the full Lethal Trifecta attack then the blocked version in ~10 seconds.
 
 ---
 
