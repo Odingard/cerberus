@@ -1006,23 +1006,6 @@
   });
 </script>
 
-<script>
-  // Apply GRAFANA_URL injected by server (falls back to localhost for local dev)
-  (function () {
-    const base = (window.__GRAFANA_URL__ || 'http://localhost:3030').replace(/\/$/, '');
-    // Nav "Full Dashboard" link
-    const navLink = document.querySelector('a[href="http://localhost:3030"]');
-    if (navLink) navLink.href = base;
-    // Open Dashboard link
-    const dashLink = document.querySelector('a[href="http://localhost:3030/d/cerberus-main"]');
-    if (dashLink) dashLink.href = base + '/d/cerberus-main';
-    // Grafana iframe
-    const iframe = document.getElementById('grafana-frame');
-    if (iframe) {
-      iframe.src = base + '/d-solo/cerberus-main/cerberus-ai-security-monitor?orgId=1&panelId=10&refresh=5s&theme=dark';
-    }
-  })();
-</script>
 
 </body>
 </html>

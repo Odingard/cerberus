@@ -24,7 +24,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC_DIR = path.join(__dirname, '../public');
 const INDEX_HTML = path.join(PUBLIC_DIR, 'index.html');
 const PORT = parseInt(process.env['PORT'] ?? '4040', 10);
-const GRAFANA_URL = process.env['GRAFANA_URL'] ?? 'http://localhost:3030';
 
 // ── SSE helpers ─────────────────────────────────────────────────────────────
 
@@ -69,11 +68,7 @@ async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse
   // ── GET / → serve index.html ────────────────────────────────────────────
   if (method === 'GET' && (url === '/' || url === '/index.html')) {
     try {
-      const raw = fs.readFileSync(INDEX_HTML, 'utf8');
-      const html = raw.replace(
-        '</head>',
-        `<script>window.__GRAFANA_URL__=${JSON.stringify(GRAFANA_URL)};</script></head>`,
-      );
+      const html = fs.readFileSync(INDEX_HTML, 'utf8');
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
       res.writeHead(200).end(html);
     } catch {
