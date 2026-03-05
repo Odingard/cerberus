@@ -1006,6 +1006,21 @@
   });
 </script>
 
+<script>
+  // Apply GRAFANA_URL injected by server at serve-time.
+  // Defaults to localhost:3030 for local docker compose; set GRAFANA_URL env var for hosted deployments.
+  (function () {
+    const base = (window.__GRAFANA_URL__ || 'http://localhost:3030').replace(/\/$/, '');
+    const navLink = document.querySelector('a[href="http://localhost:3030"]');
+    if (navLink) navLink.href = base;
+    const dashLink = document.querySelector('a[href="http://localhost:3030/d/cerberus-main"]');
+    if (dashLink) dashLink.href = base + '/d/cerberus-main';
+    const iframe = document.getElementById('grafana-frame');
+    if (iframe) {
+      iframe.src = base + '/d-solo/cerberus-main/cerberus-ai-security-monitor?orgId=1&panelId=10&refresh=5s&theme=dark';
+    }
+  })();
+</script>
 
 </body>
 </html>
