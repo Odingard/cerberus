@@ -57,6 +57,10 @@ function ensureMetrics(): void {
   _riskScore = meter.createHistogram('cerberus.risk_score', {
     description: 'Risk score (0–4) for each tool call',
     unit: '1',
+    // Explicit boundaries ensure le="0","1","2","3","4" buckets exist in Prometheus
+    // so that Grafana "High-Risk Calls (score ≥ 3)" queries work correctly.
+    // Default OTel boundaries are latency-oriented (0,5,10,25,50ms…) and miss these values.
+    advice: { explicitBucketBoundaries: [0, 1, 2, 3, 4] },
   });
 }
 
