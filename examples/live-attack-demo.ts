@@ -17,6 +17,36 @@
  * Note: Servers bind to 127.0.0.1 only. No external network access required.
  */
 
+// ── OTel bootstrap (optional — only activates when OTEL_ENDPOINT is set) ──────
+// Must be first so guard()'s built-in instrumentation emits real spans/metrics.
+const OTEL_ENDPOINT = process.env['OTEL_ENDPOINT'];
+if (OTEL_ENDPOINT) {
+  const { NodeTracerProvider } = await import('@opentelemetry/sdk-trace-node');
+  const { BatchSpanProcessor } = await import('@opentelemetry/sdk-trace-base');
+  const { OTLPTraceExporter } = await import('@opentelemetry/exporter-trace-otlp-http');
+  const { MeterProvider, PeriodicExportingMetricReader } = await import('@opentelemetry/sdk-metrics');
+  const { OTLPMetricExporter } = await import('@opentelemetry/exporter-metrics-otlp-http');
+  const { metrics } = await import('@opentelemetry/api');
+
+  const traceProvider = new NodeTracerProvider({
+    spanProcessors: [
+      new BatchSpanProcessor(new OTLPTraceExporter({ url: `${OTEL_ENDPOINT}/v1/traces` })),
+    ],
+  });
+  traceProvider.register();
+
+  const meterProvider = new MeterProvider({
+    readers: [
+      new PeriodicExportingMetricReader({
+        exporter: new OTLPMetricExporter({ url: `${OTEL_ENDPOINT}/v1/metrics` }),
+        exportIntervalMillis: 5000,
+      }),
+    ],
+  });
+  metrics.setGlobalMeterProvider(meterProvider);
+  console.log(`[otel] Exporting to ${OTEL_ENDPOINT}`);
+}
+
 import OpenAI from 'openai';
 import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
 import { guard } from '../src/index.js';
