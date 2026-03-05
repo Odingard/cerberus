@@ -1,6 +1,6 @@
 {
   "name": "@cerberus-ai/core",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Agentic AI runtime security platform — detects, correlates, and interrupts the Lethal Trifecta attack pattern across all agentic AI systems.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

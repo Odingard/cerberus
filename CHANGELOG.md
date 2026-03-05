@@ -7,12 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.2] — 2026-03-05
+
+### Added
+
 - **Outbound Correlator sub-classifier** (`src/classifiers/outbound-correlator.ts`) — 7th sub-classifier; new `INJECTION_CORRELATED_OUTBOUND` L3 signal; catches summarized/transformed exfiltration where PII is not verbatim in outbound args (gap where attackers instruct agents to paraphrase before sending); fires when untrusted content entered context + privileged data accessed + outbound to non-authorized destination; zero FP on clean runs where untrustedSources is empty; wired into interceptor after domain classifier
 - **Domain Classifier keyword heuristics** — expanded blocklists (canarytokens.com, interactsh.com, oast.pro/me, 4 new disposable email domains, 2 URL shorteners); new `social_engineering_domain` risk factor detects compliance/audit keyword + hyphen pattern (`audit-partner.io`, `compliance-verify.net`, `data-export.xyz`); `hasSuspiciousKeywordPattern()` exported; `SUSPICIOUS_DESTINATION` now fires for social-engineering domains at `domainRisk: 'high'`
 - **26 new tests** (773 total): `tests/classifiers/outbound-correlator.test.ts` (14 tests); 12 new domain-classifier tests for keyword heuristics
-- **Grafana dashboard metric fix** — corrected 10 occurrences of `tool_calls_total_total` → `tool_calls_total` in `cerberus.json`
-- **Landing page** (`docs/index.html`) — cerberus.dev; dark security aesthetic; hero with live terminal demo, stats bar (N=285, 52μs, 773 tests, 0% FP), research validation tables, code quickstart, feature grid; GitHub Pages via `.github/workflows/pages.yml`
-- **Cerberus Playground** (`playground/`) — interactive attack demo UI + Node.js backend; 6 pre-built attack scenarios (clean run, data exfiltration, prompt injection, full Lethal Trifecta, Base64-encoded injection, social engineering); real `guard()` execution with `opentelemetry: true` so every demo run sends live metrics to Grafana; SSE stream for step-by-step risk vector updates; embedded Grafana "Tool Call Rate" panel iframe; 5th service in `monitoring/docker-compose.yml` on port 4040
+
+### Fixed
+
+- **Grafana dashboard metric names** — corrected 10 occurrences of `tool_calls_total_total` → `tool_calls_total` in `cerberus.json`; OTel collector was appending `_total` once, dashboard had double-suffix that matched nothing
+
+### Platform
+
+- **Landing page** (`docs/index.html`) — GitHub Pages via `.github/workflows/pages.yml`
+- **Cerberus Playground** (`playground/`) — interactive attack demo UI + Node.js backend; 6 attack scenarios; SSE stream; embedded Grafana panel; 5th service in `monitoring/docker-compose.yml` on port 4040
 
 ## [0.3.1] — 2026-03-04
 <!-- Grafana dashboard + Prometheus alerting + Alertmanager -->
