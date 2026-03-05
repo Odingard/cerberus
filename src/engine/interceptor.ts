@@ -25,6 +25,7 @@ import { detectEncodingInResult } from '../classifiers/encoding-detector.js';
 import { classifyOutboundDomain } from '../classifiers/domain-classifier.js';
 import { checkToolCallPoisoning } from '../classifiers/mcp-scanner.js';
 import { detectBehavioralDrift } from '../classifiers/drift-detector.js';
+import { detectInjectionCorrelatedOutbound } from '../classifiers/outbound-correlator.js';
 import { recordToolCall } from '../telemetry/otel.js';
 
 /** Generic tool executor function signature. */
@@ -41,7 +42,7 @@ export type OnFullAssessmentCallback = (assessment: RiskAssessment) => void;
  * 1. Execute the tool
  * 2. Run L1 (data source classification) → Secrets Detector
  * 3. Run L2 (token provenance tagging) → Injection Scanner + Encoding Detector + MCP Scanner
- * 4. Run L3 (outbound intent classification) → Domain Classifier
+ * 4. Run L3 (outbound intent classification) → Domain Classifier → Outbound Correlator
  * 5. Run L4 (memory contamination — optional)
  * 6. Run Behavioral Drift Detector
  * 7. Correlate signals into a risk assessment
@@ -148,6 +149,19 @@ export function interceptToolCall(
     if (domainSignal) {
       signals.push(domainSignal);
       recordSignal(session, domainSignal);
+    }
+
+    // L3 sub-classifier: Injection-correlated outbound detector — catches summarized/transformed
+    // exfiltration where PII is not verbatim in args but context has injection + privileged data
+    const correlatedOutboundSignal = detectInjectionCorrelatedOutbound(
+      ctx,
+      session,
+      outboundTools,
+      config.authorizedDestinations,
+    );
+    if (correlatedOutboundSignal) {
+      signals.push(correlatedOutboundSignal);
+      recordSignal(session, correlatedOutboundSignal);
     }
 
     // L4: Memory contamination detection (optional — skip if not configured)

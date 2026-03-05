@@ -28,7 +28,7 @@ This is not theoretical. It is reproducible today with free-tier API access and 
 
 ## Architecture
 
-Cerberus is four detection layers plus six advanced sub-classifiers, sharing one correlation engine:
+Cerberus is four detection layers plus seven advanced sub-classifiers, sharing one correlation engine:
 
 ```
                     ┌──────────────────────────────────────────────────────┐
@@ -76,16 +76,17 @@ Cerberus is four detection layers plus six advanced sub-classifiers, sharing one
 
 ### Advanced Sub-Classifiers
 
-Six sub-classifiers enhance the core layers with deeper heuristic coverage:
+Seven sub-classifiers enhance the core layers with deeper heuristic coverage:
 
-| Sub-Classifier            | Enhances | Signal                        | Function                                                                |
-| ------------------------- | -------- | ----------------------------- | ----------------------------------------------------------------------- |
-| **Secrets Detector**      | L1       | `SECRETS_DETECTED`            | Detects AWS keys, GitHub tokens, JWTs, private keys, connection strings |
-| **Injection Scanner**     | L2       | `INJECTION_PATTERNS_DETECTED` | Weighted heuristic detection of prompt injection patterns               |
-| **Encoding Detector**     | L2       | `ENCODING_DETECTED`           | Detects base64, hex, unicode, URL encoding, ROT13 bypass attempts       |
-| **MCP Poisoning Scanner** | L2       | `TOOL_POISONING_DETECTED`     | Scans MCP tool descriptions for hidden instructions and manipulation    |
-| **Domain Classifier**     | L3       | `SUSPICIOUS_DESTINATION`      | Flags disposable emails, webhook services, IP addresses, URL shorteners |
-| **Drift Detector**        | L2/L3    | `BEHAVIORAL_DRIFT_DETECTED`   | Detects post-injection outbound calls and privilege escalation patterns |
+| Sub-Classifier                 | Enhances | Signal                           | Function                                                                |
+| ------------------------------ | -------- | -------------------------------- | ----------------------------------------------------------------------- |
+| **Secrets Detector**           | L1       | `SECRETS_DETECTED`               | Detects AWS keys, GitHub tokens, JWTs, private keys, connection strings |
+| **Injection Scanner**          | L2       | `INJECTION_PATTERNS_DETECTED`    | Weighted heuristic detection of prompt injection patterns               |
+| **Encoding Detector**          | L2       | `ENCODING_DETECTED`              | Detects base64, hex, unicode, URL encoding, ROT13 bypass attempts       |
+| **MCP Poisoning Scanner**      | L2       | `TOOL_POISONING_DETECTED`        | Scans MCP tool descriptions for hidden instructions and manipulation    |
+| **Domain Classifier**          | L3       | `SUSPICIOUS_DESTINATION`         | Flags webhook services, disposable emails, social-engineering domains   |
+| **Outbound Correlator**        | L3       | `INJECTION_CORRELATED_OUTBOUND`  | Catches summarized/transformed exfiltration where PII is not verbatim  |
+| **Drift Detector**             | L2/L3    | `BEHAVIORAL_DRIFT_DETECTED`      | Detects post-injection outbound calls and privilege escalation patterns |
 
 Sub-classifiers emit signals with existing layer tags (L1/L2/L3), so they contribute to the same 4-bit risk vector without score inflation. The correlation engine requires no changes.
 
@@ -456,7 +457,7 @@ npx tsx harness/bench.ts
 - **Language**: TypeScript (strict mode)
 - **Runtime**: Node.js >= 20
 - **Primary Harness**: OpenAI, Anthropic, Google Gemini (multi-provider)
-- **Testing**: Vitest (747 tests, 98%+ coverage)
+- **Testing**: Vitest (773 tests, 98%+ coverage)
 - **Memory Store**: SQLite via better-sqlite3
 - **Validation**: Zod
 
@@ -468,7 +469,7 @@ npx tsx harness/bench.ts
 cerberus/
 ├── src/
 │   ├── layers/           # L1-L4 core detection layers
-│   ├── classifiers/      # Advanced sub-classifiers (secrets, injection, encoding, domain, MCP, drift)
+│   ├── classifiers/      # Advanced sub-classifiers (secrets, injection, encoding, domain, outbound, MCP, drift)
 │   ├── engine/           # Correlation engine + interceptor
 │   ├── graph/            # Memory contamination graph + provenance ledger
 │   ├── middleware/       # Developer-facing guard() API

@@ -120,6 +120,21 @@ export interface BehavioralDriftSignal {
   readonly timestamp: number;
 }
 
+/**
+ * Sub-classifier signal — outbound call to non-authorized destination after injection and
+ * privileged data access (enhances L3). Fires even when PII is not verbatim in the outbound
+ * payload, catching summarized/transformed exfiltration that the token-match path misses.
+ */
+export interface InjectionCorrelatedOutboundSignal {
+  readonly layer: 'L3';
+  readonly signal: 'INJECTION_CORRELATED_OUTBOUND';
+  readonly turnId: TurnId;
+  readonly destination: string;
+  readonly untrustedSources: readonly string[];
+  readonly trustedSourcesAccessed: readonly string[];
+  readonly timestamp: number;
+}
+
 /** Tool description for MCP scanner. */
 export interface ToolDescription {
   readonly name: string;
@@ -146,7 +161,8 @@ export type DetectionSignal =
   | EncodingDetectedSignal
   | SuspiciousDestinationSignal
   | ToolPoisoningSignal
-  | BehavioralDriftSignal;
+  | BehavioralDriftSignal
+  | InjectionCorrelatedOutboundSignal;
 
 /** 4-bit risk vector — one boolean per detection layer. */
 export interface RiskVector {

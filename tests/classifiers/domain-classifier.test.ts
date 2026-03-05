@@ -7,6 +7,7 @@ import {
   extractDomain,
   classifyDestination,
   classifyOutboundDomain,
+  hasSuspiciousKeywordPattern,
 } from '../../src/classifiers/domain-classifier.js';
 import { createSession } from '../../src/engine/session.js';
 import type { ToolCallContext } from '../../src/types/context.js';
@@ -166,5 +167,76 @@ describe('classifyOutboundDomain', () => {
     const signal = classifyOutboundDomain(ctx, session, OUTBOUND_TOOLS);
     expect(signal).not.toBeNull();
     expect(signal!.riskFactors).toContain('exfil_service');
+  });
+});
+
+describe('hasSuspiciousKeywordPattern', () => {
+  describe('matches social-engineering style domains', () => {
+    it('should flag audit-partner.io', () => {
+      expect(hasSuspiciousKeywordPattern('audit-partner.io')).toBe(true);
+    });
+
+    it('should flag compliance-verify.net', () => {
+      expect(hasSuspiciousKeywordPattern('compliance-verify.net')).toBe(true);
+    });
+
+    it('should flag data-export.xyz', () => {
+      expect(hasSuspiciousKeywordPattern('data-export.xyz')).toBe(true);
+    });
+
+    it('should flag verify-records.top', () => {
+      expect(hasSuspiciousKeywordPattern('verify-records.top')).toBe(true);
+    });
+
+    it('should flag backup-service.xyz', () => {
+      expect(hasSuspiciousKeywordPattern('backup-service.xyz')).toBe(true);
+    });
+
+    it('should flag transfer-partner.club', () => {
+      expect(hasSuspiciousKeywordPattern('transfer-partner.club')).toBe(true);
+    });
+  });
+
+  describe('does not match legitimate domains', () => {
+    it('should not flag acme.com', () => {
+      expect(hasSuspiciousKeywordPattern('acme.com')).toBe(false);
+    });
+
+    it('should not flag google.com', () => {
+      expect(hasSuspiciousKeywordPattern('google.com')).toBe(false);
+    });
+
+    it('should not flag reports.internal.acme.com', () => {
+      expect(hasSuspiciousKeywordPattern('reports.internal.acme.com')).toBe(false);
+    });
+
+    it('should not flag stripe.com', () => {
+      expect(hasSuspiciousKeywordPattern('stripe.com')).toBe(false);
+    });
+  });
+
+  describe('classifyDestination integrates social-engineering detection', () => {
+    it('should flag audit-partner.io as social_engineering_domain', () => {
+      const { riskFactors, domainRisk } = classifyDestination('attacker@audit-partner.io');
+      expect(riskFactors).toContain('social_engineering_domain');
+      expect(domainRisk).toBe('high');
+    });
+
+    it('should flag compliance-verify.net via classifyDestination', () => {
+      const { riskFactors } = classifyDestination('verify@compliance-verify.net');
+      expect(riskFactors).toContain('social_engineering_domain');
+    });
+
+    it('should emit SUSPICIOUS_DESTINATION for social-engineering domain', () => {
+      const session = createSession();
+      const ctx = makeCtx({
+        toolArguments: { recipient: 'attacker@audit-partner.io' },
+      });
+      const signal = classifyOutboundDomain(ctx, session, OUTBOUND_TOOLS);
+      expect(signal).not.toBeNull();
+      expect(signal!.signal).toBe('SUSPICIOUS_DESTINATION');
+      expect(signal!.riskFactors).toContain('social_engineering_domain');
+      expect(signal!.domainRisk).toBe('high');
+    });
   });
 });

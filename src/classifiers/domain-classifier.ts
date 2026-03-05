@@ -2,7 +2,8 @@
  * Suspicious Domain/URL Classifier — Sub-classifier enhancing L3.
  *
  * Analyzes outbound destinations for risk indicators: disposable emails,
- * webhook services, IP addresses, URL shorteners, non-standard ports.
+ * webhook services, IP addresses, URL shorteners, non-standard ports,
+ * and social-engineering style domains (compliance/audit keyword patterns).
  */
 
 import type { SuspiciousDestinationSignal } from '../types/signals.js';
@@ -23,6 +24,10 @@ const EXFIL_SERVICES = [
   'requestcatcher.com',
   'beeceptor.com',
   'mockbin.org',
+  'canarytokens.com',
+  'interactsh.com',
+  'oast.pro',
+  'oast.me',
 ];
 
 /** Known disposable email providers. */
@@ -37,6 +42,10 @@ const DISPOSABLE_EMAIL_DOMAINS = [
   'trashmail.com',
   'temp-mail.org',
   'fakeinbox.com',
+  'dispostable.com',
+  'maildrop.cc',
+  'spamgourmet.com',
+  'trashmail.io',
 ];
 
 /** Known URL shorteners. */
@@ -49,6 +58,8 @@ const URL_SHORTENERS = [
   'buff.ly',
   'ow.ly',
   'rebrand.ly',
+  'shorturl.at',
+  'cutt.ly',
 ];
 
 /** IP address pattern. */
@@ -56,6 +67,63 @@ const IP_ADDRESS_PATTERN = /^(?:\d{1,3}\.){3}\d{1,3}$/;
 
 /** Non-standard port in URL pattern. */
 const NON_STANDARD_PORT_PATTERN = /:(\d{4,5})\b/;
+
+/**
+ * Action/compliance keywords that appear in social-engineering style domains.
+ * Attackers register domains like audit-partner.io, compliance-verify.net,
+ * data-transfer-service.com to make exfiltration destinations look legitimate.
+ */
+const SOCIAL_ENGINEERING_KEYWORDS = [
+  'audit',
+  'verify',
+  'verification',
+  'compliance',
+  'validate',
+  'validation',
+  'backup',
+  'transfer',
+  'export',
+  'submit',
+  'forward',
+  'sync',
+  'review',
+  'inspection',
+  'report-service',
+  'data-partner',
+];
+
+/**
+ * TLDs commonly used for attacker infrastructure due to low registration cost.
+ * Presence alone is not suspicious — combined with keyword patterns it is.
+ */
+const ATTACKER_PREFERRED_TLDS = ['.xyz', '.top', '.club', '.win', '.info', '.biz', '.tk', '.ml'];
+
+/**
+ * Detect social-engineering style domains: compliance/audit keyword in hostname
+ * combined with a hyphenated structure or attacker-preferred TLD.
+ *
+ * Matches: audit-partner.io, compliance-verify.net, data-export.xyz
+ * Does not match: acme.com, reports.internal.acme.com, compliance.gov
+ */
+export function hasSuspiciousKeywordPattern(domain: string): boolean {
+  const lower = domain.toLowerCase();
+  const hasKeyword = SOCIAL_ENGINEERING_KEYWORDS.some((kw) => lower.includes(kw));
+  if (!hasKeyword) return false;
+
+  // Keyword + hyphen adjacent = hallmark of social-engineering registered domain
+  const hasHyphenWithKeyword = SOCIAL_ENGINEERING_KEYWORDS.some((kw) => {
+    const idx = lower.indexOf(kw);
+    if (idx === -1) return false;
+    const before = lower[idx - 1];
+    const after = lower[idx + kw.length];
+    return before === '-' || after === '-';
+  });
+
+  // Keyword + suspicious TLD is also a strong signal
+  const hasSuspiciousTld = ATTACKER_PREFERRED_TLDS.some((tld) => lower.endsWith(tld));
+
+  return hasHyphenWithKeyword || hasSuspiciousTld;
+}
 
 /**
  * Extract domain from a destination string (email or URL).
@@ -122,13 +190,22 @@ export function classifyDestination(destination: string): {
     riskFactors.push('non_standard_port');
   }
 
+  // Check social-engineering keyword patterns (catches audit-partner.io, compliance-verify.net)
+  if (hasSuspiciousKeywordPattern(domain)) {
+    riskFactors.push('social_engineering_domain');
+  }
+
   // Determine risk level
   let domainRisk: 'low' | 'medium' | 'high' = 'low';
   if (riskFactors.length >= 2) {
     domainRisk = 'high';
   } else if (riskFactors.length === 1) {
     // Exfil services and disposable emails are high risk even alone
-    if (riskFactors.includes('exfil_service') || riskFactors.includes('disposable_email')) {
+    if (
+      riskFactors.includes('exfil_service') ||
+      riskFactors.includes('disposable_email') ||
+      riskFactors.includes('social_engineering_domain')
+    ) {
       domainRisk = 'high';
     } else {
       domainRisk = 'medium';

@@ -19,8 +19,9 @@
 | **Injection Scanner**     | `src/classifiers/injection-scanner.ts` | L2       | Weighted heuristic prompt injection detection (role override, authority spoofing, exfiltration commands) |
 | **Encoding Detector**     | `src/classifiers/encoding-detector.ts` | L2       | Detects encoded/obfuscated injection bypasses (base64, hex, unicode, URL encoding, ROT13)                |
 | **MCP Poisoning Scanner** | `src/classifiers/mcp-scanner.ts`       | L2       | Scans MCP tool descriptions for hidden instructions, cross-tool manipulation, obfuscation                |
-| **Domain Classifier**     | `src/classifiers/domain-classifier.ts` | L3       | Flags suspicious outbound destinations (disposable emails, webhook services, IP addresses)               |
-| **Drift Detector**        | `src/classifiers/drift-detector.ts`    | L2/L3    | Detects behavioral drift after injection (outbound calls, privilege escalation, repeated exfiltration)   |
+| **Domain Classifier**     | `src/classifiers/domain-classifier.ts`    | L3    | Flags suspicious outbound destinations: disposable emails, webhook services, IP addresses, social-engineering keyword domains (audit-partner.io, compliance-verify.net) |
+| **Outbound Correlator**   | `src/classifiers/outbound-correlator.ts`  | L3    | Catches summarized/transformed exfiltration: fires when untrusted context + trusted data access + outbound to non-authorized destination, without requiring verbatim PII match |
+| **Drift Detector**        | `src/classifiers/drift-detector.ts`       | L2/L3 | Detects behavioral drift after injection (outbound calls, privilege escalation, repeated exfiltration)   |
 
 ### Engine & Infrastructure
 
@@ -45,7 +46,8 @@ Tool call arrives
   → Encoding Detector: scan untrusted content for encoded/obfuscated payloads
   → MCP Scanner: check tool description for poisoning (if toolDescriptions configured)
   → L3: classify outbound intent (outbound + PII match → EXFILTRATION_RISK)
-  → Domain Classifier: flag suspicious outbound destinations
+  → Domain Classifier: flag suspicious outbound destinations (known-bad lists + keyword heuristics)
+  → Outbound Correlator: flag injection-correlated outbound to non-authorized dest (no verbatim match needed)
   → L4: check memory contamination (read tainted cross-session node → CONTAMINATED_MEMORY_ACTIVE)
   → Drift Detector: check for post-injection behavioral patterns (reads all session state)
   → Collect all session signals (cumulative across turns)
@@ -57,7 +59,7 @@ Tool call arrives
 ## Key Design Decisions
 
 - **Session-cumulative scoring**: The risk vector is built from ALL signals across the session, not just the current turn. This ensures multi-turn attacks (L1 on turn 0, L2 on turn 1, L3 on turn 2) are caught.
-- **Sub-classifiers use existing layer tags**: All 6 sub-classifiers emit signals with L1/L2/L3 layer tags. The correlation engine's `buildRiskVector()` handles them via `signal.layer` switch — no changes needed to the scoring logic.
+- **Sub-classifiers use existing layer tags**: All 7 sub-classifiers emit signals with L1/L2/L3 layer tags. The correlation engine's `buildRiskVector()` handles them via `signal.layer` switch — no changes needed to the scoring logic.
 - **Sub-classifiers are pure functions**: Each receives `ToolCallContext` + `DetectionSession` and returns a typed signal or null. No side effects beyond session state updates.
 - **Drift detector runs last**: It reads accumulated session state from all prior classifiers to detect behavioral patterns (post-injection outbound, privilege escalation, repeated exfiltration).
 - **MCP scanner has two modes**: Standalone `scanToolDescriptions()` for registration-time scanning, and runtime `checkToolCallPoisoning()` triggered when `config.toolDescriptions` is set.

@@ -602,6 +602,30 @@ interface BehavioralDriftSignal {
 }
 ```
 
+#### `InjectionCorrelatedOutboundSignal` (L3)
+
+Emitted by the **Outbound Correlator** sub-classifier when an outbound call to a non-authorized destination occurs after untrusted content entered the context and privileged data was accessed — regardless of whether PII appears verbatim in the outbound args. Catches summarized/transformed exfiltration that `EXFILTRATION_RISK` misses.
+
+```typescript
+interface InjectionCorrelatedOutboundSignal {
+  readonly layer: 'L3';
+  readonly signal: 'INJECTION_CORRELATED_OUTBOUND';
+  readonly turnId: TurnId;
+  readonly destination: string;
+  readonly untrustedSources: readonly string[]; // tools that provided untrusted content
+  readonly trustedSourcesAccessed: readonly string[]; // tools that provided privileged data
+  readonly timestamp: number;
+}
+```
+
+**When it fires:** All of the following must be true:
+1. Tool is in `outboundTools` list
+2. `session.untrustedSources.size > 0` — untrusted content entered context this session
+3. `session.trustedSourcesAccessed.size > 0` — privileged data was accessed this session
+4. Destination is NOT in `authorizedDestinations`
+
+**Zero FP guarantee on clean runs:** If no untrusted content entered context (`fetchExternalContent` was never called, or all tools have `trusted` classification), `untrustedSources` is empty and this signal never fires.
+
 ---
 
 ## Notes
