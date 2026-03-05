@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cerberus Playground — Live Attack Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #111118;
+      --surface2: #1a1a24;
+      --border: #2a2a3a;
+      --text: #e2e8f0;
+      --text-muted: #64748b;
+      --text-dim: #94a3b8;
+      --accent: #7c3aed;
+      --accent-glow: rgba(124, 58, 237, 0.15);
+      --green: #10b981;
+      --yellow: #f59e0b;
+      --orange: #f97316;
+      --red: #ef4444;
+      --red-glow: rgba(239, 68, 68, 0.15);
+      --l1: #10b981;
+      --l2: #f59e0b;
+      --l3: #ef4444;
+      --l4: #a855f7;
+      --mono: 'JetBrains Mono', monospace;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Nav ── */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 24px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .nav-brand .icon {
+      width: 28px;
+      height: 28px;
+      background: var(--accent);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+
+    .badge-playground {
+      background: var(--accent-glow);
+      border: 1px solid var(--accent);
+      color: #a78bfa;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      padding: 6px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      font-family: inherit;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--accent);
+      color: var(--text);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      border: none;
+      color: white;
+      padding: 8px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: opacity 0.15s;
+    }
+
+    .btn-primary:hover:not(:disabled) { opacity: 0.85; }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ── Main layout ── */
+    main {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 0;
+      flex: 1;
+      min-height: 0;
+    }
+
+    /* ── Left panel ── */
+    .attack-panel {
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .panel-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .scenario-controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .scenario-select {
+      flex: 1;
+      min-width: 200px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    .scenario-select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .scenario-desc {
+      padding: 10px 20px;
+      font-size: 13px;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      min-height: 42px;
+    }
+
+    .steps-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .steps-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--text-muted);
+      text-align: center;
+      gap: 8px;
+    }
+
+    .steps-empty .hint {
+      font-size: 32px;
+    }
+
+    /* ── Step cards ── */
+    .step-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      animation: slideIn 0.25s ease;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .step-card.blocked {
+      border-color: var(--red);
+      box-shadow: 0 0 0 1px var(--red-glow), inset 0 0 24px var(--red-glow);
+    }
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .step-num {
+      width: 22px;
+      height: 22px;
+      background: var(--surface2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .step-tool {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      flex: 1;
+    }
+
+    .layer-badge {
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .layer-L1 { background: rgba(16,185,129,0.15); color: var(--l1); }
+    .layer-L2 { background: rgba(245,158,11,0.15); color: var(--l2); }
+    .layer-L3 { background: rgba(239,68,68,0.15); color: var(--l3); }
+    .layer-L4 { background: rgba(168,85,247,0.15); color: var(--l4); }
+
+    .blocked-badge {
+      background: var(--red);
+      color: white;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    .step-body {
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .step-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .assessment-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .score-pill {
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 500;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: var(--surface2);
+    }
+
+    .score-0, .score-1 { color: var(--green); }
+    .score-2 { color: var(--yellow); }
+    .score-3 { color: var(--orange); }
+    .score-4 { color: var(--red); }
+
+    .action-pill {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .action-log { background: rgba(100,116,139,0.15); color: var(--text-muted); }
+    .action-alert { background: rgba(245,158,11,0.15); color: var(--yellow); }
+    .action-interrupt { background: rgba(239,68,68,0.15); color: var(--red); }
+
+    .signal-pills {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+
+    .signal-pill {
+      font-family: var(--mono);
+      font-size: 10px;
+      padding: 1px 6px;
+      border-radius: 3px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+    }
+
+    .result-toggle {
+      font-size: 11px;
+      color: var(--accent);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      font-family: inherit;
+    }
+
+    .result-text {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      background: var(--surface2);
+      border-radius: 4px;
+      padding: 8px 10px;
+      word-break: break-all;
+      white-space: pre-wrap;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+
+    .result-text.blocked-result {
+      color: var(--red);
+      background: var(--red-glow);
+    }
+
+    /* ── Right panel ── */
+    .monitor-panel {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--surface);
+    }
+
+    .monitor-section {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .monitor-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    /* ── Layer grid ── */
+    .layer-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .layer-cell {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .layer-cell.active-L1 { border-color: var(--l1); background: rgba(16,185,129,0.08); }
+    .layer-cell.active-L2 { border-color: var(--l2); background: rgba(245,158,11,0.08); }
+    .layer-cell.active-L3 { border-color: var(--l3); background: rgba(239,68,68,0.08); }
+    .layer-cell.active-L4 { border-color: var(--l4); background: rgba(168,85,247,0.08); }
+
+    .layer-cell .layer-name {
+      font-size: 11px;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    .layer-cell .layer-label {
+      font-size: 9px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .layer-cell.active-L1 .layer-name { color: var(--l1); }
+    .layer-cell.active-L2 .layer-name { color: var(--l2); }
+    .layer-cell.active-L3 .layer-name { color: var(--l3); }
+    .layer-cell.active-L4 .layer-name { color: var(--l4); }
+
+    /* ── Score bar ── */
+    .score-display {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .score-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .score-bar-track {
+      flex: 1;
+      height: 8px;
+      background: var(--surface2);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .score-bar-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 4px;
+      transition: width 0.4s ease, background-color 0.4s ease;
+      background: var(--green);
+    }
+
+    .score-value {
+      font-family: var(--mono);
+      font-size: 14px;
+      font-weight: 600;
+      min-width: 32px;
+      text-align: right;
+    }
+
+    /* ── Action display ── */
+    .action-display {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .action-label {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .action-value {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      padding: 4px 12px;
+      border-radius: 4px;
+    }
+
+    .action-waiting { color: var(--text-muted); background: var(--surface2); }
+    .action-running { color: var(--accent); background: var(--accent-glow); }
+    .action-log2 { color: var(--text-muted); background: var(--surface2); }
+    .action-alert2 { color: var(--yellow); background: rgba(245,158,11,0.1); }
+    .action-interrupt2 { color: var(--red); background: var(--red-glow); }
+
+    /* ── Grafana iframe ── */
+    .grafana-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      padding: 0;
+    }
+
+    .grafana-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .grafana-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+
+    .grafana-link {
+      font-size: 11px;
+      color: var(--accent);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .grafana-link:hover { text-decoration: underline; }
+
+    .grafana-frame {
+      flex: 1;
+      border: none;
+      background: #0a0a0f;
+      min-height: 240px;
+    }
+
+    .grafana-unavailable {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 13px;
+      gap: 8px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .grafana-unavailable a {
+      color: var(--accent);
+      font-size: 12px;
+    }
+
+    /* ── Status bar ── */
+    .status-bar {
+      padding: 8px 16px;
+      border-top: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--text-muted);
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      display: inline-block;
+      margin-right: 6px;
+    }
+
+    .status-dot.running {
+      background: var(--accent);
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* ── Run complete banner ── */
+    .run-banner {
+      padding: 10px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      display: none;
+    }
+
+    .run-banner.show { display: block; }
+    .run-banner.blocked { background: var(--red-glow); color: var(--red); border-color: var(--red); }
+    .run-banner.allowed { background: rgba(16,185,129,0.08); color: var(--green); border-color: var(--green); }
+  </style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <a href="/" class="nav-brand">
+    <div class="icon">🐺</div>
+    Cerberus
+    <span class="badge-playground">Playground</span>
+  </a>
+  <div class="nav-actions">
+    <a href="https://github.com/Odingard/cerberus" target="_blank" class="btn-ghost">GitHub ↗</a>
+    <a href="http://localhost:3030" target="_blank" class="btn-ghost">Full Dashboard ↗</a>
+  </div>
+</nav>
+
+<!-- Main -->
+<main>
+
+  <!-- Left: Attack Runner -->
+  <div class="attack-panel">
+    <div class="panel-header">
+      <div class="panel-title">Attack Runner</div>
+      <div class="scenario-controls">
+        <select id="scenario-select" class="scenario-select">
+          <option value="">Loading scenarios...</option>
+        </select>
+        <button id="btn-run" class="btn-primary" disabled>
+          ▶ Run Attack
+        </button>
+        <button id="btn-reset" class="btn-ghost">Reset</button>
+      </div>
+    </div>
+    <div id="scenario-desc" class="scenario-desc">Select a scenario to begin.</div>
+    <div id="run-banner" class="run-banner"></div>
+    <div id="steps" class="steps-container">
+      <div class="steps-empty">
+        <div class="hint">⚡</div>
+        <div>Select a scenario and click <strong>Run Attack</strong></div>
+        <div style="font-size:12px">Watch Cerberus detect and block threats in real time</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Monitor Panel -->
+  <div class="monitor-panel">
+    <!-- Risk Vector -->
+    <div class="monitor-section">
+      <div class="monitor-title">Risk Vector</div>
+      <div class="layer-grid">
+        <div class="layer-cell" id="cell-L1">
+          <div class="layer-name">L1</div>
+          <div class="layer-label">Data Source</div>
+        </div>
+        <div class="layer-cell" id="cell-L2">
+          <div class="layer-name">L2</div>
+          <div class="layer-label">Provenance</div>
+        </div>
+        <div class="layer-cell" id="cell-L3">
+          <div class="layer-name">L3</div>
+          <div class="layer-label">Outbound</div>
+        </div>
+        <div class="layer-cell" id="cell-L4">
+          <div class="layer-name">L4</div>
+          <div class="layer-label">Memory</div>
+        </div>
+      </div>
+      <div class="score-display">
+        <span class="score-label">Risk Score</span>
+        <div class="score-bar-track">
+          <div class="score-bar-fill" id="score-bar"></div>
+        </div>
+        <span class="score-value" id="score-value">0/4</span>
+      </div>
+      <div class="action-display">
+        <span class="action-label">Action</span>
+        <span class="action-value action-waiting" id="action-display">WAITING</span>
+      </div>
+    </div>
+
+    <!-- Grafana Live Panel -->
+    <div class="grafana-section">
+      <div class="grafana-header">
+        <span class="grafana-title">Live: Tool Call Rate</span>
+        <a href="http://localhost:3030/d/cerberus-main" target="_blank" class="grafana-link">
+          Open Dashboard ↗
+        </a>
+      </div>
+      <iframe
+        id="grafana-frame"
+        class="grafana-frame"
+        src="http://localhost:3030/d-solo/cerberus-main/cerberus-ai-security-monitor?orgId=1&panelId=10&refresh=5s&theme=dark"
+        title="Cerberus Tool Call Rate"
+        loading="lazy"
+      ></iframe>
+    </div>
+
+    <!-- Status -->
+    <div class="status-bar">
+      <span><span class="status-dot" id="status-dot"></span><span id="status-text">Ready</span></span>
+      <span id="run-count" style="color:var(--text-muted)">0 runs</span>
+    </div>
+  </div>
+
+</main>
+
+<script type="module">
+  // ── State ────────────────────────────────────────────────────────────────────
+  let scenarios = [];
+  let running = false;
+  let runCount = 0;
+
+  // ── DOM refs ─────────────────────────────────────────────────────────────────
+  const select = document.getElementById('scenario-select');
+  const btnRun = document.getElementById('btn-run');
+  const btnReset = document.getElementById('btn-reset');
+  const stepsEl = document.getElementById('steps');
+  const descEl = document.getElementById('scenario-desc');
+  const runBanner = document.getElementById('run-banner');
+  const statusDot = document.getElementById('status-dot');
+  const statusText = document.getElementById('status-text');
+  const runCountEl = document.getElementById('run-count');
+
+  const scoreBar = document.getElementById('score-bar');
+  const scoreValue = document.getElementById('score-value');
+  const actionDisplay = document.getElementById('action-display');
+
+  const cellL1 = document.getElementById('cell-L1');
+  const cellL2 = document.getElementById('cell-L2');
+  const cellL3 = document.getElementById('cell-L3');
+  const cellL4 = document.getElementById('cell-L4');
+
+  const SCORE_COLORS = ['#10b981', '#10b981', '#f59e0b', '#f97316', '#ef4444'];
+
+  // ── Load scenarios ────────────────────────────────────────────────────────────
+  async function loadScenarios() {
+    try {
+      const res = await fetch('/api/scenarios');
+      scenarios = await res.json();
+      select.innerHTML = scenarios.map(s =>
+        `<option value="${s.id}">${s.name}</option>`
+      ).join('');
+      btnRun.disabled = false;
+      onScenarioChange();
+    } catch (e) {
+      select.innerHTML = '<option value="">Failed to load — is the server running?</option>';
+    }
+  }
+
+  function onScenarioChange() {
+    const id = select.value;
+    const scenario = scenarios.find(s => s.id === id);
+    descEl.textContent = scenario ? scenario.description : 'Select a scenario to begin.';
+  }
+
+  select.addEventListener('change', onScenarioChange);
+
+  // ── Reset ────────────────────────────────────────────────────────────────────
+  function reset() {
+    stepsEl.innerHTML = `
+      <div class="steps-empty">
+        <div class="hint">⚡</div>
+        <div>Select a scenario and click <strong>Run Attack</strong></div>
+        <div style="font-size:12px">Watch Cerberus detect and block threats in real time</div>
+      </div>`;
+    runBanner.className = 'run-banner';
+    updateScore(0);
+    updateAction('WAITING', 'waiting');
+    clearLayers();
+    setStatus('Ready', false);
+  }
+
+  btnReset.addEventListener('click', () => { if (!running) reset(); });
+
+  // ── Risk monitor updates ──────────────────────────────────────────────────────
+  function updateScore(score) {
+    const pct = (score / 4) * 100;
+    scoreBar.style.width = pct + '%';
+    scoreBar.style.backgroundColor = SCORE_COLORS[Math.min(score, 4)];
+    scoreValue.textContent = score + '/4';
+    scoreValue.style.color = SCORE_COLORS[Math.min(score, 4)];
+  }
+
+  function updateAction(label, cls) {
+    actionDisplay.textContent = label;
+    actionDisplay.className = 'action-value action-' + cls;
+  }
+
+  function clearLayers() {
+    [cellL1, cellL2, cellL3, cellL4].forEach(c => {
+      c.className = 'layer-cell';
+    });
+  }
+
+  function activateLayer(layer) {
+    const cell = document.getElementById('cell-' + layer);
+    if (cell) cell.classList.add('active-' + layer);
+  }
+
+  function setStatus(text, isRunning) {
+    statusText.textContent = text;
+    statusDot.className = 'status-dot' + (isRunning ? ' running' : '');
+  }
+
+  // ── Step card rendering ───────────────────────────────────────────────────────
+  function renderStep(stepData) {
+    const { index, toolName, description, assessment, blocked, layer, result } = stepData;
+
+    const card = document.createElement('div');
+    card.className = 'step-card' + (blocked ? ' blocked' : '');
+
+    let assessmentHtml = '';
+    if (assessment) {
+      const scoreClass = 'score-' + assessment.score;
+      const actionClass = 'action-' + assessment.action;
+      const signals = (assessment.signals || []).slice(0, 4);
+
+      assessmentHtml = `
+        <div class="assessment-row">
+          <span class="score-pill ${scoreClass}">score: ${assessment.score}/4</span>
+          <span class="action-pill ${actionClass}">${assessment.action.toUpperCase()}</span>
+          ${blocked ? '<span class="blocked-badge">BLOCKED</span>' : ''}
+        </div>
+        ${signals.length > 0 ? `
+          <div class="signal-pills">
+            ${signals.map(s => `<span class="signal-pill">${s}</span>`).join('')}
+          </div>` : ''}`;
+    }
+
+    const truncated = result.length > 200 ? result.slice(0, 200) + '…' : result;
+    const isBlockedResult = result.startsWith('[Cerberus]');
+
+    card.innerHTML = `
+      <div class="step-header">
+        <span class="step-num">${index + 1}</span>
+        <span class="step-tool">${toolName}()</span>
+        <span class="layer-badge layer-${layer}">${layer}</span>
+        ${blocked ? '<span class="blocked-badge">BLOCKED</span>' : ''}
+      </div>
+      <div class="step-body">
+        <div class="step-desc">${description}</div>
+        ${assessmentHtml}
+        <button class="result-toggle" onclick="this.nextElementSibling.classList.toggle('hidden')">▸ Result</button>
+        <div class="result-text ${isBlockedResult ? 'blocked-result' : ''} hidden">${truncated}</div>
+      </div>`;
+
+    return card;
+  }
+
+  // ── Run scenario ──────────────────────────────────────────────────────────────
+  btnRun.addEventListener('click', async () => {
+    if (running) return;
+    const scenarioId = select.value;
+    if (!scenarioId) return;
+
+    running = true;
+    btnRun.disabled = true;
+    btnReset.disabled = true;
+    runBanner.className = 'run-banner';
+
+    // Clear steps
+    stepsEl.innerHTML = '';
+    clearLayers();
+    updateScore(0);
+    updateAction('RUNNING', 'running');
+    setStatus('Running attack…', true);
+
+    let finalScore = 0;
+    let finalAction = 'log';
+
+    try {
+      const response = await fetch('/api/run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scenarioId }),
+      });
+
+      if (!response.body) throw new Error('No response body');
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+
+        // Parse SSE events from buffer
+        const parts = buffer.split('\n\n');
+        buffer = parts.pop() ?? '';
+
+        for (const part of parts) {
+          const lines = part.split('\n');
+          let eventType = '';
+          let dataLine = '';
+
+          for (const line of lines) {
+            if (line.startsWith('event: ')) eventType = line.slice(7).trim();
+            if (line.startsWith('data: ')) dataLine = line.slice(6).trim();
+          }
+
+          if (!eventType || !dataLine) continue;
+
+          let data;
+          try { data = JSON.parse(dataLine); } catch { continue; }
+
+          if (eventType === 'start') {
+            setStatus(`Running: ${data.scenarioId} (${data.totalSteps} steps)`, true);
+          }
+
+          if (eventType === 'step') {
+            const card = renderStep(data);
+            stepsEl.appendChild(card);
+            card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+            if (data.assessment) {
+              updateScore(data.assessment.score);
+              finalScore = Math.max(finalScore, data.assessment.score);
+
+              if (data.assessment.vector) {
+                if (data.assessment.vector.l1) activateLayer('L1');
+                if (data.assessment.vector.l2) activateLayer('L2');
+                if (data.assessment.vector.l3) activateLayer('L3');
+                if (data.assessment.vector.l4) activateLayer('L4');
+              }
+
+              const a = data.assessment.action;
+              if (a === 'interrupt') {
+                finalAction = 'interrupt';
+                updateAction('INTERRUPT', 'interrupt2');
+              } else if (a === 'alert' && finalAction !== 'interrupt') {
+                finalAction = 'alert';
+                updateAction('ALERT', 'alert2');
+              } else if (finalAction === 'log') {
+                updateAction('LOG', 'log2');
+              }
+            }
+          }
+
+          if (eventType === 'done') {
+            finalScore = data.finalScore;
+            finalAction = data.action;
+            runCount++;
+            runCountEl.textContent = runCount + ' run' + (runCount === 1 ? '' : 's');
+          }
+
+          if (eventType === 'error') {
+            setStatus('Error: ' + data.message, false);
+          }
+        }
+      }
+
+    } catch (err) {
+      setStatus('Connection error — is the server running?', false);
+    } finally {
+      running = false;
+      btnRun.disabled = false;
+      btnReset.disabled = false;
+
+      // Show result banner
+      const wasBlocked = finalAction === 'interrupt';
+      runBanner.className = 'run-banner show ' + (wasBlocked ? 'blocked' : 'allowed');
+      runBanner.textContent = wasBlocked
+        ? `🛡 Attack BLOCKED — Cerberus interrupted the tool call (score: ${finalScore}/4)`
+        : `✓ Run complete — score: ${finalScore}/4 (below interrupt threshold)`;
+
+      setStatus(wasBlocked ? 'Attack blocked by Cerberus' : 'Run complete', false);
+    }
+  });
+
+  // ── Init ──────────────────────────────────────────────────────────────────────
+  await loadScenarios();
+
+  // Check if Grafana is reachable; show friendly message if not
+  const grafanaFrame = document.getElementById('grafana-frame');
+  grafanaFrame.addEventListener('error', () => {
+    grafanaFrame.style.display = 'none';
+    const parent = grafanaFrame.parentElement;
+    const msg = document.createElement('div');
+    msg.className = 'grafana-unavailable';
+    msg.innerHTML = `
+      <div style="font-size:24px">📊</div>
+      <div>Grafana not running</div>
+      <div style="font-size:12px;color:var(--text-muted)">Start the monitoring stack to see live metrics</div>
+      <code style="font-size:11px;background:var(--surface2);padding:4px 8px;border-radius:4px;">docker compose -f monitoring/docker-compose.yml up -d</code>
+    `;
+    parent.appendChild(msg);
+  });
+</script>
+
+</body>
+</html>

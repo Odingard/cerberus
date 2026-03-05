@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 - **Landing page** (`docs/index.html`) — cerberus.dev; dark security aesthetic; hero with live terminal demo, stats bar (N=285, 52μs, 747 tests, 0% FP), research validation tables, code quickstart, feature grid; GitHub Pages via `.github/workflows/pages.yml`
+- **Cerberus Playground** (`playground/`) — interactive attack demo UI + Node.js backend; 6 pre-built attack scenarios (clean run, data exfiltration, prompt injection, full Lethal Trifecta, Base64-encoded injection, social engineering); real `guard()` execution with `opentelemetry: true` so every demo run sends live metrics to Grafana; SSE stream for step-by-step risk vector updates; embedded Grafana "Tool Call Rate" panel iframe; 5th service in `monitoring/docker-compose.yml` on port 4040
 
 ## [0.3.1] — 2026-03-04
 <!-- Grafana dashboard + Prometheus alerting + Alertmanager -->
