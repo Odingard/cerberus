@@ -6,6 +6,7 @@
 #   alertmanager    — routes alerts to Slack/PagerDuty/email (log-only by default)
 #   grafana         — pre-built Cerberus dashboard, auto-provisioned
 #   playground      — interactive attack demo UI + backend (port 4040)
+#   license-server  — enterprise license validation API (port 8080, internal)
 #
 # Quick start:
 #   docker compose -f monitoring/docker-compose.yml up -d
@@ -110,10 +111,31 @@ services:
       - grafana
     restart: unless-stopped
 
+  license-server:
+    build:
+      context: ..
+      dockerfile: license-server/Dockerfile
+    container_name: cerberus-license-server
+    environment:
+      - PORT=8080
+      - LICENSE_DB_PATH=/app/data/licenses.db
+      - LICENSE_SIGNING_SECRET=${LICENSE_SIGNING_SECRET}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+      - RESEND_API_KEY=${RESEND_API_KEY}
+    volumes:
+      - license-data:/app/data
+    ports:
+      - '127.0.0.1:8080:8080'   # internal only — exposed via nginx at api.cerberus.sixsenseenterprise.com
+    networks:
+      - cerberus-monitoring
+    restart: unless-stopped
+
 volumes:
   prometheus-data:
   grafana-data:
   alertmanager-data:
+  license-data:
 
 networks:
   cerberus-monitoring:

@@ -199,8 +199,10 @@ export function interceptToolCall(
     onFullAssessment?.(assessment);
     config.onAssessment?.({
       turnId: assessment.turnId,
+      toolName,
       score: assessment.score,
       action: assessment.action,
+      signals: assessment.signals.map((s) => s.signal),
     });
 
     // OpenTelemetry instrumentation

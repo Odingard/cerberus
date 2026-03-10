@@ -1,0 +1,44 @@
+# Cerberus Enterprise — Tool Configuration
+#
+# 1. Copy this file:  cp cerberus.config.yml.example cerberus.config.yml
+# 2. Edit the tools section to match your AI agent's tool endpoints
+# 3. Full reference: docs/enterprise-configuration.md
+
+cerberus:
+  alertMode: interrupt          # log | alert | interrupt
+  threshold: 3                  # 1–4. 3 = Lethal Trifecta (L1+L2+L3 = block)
+  memoryTracking: false         # Enable L4 cross-session memory contamination
+  authorizedDestinations:       # Outbound to these domains is NOT flagged as exfiltration
+    - reports.yourcompany.com
+    - internal-siem.yourcompany.com
+
+tools:
+  # One entry per tool your AI agent can call.
+  # The gateway routes POST /tool/<toolName> to the configured target URL.
+
+  readDatabase:
+    target: http://your-tools-service:3001/read
+    trustLevel: trusted          # Output treated as internal trusted data (L1 tracks PII here)
+
+  fetchWebContent:
+    target: http://your-tools-service:3001/fetch
+    trustLevel: untrusted        # Output scanned for prompt injection (L2)
+
+  sendReport:
+    target: http://your-tools-service:3001/email
+    outbound: true               # L3 exfiltration detector watches all calls to this tool
+
+gateway:
+  port: 4000
+  sessionTtlMinutes: 30
+  # apiKey: ${CERBERUS_API_KEY}  # Uncomment to require X-Cerberus-Api-Key header
+
+# alerts:
+#   slack:
+#     webhook: ${SLACK_WEBHOOK_URL}
+#   pagerduty:
+#     integrationKey: ${PAGERDUTY_KEY}
+#   email:
+#     smtp: ${SMTP_HOST}
+#     from: security-alerts@yourcompany.com
+#     to: ${ALERT_EMAIL_TO}

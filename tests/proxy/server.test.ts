@@ -372,3 +372,80 @@ describe('createProxy — health endpoint', () => {
     await proxy.close();
   });
 });
+
+// ── authMiddleware ─────────────────────────────────────────────────────────
+
+async function allocatePort(): Promise<number> {
+  const net = await import('node:net');
+  return new Promise<number>((resolve) => {
+    const s = net.createServer();
+    s.listen(0, () => {
+      const addr = s.address() as import('node:net').AddressInfo;
+      s.close(() => resolve(addr.port));
+    });
+  });
+}
+
+describe('authMiddleware', () => {
+  it('should allow requests when authMiddleware returns true', async () => {
+    const port = await allocatePort();
+    const proxy = createProxy({
+      port,
+      cerberus: { alertMode: 'log' },
+      tools: { echo: { handler: (args) => Promise.resolve(JSON.stringify(args)) } },
+      authMiddleware: (req) => req.headers['x-cerberus-api-key'] === 'secret',
+    });
+    await proxy.listen();
+
+    const { status } = await post(
+      port,
+      '/tool/echo',
+      { args: {} },
+      {
+        'X-Cerberus-Api-Key': 'secret',
+      },
+    );
+    expect(status).toBe(200);
+
+    await proxy.close();
+  });
+
+  it('should reject requests with 401 when authMiddleware returns false', async () => {
+    const port = await allocatePort();
+    const proxy = createProxy({
+      port,
+      cerberus: { alertMode: 'log' },
+      tools: { echo: { handler: (args) => Promise.resolve(JSON.stringify(args)) } },
+      authMiddleware: (req) => req.headers['x-cerberus-api-key'] === 'secret',
+    });
+    await proxy.listen();
+
+    const { status } = await post(
+      port,
+      '/tool/echo',
+      { args: {} },
+      {
+        'X-Cerberus-Api-Key': 'wrong',
+      },
+    );
+    expect(status).toBe(401);
+
+    await proxy.close();
+  });
+
+  it('should bypass authMiddleware for the health endpoint', async () => {
+    const port = await allocatePort();
+    const proxy = createProxy({
+      port,
+      cerberus: { alertMode: 'log' },
+      tools: {},
+      authMiddleware: (_req) => false,
+    });
+    await proxy.listen();
+
+    const { status } = await get(port, '/health');
+    expect(status).toBe(200);
+
+    await proxy.close();
+  });
+});

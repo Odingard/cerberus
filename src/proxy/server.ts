@@ -137,6 +137,12 @@ export function createProxy(config: ProxyConfig): ProxyServer {
       return;
     }
 
+    // Auth check (bypassed for health endpoint above)
+    if (config.authMiddleware && !config.authMiddleware(req)) {
+      res.writeHead(401).end(JSON.stringify({ error: 'Unauthorized' }));
+      return;
+    }
+
     if (req.method !== 'POST') {
       res
         .writeHead(405)

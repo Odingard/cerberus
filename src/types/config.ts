@@ -75,7 +75,9 @@ export interface CerberusConfig {
   /** Callback invoked on every risk assessment. */
   readonly onAssessment?: (assessment: {
     readonly turnId: string;
+    readonly toolName: string;
     readonly score: number;
     readonly action: RiskAction;
+    readonly signals: readonly string[];
   }) => void;
 }

@@ -457,7 +457,7 @@ npx tsx harness/bench.ts
 - **Language**: TypeScript (strict mode)
 - **Runtime**: Node.js >= 20
 - **Primary Harness**: OpenAI, Anthropic, Google Gemini (multi-provider)
-- **Testing**: Vitest (773 tests, 98%+ coverage)
+- **Testing**: Vitest (776 tests, 98%+ coverage)
 - **Memory Store**: SQLite via better-sqlite3
 - **Validation**: Zod
 

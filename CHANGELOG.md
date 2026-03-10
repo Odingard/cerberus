@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] — 2026-03-10
+
+### Added
+
+- **Cerberus Enterprise** — self-hosted enterprise product for paying customers:
+  - `enterprise/gateway/` — Cerberus Gateway Docker service (`enterprise/gateway/Dockerfile`, `enterprise/gateway/server.ts`)
+  - `enterprise/gateway/config-schema.ts` — Zod schema validating `cerberus.config.yml`
+  - `enterprise/gateway/license-client.ts` — license validation against `api.cerberus.sixsenseenterprise.com`, background 24h re-check, grace mode on network error, degraded mode on revocation
+  - `enterprise/gateway/audit-log.ts` — tamper-evident chained-hash append-only audit log at `/var/log/cerberus/audit.jsonl`
+  - `enterprise/docker-compose.yml` — production 5-container stack (gateway + OTel + Prometheus + Alertmanager + Grafana) with resource limits, non-root user, read-only filesystem, no-new-privileges
+  - `enterprise/.env.example` — environment variable template with secure-defaults guidance
+  - `enterprise/cerberus.config.yml.example` — tool configuration template
+  - `enterprise/setup.sh` — interactive setup: prereq check, .env generation with `openssl rand`, license validation, stack start, health verification
+  - `enterprise/README.md` — enterprise quick start guide
+  - `license-server/` — Stripe + Resend license issuance server (SQLite, `invoice.payment_succeeded` webhook, annual license generation, email delivery)
+  - `monitoring/docker-compose.yml` — added `license-server` as 6th service (internal port 8080)
+  - `docs/index.html` — Enterprise section with feature grid and "Contact Us" CTA
+  - `docs/enterprise-deployment.md` — full deployment guide (AWS/GCP/Azure, TLS, nginx hardening, env vars, upgrade procedure)
+  - `docs/enterprise-configuration.md` — complete `cerberus.config.yml` reference
+  - `.github/workflows/release.yml` — cosign image signing, SBOM generation, enterprise gateway Docker image publish
+
+- **`authMiddleware` in `ProxyConfig`** — optional `(req: IncomingMessage) => boolean` field; bypasses health endpoint; 3 new tests in `tests/proxy/server.test.ts` (776 total)
+
+- **Extended `onAssessment` callback** — now includes `toolName` and `signals` fields alongside `turnId`, `score`, `action`
+
+### Security
+
+- Enterprise gateway hardening: rate limiting (100 req/min/IP), non-root Docker user, read-only container filesystem, resource limits (2 CPU / 512MB RAM), `no-new-privileges`, `cap_drop: ALL`
+- License key format validation (`cbr_ent_[0-9a-f]{32}`) + HMAC tamper-evidence via `deriveKeyHmac()`
+- nginx reverse proxy configuration for TLS, security headers, and rate limiting at the network layer
+
 ## [1.0.0] — 2026-03-10
 
 ### Breaking Changes

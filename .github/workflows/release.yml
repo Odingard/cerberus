@@ -47,6 +47,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      id-token: write   # for cosign OIDC signing
 
     steps:
       - uses: actions/checkout@v4
@@ -58,11 +59,15 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3
+
       - name: Extract version tag
         id: meta
         run: echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
 
       - name: Build and push demo image
+        id: demo-build
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -70,3 +75,37 @@ jobs:
           tags: |
             ghcr.io/odingard/cerberus-demo:latest
             ghcr.io/odingard/cerberus-demo:${{ steps.meta.outputs.tag }}
+
+      - name: Sign demo image
+        run: |
+          cosign sign --yes \
+            ghcr.io/odingard/cerberus-demo@${{ steps.demo-build.outputs.digest }}
+
+      - name: Build and push gateway image
+        id: gateway-build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: enterprise/gateway/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/odingard/cerberus-gateway:latest
+            ghcr.io/odingard/cerberus-gateway:${{ steps.meta.outputs.tag }}
+
+      - name: Sign gateway image
+        run: |
+          cosign sign --yes \
+            ghcr.io/odingard/cerberus-gateway@${{ steps.gateway-build.outputs.digest }}
+
+      - name: Generate SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          image: ghcr.io/odingard/cerberus-gateway:${{ steps.meta.outputs.tag }}
+          artifact-name: cerberus-gateway-${{ steps.meta.outputs.tag }}-sbom.spdx.json
+          output-file: cerberus-gateway-sbom.spdx.json
+
+      - name: Attach SBOM to release
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-${{ steps.meta.outputs.tag }}
+          path: cerberus-gateway-sbom.spdx.json

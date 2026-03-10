@@ -1,0 +1,23 @@
+{
+  "name": "@cerberus-ai/license-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Cerberus Enterprise license validation server",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts",
+    "build": "tsc --noEmit"
+  },
+  "dependencies": {
+    "better-sqlite3": "^9.4.3",
+    "resend": "^3.2.0",
+    "stripe": "^14.21.0",
+    "tsx": "^4.7.1"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.8",
+    "@types/node": "^20.11.5",
+    "typescript": "^5.3.3"
+  }
+}

@@ -1,0 +1,96 @@
+name: cerberus-enterprise
+
+services:
+  cerberus-gateway:
+    build:
+      context: ..
+      dockerfile: enterprise/gateway/Dockerfile
+    container_name: cerberus-gateway
+    restart: unless-stopped
+    ports:
+      - '4000:4000'
+    volumes:
+      - './cerberus.config.yml:/app/cerberus.config.yml:ro'
+      - 'audit-log:/var/log/cerberus'
+    env_file: .env
+    environment:
+      - OTEL_ENDPOINT=http://otel-collector:4318
+      - CERBERUS_AUDIT_LOG=/var/log/cerberus/audit.jsonl
+    depends_on:
+      - otel-collector
+    networks:
+      - cerberus-net
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 512M
+        reservations:
+          memory: 128M
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.97.0
+    container_name: cerberus-otel-collector
+    restart: unless-stopped
+    volumes:
+      - '../monitoring/otel-collector.yml:/etc/otelcol-contrib/config.yaml:ro'
+    networks:
+      - cerberus-net
+
+  prometheus:
+    image: prom/prometheus:v2.51.2
+    container_name: cerberus-prometheus
+    restart: unless-stopped
+    volumes:
+      - '../monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro'
+      - '../monitoring/alerts.yml:/etc/prometheus/alerts.yml:ro'
+      - 'prometheus-data:/prometheus'
+    networks:
+      - cerberus-net
+
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    container_name: cerberus-alertmanager
+    restart: unless-stopped
+    volumes:
+      - '../monitoring/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro'
+      - 'alertmanager-data:/alertmanager'
+    networks:
+      - cerberus-net
+
+  grafana:
+    image: grafana/grafana:10.4.2
+    container_name: cerberus-grafana
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=false
+      - GF_AUTH_DISABLE_LOGIN_FORM=false
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+      - GF_SECURITY_SECRET_KEY=${GRAFANA_SECRET_KEY}
+      - GF_SERVER_HTTP_PORT=3000
+      - GF_UNIFIED_ALERTING_ENABLED=true
+    volumes:
+      - 'grafana-data:/var/lib/grafana'
+      - '../monitoring/grafana/provisioning:/etc/grafana/provisioning:ro'
+      - '../monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro'
+    networks:
+      - cerberus-net
+
+volumes:
+  prometheus-data:
+  alertmanager-data:
+  grafana-data:
+  audit-log:
+
+networks:
+  cerberus-net:
+    driver: bridge

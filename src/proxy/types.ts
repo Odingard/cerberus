@@ -6,6 +6,7 @@
  * route tool calls through the proxy and detection runs transparently.
  */
 
+import type { IncomingMessage } from 'node:http';
 import type { CerberusConfig } from '../types/config.js';
 import type { ToolExecutorFn } from '../engine/interceptor.js';
 
@@ -63,6 +64,17 @@ export interface ProxyConfig {
    * Default: 1_800_000 (30 minutes).
    */
   readonly sessionTtlMs?: number;
+
+  /**
+   * Optional authentication middleware.
+   * Called before every tool request. Return true to allow, false to reject (401).
+   * Health checks bypass this check.
+   *
+   * @example
+   * // Require X-Cerberus-Api-Key header
+   * authMiddleware: (req) => req.headers['x-cerberus-api-key'] === process.env.API_KEY
+   */
+  readonly authMiddleware?: (req: IncomingMessage) => boolean;
 }
 
 /** Handle to the running proxy server. */
