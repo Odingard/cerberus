@@ -8,7 +8,7 @@ RUN addgroup -S cerberus && adduser -S cerberus -G cerberus
 # Install dependencies
 ENV HUSKY=0 NODE_ENV=production
 COPY package*.json ./
-RUN npm ci --omit=dev
+RUN npm ci --omit=dev --ignore-scripts
 
 # Copy source (enterprise gateway uses local src via relative imports)
 COPY src/ ./src/
