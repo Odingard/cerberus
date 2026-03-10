@@ -205,7 +205,7 @@
       padding: 16px 20px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
     }
 
     .steps-empty {
@@ -227,19 +227,26 @@
     .step-card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: 10px;
       overflow: hidden;
-      animation: slideIn 0.25s ease;
+      animation: slideIn 0.3s ease;
     }
 
     @keyframes slideIn {
-      from { opacity: 0; transform: translateY(8px); }
+      from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
     .step-card.blocked {
       border-color: var(--red);
-      box-shadow: 0 0 0 1px var(--red-glow), inset 0 0 24px var(--red-glow);
+      box-shadow: 0 0 0 1px var(--red-glow), inset 0 0 32px var(--red-glow);
+      animation: slideIn 0.3s ease, blockPulse 0.6s ease 0.3s;
+    }
+
+    @keyframes blockPulse {
+      0% { box-shadow: 0 0 0 1px var(--red-glow), inset 0 0 32px var(--red-glow); }
+      50% { box-shadow: 0 0 0 3px rgba(239,68,68,0.4), inset 0 0 48px var(--red-glow); }
+      100% { box-shadow: 0 0 0 1px var(--red-glow), inset 0 0 32px var(--red-glow); }
     }
 
     .step-header {
@@ -251,8 +258,8 @@
     }
 
     .step-num {
-      width: 22px;
-      height: 22px;
+      width: 24px;
+      height: 24px;
       background: var(--surface2);
       border-radius: 50%;
       display: flex;
@@ -264,19 +271,12 @@
       flex-shrink: 0;
     }
 
-    .step-tool {
-      font-family: var(--mono);
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--text);
-      flex: 1;
-    }
-
-    .layer-badge {
-      padding: 2px 8px;
-      border-radius: 4px;
+    .step-layer-label {
       font-size: 11px;
       font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      flex-shrink: 0;
     }
 
     .layer-L1 { background: rgba(16,185,129,0.15); color: var(--l1); }
@@ -287,22 +287,32 @@
     .blocked-badge {
       background: var(--red);
       color: white;
-      padding: 2px 8px;
+      padding: 3px 10px;
       border-radius: 4px;
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 700;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.08em;
+      margin-left: auto;
     }
 
     .step-body {
-      padding: 10px 14px;
+      padding: 12px 14px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 10px;
     }
 
+    /* Description is now the hero — big and readable */
     .step-desc {
-      font-size: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .step-tool-name {
+      font-family: var(--mono);
+      font-size: 11px;
       color: var(--text-muted);
     }
 
@@ -314,10 +324,9 @@
     }
 
     .score-pill {
-      font-family: var(--mono);
       font-size: 12px;
-      font-weight: 500;
-      padding: 2px 8px;
+      font-weight: 600;
+      padding: 3px 10px;
       border-radius: 4px;
       background: var(--surface2);
     }
@@ -330,7 +339,7 @@
     .action-pill {
       font-size: 11px;
       font-weight: 600;
-      padding: 2px 8px;
+      padding: 3px 10px;
       border-radius: 4px;
     }
 
@@ -345,9 +354,8 @@
     }
 
     .signal-pill {
-      font-family: var(--mono);
-      font-size: 10px;
-      padding: 1px 6px;
+      font-size: 11px;
+      padding: 2px 8px;
       border-radius: 3px;
       background: var(--surface2);
       border: 1px solid var(--border);
@@ -382,6 +390,8 @@
       background: var(--red-glow);
     }
 
+    .hidden { display: none !important; }
+
     /* ── Right panel ── */
     .monitor-panel {
       display: flex;
@@ -404,10 +414,10 @@
       margin-bottom: 12px;
     }
 
-    /* ── Layer grid ── */
+    /* ── Detection layers ── */
     .layer-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(2, 1fr);
       gap: 8px;
       margin-bottom: 12px;
     }
@@ -415,9 +425,8 @@
     .layer-cell {
       background: var(--surface2);
       border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 8px;
-      text-align: center;
+      border-radius: 8px;
+      padding: 10px;
       transition: all 0.3s ease;
     }
 
@@ -427,16 +436,15 @@
     .layer-cell.active-L4 { border-color: var(--l4); background: rgba(168,85,247,0.08); }
 
     .layer-cell .layer-name {
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 700;
       margin-bottom: 2px;
     }
 
     .layer-cell .layer-label {
-      font-size: 9px;
+      font-size: 11px;
       color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+      line-height: 1.3;
     }
 
     .layer-cell.active-L1 .layer-name { color: var(--l1); }
@@ -460,25 +468,25 @@
 
     .score-bar-track {
       flex: 1;
-      height: 8px;
+      height: 10px;
       background: var(--surface2);
-      border-radius: 4px;
+      border-radius: 5px;
       overflow: hidden;
     }
 
     .score-bar-fill {
       height: 100%;
       width: 0%;
-      border-radius: 4px;
-      transition: width 0.4s ease, background-color 0.4s ease;
+      border-radius: 5px;
+      transition: width 0.5s ease, background-color 0.5s ease;
       background: var(--green);
     }
 
     .score-value {
       font-family: var(--mono);
-      font-size: 14px;
-      font-weight: 600;
-      min-width: 32px;
+      font-size: 15px;
+      font-weight: 700;
+      min-width: 36px;
       text-align: right;
     }
 
@@ -498,7 +506,7 @@
       font-size: 13px;
       font-weight: 700;
       letter-spacing: 0.05em;
-      padding: 4px 12px;
+      padding: 4px 14px;
       border-radius: 4px;
     }
 
@@ -506,7 +514,12 @@
     .action-running { color: var(--accent); background: var(--accent-glow); }
     .action-log2 { color: var(--text-muted); background: var(--surface2); }
     .action-alert2 { color: var(--yellow); background: rgba(245,158,11,0.1); }
-    .action-interrupt2 { color: var(--red); background: var(--red-glow); }
+    .action-interrupt2 { color: var(--red); background: var(--red-glow); animation: flashRed 0.8s ease; }
+
+    @keyframes flashRed {
+      0%, 100% { background: var(--red-glow); }
+      40% { background: rgba(239,68,68,0.35); }
+    }
 
     /* ── Grafana iframe ── */
     .grafana-section {
@@ -602,8 +615,8 @@
 
     /* ── Run complete banner ── */
     .run-banner {
-      padding: 10px 20px;
-      font-size: 13px;
+      padding: 12px 20px;
+      font-size: 14px;
       font-weight: 600;
       text-align: center;
       border-bottom: 1px solid var(--border);
@@ -622,11 +635,11 @@
   <a href="/" class="nav-brand">
     <div class="icon">🐺</div>
     Cerberus
-    <span class="badge-playground">Playground</span>
+    <span class="badge-playground">Live Demo</span>
   </a>
   <div class="nav-actions">
     <a href="https://github.com/Odingard/cerberus" target="_blank" class="btn-ghost">GitHub ↗</a>
-    <a href="http://localhost:3030" target="_blank" class="btn-ghost">Full Dashboard ↗</a>
+    <a href="http://localhost:3030" target="_blank" class="btn-ghost" id="nav-dashboard-link">Live Dashboard ↗</a>
   </div>
 </nav>
 
@@ -636,7 +649,7 @@
   <!-- Left: Attack Runner -->
   <div class="attack-panel">
     <div class="panel-header">
-      <div class="panel-title">Attack Runner</div>
+      <div class="panel-title">Choose an Attack Scenario</div>
       <div class="scenario-controls">
         <select id="scenario-select" class="scenario-select">
           <option value="">Loading scenarios...</option>
@@ -653,43 +666,43 @@
       <div class="steps-empty">
         <div class="hint">⚡</div>
         <div>Select a scenario and click <strong>Run Attack</strong></div>
-        <div style="font-size:12px">Watch Cerberus detect and block threats in real time</div>
+        <div style="font-size:12px;margin-top:4px">Watch Cerberus detect and block the threat in real time</div>
       </div>
     </div>
   </div>
 
   <!-- Right: Monitor Panel -->
   <div class="monitor-panel">
-    <!-- Risk Vector -->
+    <!-- Detection Layers -->
     <div class="monitor-section">
-      <div class="monitor-title">Risk Vector</div>
+      <div class="monitor-title">What Cerberus Is Watching</div>
       <div class="layer-grid">
         <div class="layer-cell" id="cell-L1">
-          <div class="layer-name">L1</div>
-          <div class="layer-label">Data Source</div>
+          <div class="layer-name">Private Data Access</div>
+          <div class="layer-label">Reading sensitive files or records</div>
         </div>
         <div class="layer-cell" id="cell-L2">
-          <div class="layer-name">L2</div>
-          <div class="layer-label">Provenance</div>
+          <div class="layer-name">Injection Detected</div>
+          <div class="layer-label">Hidden instructions in external content</div>
         </div>
         <div class="layer-cell" id="cell-L3">
-          <div class="layer-name">L3</div>
-          <div class="layer-label">Outbound</div>
+          <div class="layer-name">Outbound Attempt</div>
+          <div class="layer-label">Trying to send data outside the org</div>
         </div>
         <div class="layer-cell" id="cell-L4">
-          <div class="layer-name">L4</div>
-          <div class="layer-label">Memory</div>
+          <div class="layer-name">Memory Poisoning</div>
+          <div class="layer-label">Malicious content stored for later</div>
         </div>
       </div>
       <div class="score-display">
-        <span class="score-label">Risk Score</span>
+        <span class="score-label">Threat Level</span>
         <div class="score-bar-track">
           <div class="score-bar-fill" id="score-bar"></div>
         </div>
         <span class="score-value" id="score-value">0/4</span>
       </div>
       <div class="action-display">
-        <span class="action-label">Action</span>
+        <span class="action-label">Cerberus Decision</span>
         <span class="action-value action-waiting" id="action-display">WAITING</span>
       </div>
     </div>
@@ -697,16 +710,16 @@
     <!-- Grafana Live Panel -->
     <div class="grafana-section">
       <div class="grafana-header">
-        <span class="grafana-title">Live: Tool Call Rate</span>
-        <a href="http://localhost:3030/d/cerberus-main" target="_blank" class="grafana-link">
-          Open Dashboard ↗
+        <span class="grafana-title">Live Attack Traffic</span>
+        <a href="http://localhost:3030/d/cerberus-main" target="_blank" class="grafana-link" id="nav-full-dashboard">
+          Full Dashboard ↗
         </a>
       </div>
       <iframe
         id="grafana-frame"
         class="grafana-frame"
         src="http://localhost:3030/d-solo/cerberus-main/cerberus-ai-security-monitor?orgId=1&panelId=10&refresh=5s&theme=dark"
-        title="Cerberus Tool Call Rate"
+        title="Live Attack Traffic"
         loading="lazy"
       ></iframe>
     </div>
@@ -721,34 +734,53 @@
 </main>
 
 <script type="module">
-  // ── State ────────────────────────────────────────────────────────────────────
+  // ── Signal name → plain English ───────────────────────────────────────────────
+  const SIGNAL_LABELS = {
+    PRIVILEGED_DATA_ACCESS:          'Read sensitive data',
+    UNTRUSTED_CONTENT_FETCH:         'Fetched external content',
+    PROMPT_INJECTION_DETECTED:       'Injection attempt found',
+    ENCODED_PAYLOAD_DETECTED:        'Hidden/encoded payload',
+    SUSPICIOUS_OUTBOUND_DESTINATION: 'Suspicious send destination',
+    CROSS_SESSION_CONTAMINATION:     'Memory contamination',
+    INJECTION_CORRELATED_OUTBOUND:   'Injection → exfiltration chain',
+    MCP_TOOL_POISONING:              'Tool poisoning attempt',
+    BEHAVIORAL_DRIFT_DETECTED:       'Behavior changed mid-session',
+    SECRET_DETECTED:                 'Credential/secret exposed',
+  };
+
+  // ── Action → human label ──────────────────────────────────────────────────────
+  const ACTION_LABELS = {
+    log:       'Monitoring',
+    alert:     'Alert Raised',
+    interrupt: 'BLOCKED',
+  };
+
+  // ── State ─────────────────────────────────────────────────────────────────────
   let scenarios = [];
   let running = false;
   let runCount = 0;
 
-  // ── DOM refs ─────────────────────────────────────────────────────────────────
-  const select = document.getElementById('scenario-select');
-  const btnRun = document.getElementById('btn-run');
-  const btnReset = document.getElementById('btn-reset');
-  const stepsEl = document.getElementById('steps');
-  const descEl = document.getElementById('scenario-desc');
-  const runBanner = document.getElementById('run-banner');
-  const statusDot = document.getElementById('status-dot');
-  const statusText = document.getElementById('status-text');
-  const runCountEl = document.getElementById('run-count');
-
-  const scoreBar = document.getElementById('score-bar');
-  const scoreValue = document.getElementById('score-value');
-  const actionDisplay = document.getElementById('action-display');
-
-  const cellL1 = document.getElementById('cell-L1');
-  const cellL2 = document.getElementById('cell-L2');
-  const cellL3 = document.getElementById('cell-L3');
-  const cellL4 = document.getElementById('cell-L4');
+  // ── DOM refs ──────────────────────────────────────────────────────────────────
+  const select       = document.getElementById('scenario-select');
+  const btnRun       = document.getElementById('btn-run');
+  const btnReset     = document.getElementById('btn-reset');
+  const stepsEl      = document.getElementById('steps');
+  const descEl       = document.getElementById('scenario-desc');
+  const runBanner    = document.getElementById('run-banner');
+  const statusDot    = document.getElementById('status-dot');
+  const statusText   = document.getElementById('status-text');
+  const runCountEl   = document.getElementById('run-count');
+  const scoreBar     = document.getElementById('score-bar');
+  const scoreValue   = document.getElementById('score-value');
+  const actionDisplay= document.getElementById('action-display');
+  const cellL1       = document.getElementById('cell-L1');
+  const cellL2       = document.getElementById('cell-L2');
+  const cellL3       = document.getElementById('cell-L3');
+  const cellL4       = document.getElementById('cell-L4');
 
   const SCORE_COLORS = ['#10b981', '#10b981', '#f59e0b', '#f97316', '#ef4444'];
 
-  // ── Load scenarios ────────────────────────────────────────────────────────────
+  // ── Load scenarios ─────────────────────────────────────────────────────────────
   async function loadScenarios() {
     try {
       const res = await fetch('/api/scenarios');
@@ -771,13 +803,13 @@
 
   select.addEventListener('change', onScenarioChange);
 
-  // ── Reset ────────────────────────────────────────────────────────────────────
+  // ── Reset ──────────────────────────────────────────────────────────────────────
   function reset() {
     stepsEl.innerHTML = `
       <div class="steps-empty">
         <div class="hint">⚡</div>
         <div>Select a scenario and click <strong>Run Attack</strong></div>
-        <div style="font-size:12px">Watch Cerberus detect and block threats in real time</div>
+        <div style="font-size:12px;margin-top:4px">Watch Cerberus detect and block the threat in real time</div>
       </div>`;
     runBanner.className = 'run-banner';
     updateScore(0);
@@ -788,7 +820,7 @@
 
   btnReset.addEventListener('click', () => { if (!running) reset(); });
 
-  // ── Risk monitor updates ──────────────────────────────────────────────────────
+  // ── Risk monitor updates ───────────────────────────────────────────────────────
   function updateScore(score) {
     const pct = (score / 4) * 100;
     scoreBar.style.width = pct + '%';
@@ -803,9 +835,7 @@
   }
 
   function clearLayers() {
-    [cellL1, cellL2, cellL3, cellL4].forEach(c => {
-      c.className = 'layer-cell';
-    });
+    [cellL1, cellL2, cellL3, cellL4].forEach(c => { c.className = 'layer-cell'; });
   }
 
   function activateLayer(layer) {
@@ -818,24 +848,43 @@
     statusDot.className = 'status-dot' + (isRunning ? ' running' : '');
   }
 
-  // ── Step card rendering ───────────────────────────────────────────────────────
+  // ── Step card rendering ────────────────────────────────────────────────────────
   function renderStep(stepData) {
     const { index, toolName, description, assessment, blocked, layer, result } = stepData;
 
     const card = document.createElement('div');
     card.className = 'step-card' + (blocked ? ' blocked' : '');
 
+    // Layer → human label
+    const layerLabels = {
+      L1: 'Private Data',
+      L2: 'External Content',
+      L3: 'Outbound Action',
+      L4: 'Memory',
+    };
+    const layerLabel = layerLabels[layer] || layer;
+
     let assessmentHtml = '';
     if (assessment) {
       const scoreClass = 'score-' + assessment.score;
       const actionClass = 'action-' + assessment.action;
-      const signals = (assessment.signals || []).slice(0, 4);
+
+      // Score label
+      const scoreLabels = ['Safe', 'Low Risk', 'Elevated', 'High Risk', 'Critical'];
+      const scoreText = scoreLabels[Math.min(assessment.score, 4)] + ' (' + assessment.score + '/4)';
+
+      // Humanize signals
+      const signals = (assessment.signals || [])
+        .slice(0, 4)
+        .map(s => SIGNAL_LABELS[s] || s.replace(/_/g, ' ').toLowerCase());
+
+      const actionLabel = ACTION_LABELS[assessment.action] || assessment.action.toUpperCase();
 
       assessmentHtml = `
         <div class="assessment-row">
-          <span class="score-pill ${scoreClass}">score: ${assessment.score}/4</span>
-          <span class="action-pill ${actionClass}">${assessment.action.toUpperCase()}</span>
-          ${blocked ? '<span class="blocked-badge">BLOCKED</span>' : ''}
+          <span class="score-pill ${scoreClass}">${scoreText}</span>
+          <span class="action-pill ${actionClass}">${actionLabel}</span>
+          ${blocked ? '<span class="blocked-badge">🛡 BLOCKED</span>' : ''}
         </div>
         ${signals.length > 0 ? `
           <div class="signal-pills">
@@ -849,21 +898,21 @@
     card.innerHTML = `
       <div class="step-header">
         <span class="step-num">${index + 1}</span>
-        <span class="step-tool">${toolName}()</span>
-        <span class="layer-badge layer-${layer}">${layer}</span>
-        ${blocked ? '<span class="blocked-badge">BLOCKED</span>' : ''}
+        <span class="step-layer-label layer-${layer}">${layerLabel}</span>
+        ${blocked ? '<span class="blocked-badge" style="margin-left:auto">🛡 BLOCKED</span>' : ''}
       </div>
       <div class="step-body">
         <div class="step-desc">${description}</div>
+        <div class="step-tool-name">${toolName}()</div>
         ${assessmentHtml}
-        <button class="result-toggle" onclick="this.nextElementSibling.classList.toggle('hidden')">▸ Result</button>
+        <button class="result-toggle" onclick="this.nextElementSibling.classList.toggle('hidden')">▸ Raw output</button>
         <div class="result-text ${isBlockedResult ? 'blocked-result' : ''} hidden">${truncated}</div>
       </div>`;
 
     return card;
   }
 
-  // ── Run scenario ──────────────────────────────────────────────────────────────
+  // ── Run scenario ───────────────────────────────────────────────────────────────
   btnRun.addEventListener('click', async () => {
     if (running) return;
     const scenarioId = select.value;
@@ -874,12 +923,11 @@
     btnReset.disabled = true;
     runBanner.className = 'run-banner';
 
-    // Clear steps
     stepsEl.innerHTML = '';
     clearLayers();
     updateScore(0);
-    updateAction('RUNNING', 'running');
-    setStatus('Running attack…', true);
+    updateAction('RUNNING…', 'running');
+    setStatus('Attack running…', true);
 
     let finalScore = 0;
     let finalAction = 'log';
@@ -903,7 +951,6 @@
 
         buffer += decoder.decode(value, { stream: true });
 
-        // Parse SSE events from buffer
         const parts = buffer.split('\n\n');
         buffer = parts.pop() ?? '';
 
@@ -914,7 +961,7 @@
 
           for (const line of lines) {
             if (line.startsWith('event: ')) eventType = line.slice(7).trim();
-            if (line.startsWith('data: ')) dataLine = line.slice(6).trim();
+            if (line.startsWith('data: '))  dataLine  = line.slice(6).trim();
           }
 
           if (!eventType || !dataLine) continue;
@@ -923,7 +970,7 @@
           try { data = JSON.parse(dataLine); } catch { continue; }
 
           if (eventType === 'start') {
-            setStatus(`Running: ${data.scenarioId} (${data.totalSteps} steps)`, true);
+            setStatus(`Running: ${data.totalSteps} steps`, true);
           }
 
           if (eventType === 'step') {
@@ -945,12 +992,12 @@
               const a = data.assessment.action;
               if (a === 'interrupt') {
                 finalAction = 'interrupt';
-                updateAction('INTERRUPT', 'interrupt2');
+                updateAction('BLOCKED', 'interrupt2');
               } else if (a === 'alert' && finalAction !== 'interrupt') {
                 finalAction = 'alert';
-                updateAction('ALERT', 'alert2');
+                updateAction('ALERT RAISED', 'alert2');
               } else if (finalAction === 'log') {
-                updateAction('LOG', 'log2');
+                updateAction('MONITORING', 'log2');
               }
             }
           }
@@ -975,21 +1022,19 @@
       btnRun.disabled = false;
       btnReset.disabled = false;
 
-      // Show result banner
       const wasBlocked = finalAction === 'interrupt';
       runBanner.className = 'run-banner show ' + (wasBlocked ? 'blocked' : 'allowed');
       runBanner.textContent = wasBlocked
-        ? `🛡 Attack BLOCKED — Cerberus interrupted the tool call (score: ${finalScore}/4)`
-        : `✓ Run complete — score: ${finalScore}/4 (below interrupt threshold)`;
+        ? `🛡 Attack BLOCKED — Cerberus stopped the threat before data left the organization (threat level: ${finalScore}/4)`
+        : `✓ Run complete — no threat blocked (threat level: ${finalScore}/4)`;
 
       setStatus(wasBlocked ? 'Attack blocked by Cerberus' : 'Run complete', false);
     }
   });
 
-  // ── Init ──────────────────────────────────────────────────────────────────────
+  // ── Init ───────────────────────────────────────────────────────────────────────
   await loadScenarios();
 
-  // Check if Grafana is reachable; show friendly message if not
   const grafanaFrame = document.getElementById('grafana-frame');
   grafanaFrame.addEventListener('error', () => {
     grafanaFrame.style.display = 'none';
@@ -998,8 +1043,8 @@
     msg.className = 'grafana-unavailable';
     msg.innerHTML = `
       <div style="font-size:24px">📊</div>
-      <div>Grafana not running</div>
-      <div style="font-size:12px;color:var(--text-muted)">Start the monitoring stack to see live metrics</div>
+      <div>Live metrics not available</div>
+      <div style="font-size:12px;color:var(--text-muted)">Start the monitoring stack to see real-time attack traffic</div>
       <code style="font-size:11px;background:var(--surface2);padding:4px 8px;border-radius:4px;">docker compose -f monitoring/docker-compose.yml up -d</code>
     `;
     parent.appendChild(msg);
@@ -1008,12 +1053,11 @@
 
 <script>
   // Apply GRAFANA_URL injected by server at serve-time.
-  // Defaults to localhost:3030 for local docker compose; set GRAFANA_URL env var for hosted deployments.
   (function () {
     const base = (window.__GRAFANA_URL__ || 'http://localhost:3030').replace(/\/$/, '');
-    const navLink = document.querySelector('a[href="http://localhost:3030"]');
+    const navLink = document.getElementById('nav-dashboard-link');
     if (navLink) navLink.href = base;
-    const dashLink = document.querySelector('a[href="http://localhost:3030/d/cerberus-main"]');
+    const dashLink = document.getElementById('nav-full-dashboard');
     if (dashLink) dashLink.href = base + '/d/cerberus-main';
     const iframe = document.getElementById('grafana-frame');
     if (iframe) {

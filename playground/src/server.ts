@@ -193,9 +193,11 @@ async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse
       // Stop execution if blocked
       if (blocked) break;
 
-      // Dramatic pause between steps
+      // Pause between steps — long enough for non-technical audiences to read
       if (i < scenario.steps.length - 1) {
-        await sleep(500);
+        // Extra pause when risk is building, so the audience feels the tension
+        const pauseMs = assessment && assessment.score >= 2 ? 2500 : 1500;
+        await sleep(pauseMs);
       }
     }
 
