@@ -183,7 +183,7 @@ async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse
               score: assessment.score,
               action: assessment.action,
               vector: assessment.vector,
-              signals: assessment.signals,
+              signals: assessment.signals.map((s) => s.signal),
             }
           : null,
         blocked,
