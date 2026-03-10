@@ -5,10 +5,10 @@ WORKDIR /app
 RUN addgroup -S cerberus && adduser -S cerberus -G cerberus
 
 ENV HUSKY=0 NODE_ENV=production
-COPY package*.json ./
-RUN npm ci
+COPY license-server/package.json ./
+RUN npm install --ignore-scripts
 
-COPY src/ ./src/
+COPY license-server/src/ ./src/
 
 RUN chown -R cerberus:cerberus /app
 
