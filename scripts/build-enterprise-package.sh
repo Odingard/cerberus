@@ -25,13 +25,16 @@ mkdir -p "${PKG_DIR}"
 
 # ── Customer-facing files ──────────────────────────────────────────────────
 
-# Docker Compose — rewrite to use GHCR image instead of local build
+# Docker Compose — rewrite for customer's flat directory layout:
+#   1. Replace build: block with pre-built GHCR image
+#   2. Fix ../monitoring/ → ./monitoring/ (tarball has monitoring/ at root level)
 sed \
   -e 's|build:|# build:|' \
   -e 's|context: \.\.|# context: ..|' \
   -e 's|dockerfile: enterprise/gateway/Dockerfile|# dockerfile: enterprise/gateway/Dockerfile|' \
   -e "/# dockerfile: enterprise\/gateway\/Dockerfile/a\\
 \\    image: ghcr.io/odingard/cerberus-gateway:v${VERSION}" \
+  -e "s|\.\./monitoring/|./monitoring/|g" \
   enterprise/docker-compose.yml > "${PKG_DIR}/docker-compose.yml"
 
 # Config templates
