@@ -146,11 +146,13 @@ async function handleStripeWebhook(
   });
 
   try {
+    const version = process.env['CERBERUS_VERSION'] ?? '1.0.0';
     await sendLicenseEmail({
       to: customerEmail,
       licenseKey: key,
       plan: 'enterprise',
       expiresAt,
+      version,
     });
     console.log(`[License] Key issued and emailed to ${customerEmail}`);
   } catch (err) {

@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.2] — 2026-03-10
+
+### Added
+
+- **Enterprise business infrastructure** — complete set of documents for enterprise sales readiness:
+  - `legal/EULA.md` — End User License Agreement (15 sections: grant, restrictions, IP, warranties, liability, indemnification, termination)
+  - `legal/MSA.md` — Master Services Agreement (12 sections: order forms, payment terms, confidentiality, IP, warranties)
+  - `legal/PRIVACY.md` — Privacy Policy (data collection, processors, retention, rights, international transfers)
+  - `legal/DPA.md` — Data Processing Agreement (GDPR SCCs, CCPA Service Provider, HIPAA self-hosted position, sub-processor list, breach notification 72h)
+  - `legal/SLA.md` — Service Level Agreement (Standard + Premium tiers, 4 severity levels, 99.9% uptime, service credits, escalation matrix)
+  - `legal/COMPLIANCE.md` — Compliance Statement (SOC 2 roadmap, GDPR, CCPA, HIPAA, PCI DSS, ISO 27001, supply chain security, pen test schedule)
+  - `docs/troubleshooting.md` — comprehensive troubleshooting guide (startup, runtime, monitoring, audit log, Docker, license issues)
+  - `docs/capacity-planning.md` — sizing guide (throughput estimates, resource requirements, horizontal scaling, audit log/Prometheus disk sizing)
+  - `docs/runbooks/license-revocation.md` — emergency license key revocation procedure
+  - `docs/runbooks/audit-log-forensics.md` — audit log analysis, chain verification, SIEM integration
+  - `docs/runbooks/gateway-degradation.md` — performance triage and remediation
+  - `docs/runbooks/upgrade-rollback.md` — upgrade and rollback procedures
+  - `scripts/build-enterprise-package.sh` — builds customer-deliverable tarball (docker-compose + configs + monitoring + docs + legal, no source code)
+
+### Changed
+
+- **License email** — now includes download URL, SHA-256 checksum, 3-step setup instructions, version-specific tarball link, SLA reference
+- **Landing page footer** — added legal links (Privacy, Terms, SLA, Compliance, Support) + copyright notice
+
 ## [1.0.1] — 2026-03-10
 
 ### Added
