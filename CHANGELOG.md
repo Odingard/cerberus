@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] — 2026-03-10
+
+### Breaking Changes
+
+None — v1.0.0 is fully backwards-compatible with v0.3.x. The version bump marks production readiness.
+
+### Added
+
+- **14 attack scenarios in Playground** — 7 new scenarios covering Healthcare/HIPAA (patient PHI + fake CMS directive), Financial Trading ($4.2M portfolio liquidation order), Multilingual Injection (Spanish RGPD notice), Multi-Turn Persistent (behavioral drift across 5 turns), MCP Tool Poisoning (poisoned tool description in registry), Supply Chain CI/CD (compromised dep changelog + CI secrets), Supply Chain npm (malicious package.json README hook)
+- **Landing page v1.0.0** (`docs/index.html`) — updated stats (773 tests, 14 attack scenarios), v1.0.0 badge, Live Demo nav link, correct Grafana subdomain link, 7 sub-classifiers count
+
+### Changed
+
+- **Version**: `0.3.2` → `1.0.0` — production release milestone
+
 ## [0.3.2] — 2026-03-05
 
 ### Added

@@ -1,5 +1,35 @@
 # Cerberus — Release Notes
 
+## v1.0.0 — 2026-03-10
+
+> Production release. All detection layers complete, 773 tests, 14 interactive attack scenarios, scientific validation (N=285 real API calls). Backwards-compatible with v0.3.x.
+
+### Highlights
+
+- **14 attack scenarios** in the interactive Playground — healthcare, financial trading, multilingual injection, multi-turn persistent drift, MCP tool poisoning, and two supply chain scenarios (CI/CD + npm)
+- **7 sub-classifiers** — outbound correlator joins secrets detector, injection scanner, encoding detector, MCP poisoning scanner, domain classifier, and drift detector
+- **773 tests**, 98%+ coverage
+- **Landing page v1.0.0** — updated stats, Live Demo nav link, Grafana dashboard link, v1.0.0 badge
+- Production deployment: `demo.cerberus.sixsenseenterprise.com` + `grafana.cerberus.sixsenseenterprise.com`
+
+### New Attack Scenarios (Playground)
+
+| ID | Name | Attack Vector | Action |
+|----|------|---------------|--------|
+| `healthcare-hipaa` | Healthcare/HIPAA Breach | Patient PHI + fake CMS directive | interrupt |
+| `financial-trading` | Financial Trading | $4.2M portfolio + liquidation order | interrupt |
+| `multilingual-injection` | Multilingual Injection | Spanish RGPD notice obfuscation | interrupt |
+| `multi-turn-persistent` | Multi-Turn Persistent | Drift detection across 5 turns | interrupt |
+| `mcp-tool-poisoning` | MCP Tool Poisoning | Poisoned tool description in registry | interrupt |
+| `supply-chain-cicd` | Supply Chain CI/CD | CI secrets + compromised dep changelog | interrupt |
+| `supply-chain-npm` | Supply Chain npm | Malicious package.json README hook | interrupt |
+
+### No Breaking Changes
+
+All v0.3.x `guard()`, `createProxy()`, `scanToolDescriptions()`, and adapter APIs are unchanged.
+
+---
+
 ## v0.3.0 — 2026-03-04
 
 > Platform integration release — HTTP proxy/gateway mode, OpenTelemetry instrumentation, Docker demo, and getting-started guide. Zero-code-change integration path; plug Cerberus into any observability stack.

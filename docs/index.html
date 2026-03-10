@@ -6,7 +6,7 @@
   <title>Cerberus — Agentic AI Runtime Security</title>
   <meta name="description" content="Cerberus detects, correlates, and interrupts the Lethal Trifecta attack pattern across all agentic AI systems. One function call. Zero framework changes." />
   <meta property="og:title" content="Cerberus — Agentic AI Runtime Security" />
-  <meta property="og:description" content="Detects and blocks prompt injection + PII exfiltration attacks in real time. N=285 real API calls validated. 747 tests. npm install @cerberus-ai/core" />
+  <meta property="og:description" content="Detects and blocks prompt injection + PII exfiltration attacks in real time. N=285 real API calls validated. 773 tests. npm install @cerberus-ai/core" />
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary_large_image" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>" />
@@ -427,6 +427,7 @@
     <a href="#how-it-works" class="hide-mobile">How It Works</a>
     <a href="#research" class="hide-mobile">Research</a>
     <a href="#quickstart" class="hide-mobile">Quickstart</a>
+    <a href="http://demo.cerberus.sixsenseenterprise.com" target="_blank" class="hide-mobile">Live Demo</a>
     <a href="https://github.com/Odingard/cerberus" class="hide-mobile">GitHub</a>
     <a href="https://www.npmjs.com/package/@cerberus-ai/core" class="nav-cta">npm install</a>
   </div>
@@ -434,7 +435,7 @@
 
 <!-- ── Hero ─────────────────────────────────────────────────────────────── -->
 <div class="hero">
-  <div class="badge">Agentic AI Runtime Security</div>
+  <div class="badge">v1.0.0 — Agentic AI Runtime Security</div>
   <h1>Your AI agents are being<br><em>weaponized against you</em></h1>
   <p class="hero-sub">
     Every AI agent that can read private data, process external content, and send outbound messages
@@ -488,8 +489,12 @@
     <div class="stat-label">Detection overhead p50<br>0.01% of LLM latency</div>
   </div>
   <div class="stat">
-    <div class="stat-num">747</div>
+    <div class="stat-num">773</div>
     <div class="stat-label">Tests<br>98%+ coverage</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">14</div>
+    <div class="stat-label">Attack scenarios<br>in live playground</div>
   </div>
   <div class="stat">
     <div class="stat-num">0%</div>
@@ -544,8 +549,8 @@
     </div>
     <div class="feature">
       <div class="feature-icon">🧬</div>
-      <div class="feature-title">6 Sub-Classifiers</div>
-      <div class="feature-desc">Secrets detector, injection scanner, encoding detector, MCP poisoning scanner, domain classifier, behavioral drift detector.</div>
+      <div class="feature-title">7 Sub-Classifiers</div>
+      <div class="feature-desc">Secrets detector, injection scanner, encoding detector, MCP poisoning scanner, domain classifier, outbound correlator, behavioral drift detector.</div>
     </div>
     <div class="feature">
       <div class="feature-icon">📡</div>
@@ -742,7 +747,7 @@
   <p>Run real attack scenarios — prompt injection, data exfiltration, the full Lethal Trifecta —<br>and watch Cerberus detect and block them in real time with live Grafana metrics.</p>
   <div class="hero-actions">
     <a href="http://demo.cerberus.sixsenseenterprise.com" target="_blank" class="btn btn-primary" style="background:var(--red);border-color:var(--red);font-size:1.05rem;padding:0.85rem 2rem">▶ Launch Live Demo</a>
-    <a href="http://demo.cerberus.sixsenseenterprise.com/grafana/d/cerberus-main" target="_blank" class="btn btn-secondary">View Grafana Dashboard</a>
+    <a href="http://grafana.cerberus.sixsenseenterprise.com" target="_blank" class="btn btn-secondary">View Grafana Dashboard</a>
   </div>
   <p style="margin-top:1.5rem;font-size:0.8rem;color:var(--text-muted)">No sign-up required · Enterprise APT scenario runs 19 tool calls in ~10 seconds</p>
 </div>
