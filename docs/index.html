@@ -427,7 +427,7 @@
     <a href="#how-it-works" class="hide-mobile">How It Works</a>
     <a href="#research" class="hide-mobile">Research</a>
     <a href="#quickstart" class="hide-mobile">Quickstart</a>
-    <a href="http://demo.cerberus.sixsenseenterprise.com" target="_blank" class="hide-mobile">Live Demo</a>
+    <a href="https://demo.cerberus.sixsenseenterprise.com" target="_blank" class="hide-mobile">Live Demo</a>
     <a href="https://github.com/Odingard/cerberus" class="hide-mobile">GitHub</a>
     <a href="https://www.npmjs.com/package/@cerberus-ai/core" class="nav-cta">npm install</a>
   </div>
@@ -443,7 +443,7 @@
     in real time, before data leaves your system.
   </p>
   <div class="hero-actions">
-    <a href="http://demo.cerberus.sixsenseenterprise.com" target="_blank" class="btn btn-primary" style="background:var(--red);border-color:var(--red)">▶ Live Attack Demo</a>
+    <a href="https://demo.cerberus.sixsenseenterprise.com" target="_blank" class="btn btn-primary" style="background:var(--red);border-color:var(--red)">▶ Live Attack Demo</a>
     <a href="#quickstart" class="btn btn-secondary">Get started in 5 min</a>
     <a href="https://github.com/Odingard/cerberus" class="btn btn-secondary">GitHub</a>
   </div>
@@ -742,53 +742,123 @@
 
 <!-- ── Enterprise ────────────────────────────────────────────────────────── -->
 <section id="enterprise">
-  <div class="badge" style="background:rgba(66,153,225,0.12);color:#4299e1;border-color:rgba(66,153,225,0.3)">Self-Hosted Enterprise</div>
-  <h2>Deploy in your <em>own environment</em></h2>
-  <p class="section-sub">Full detection stack inside your VPC. Zero data sharing. One command to start.</p>
+  <div class="badge" style="background:rgba(66,153,225,0.12);color:#4299e1;border-color:rgba(66,153,225,0.3)">Open Source · Enterprise</div>
+  <h2>Choose the right <em>deployment</em></h2>
+  <p class="section-sub">The detection engine is open source and free. The enterprise package adds the production infrastructure teams need to deploy, monitor, and operate it at scale.</p>
 
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin:2.5rem 0;max-width:900px;margin-inline:auto">
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem;text-align:center">
-      <div style="font-size:1.5rem;margin-bottom:.4rem">🛡️</div>
-      <strong>Cerberus Gateway</strong>
-      <p style="font-size:.8rem;color:var(--text-muted);margin:.4rem 0 0">Zero-code-change HTTP proxy on :4000</p>
-    </div>
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem;text-align:center">
-      <div style="font-size:1.5rem;margin-bottom:.4rem">📊</div>
-      <strong>Grafana Dashboard</strong>
-      <p style="font-size:.8rem;color:var(--text-muted);margin:.4rem 0 0">16 security panels, live metrics</p>
-    </div>
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem;text-align:center">
-      <div style="font-size:1.5rem;margin-bottom:.4rem">🔔</div>
-      <strong>Alert Routing</strong>
-      <p style="font-size:.8rem;color:var(--text-muted);margin:.4rem 0 0">Slack, PagerDuty, email</p>
-    </div>
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem;text-align:center">
-      <div style="font-size:1.5rem;margin-bottom:.4rem">📋</div>
-      <strong>Audit Log</strong>
-      <p style="font-size:.8rem;color:var(--text-muted);margin:.4rem 0 0">Tamper-evident chained hash log</p>
-    </div>
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem;text-align:center">
-      <div style="font-size:1.5rem;margin-bottom:.4rem">🐳</div>
-      <strong>Docker Deploy</strong>
-      <p style="font-size:.8rem;color:var(--text-muted);margin:.4rem 0 0">Single compose file, 5-container stack</p>
-    </div>
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem;text-align:center">
-      <div style="font-size:1.5rem;margin-bottom:.4rem">🔑</div>
-      <strong>Priority Support</strong>
-      <p style="font-size:.8rem;color:var(--text-muted);margin:.4rem 0 0">Setup assistance included</p>
-    </div>
+  <!-- Comparison table -->
+  <div style="overflow-x:auto;margin:2.5rem auto;max-width:860px">
+    <table style="width:100%;border-collapse:collapse;font-size:.9rem">
+      <thead>
+        <tr>
+          <th style="text-align:left;padding:.75rem 1rem;border-bottom:2px solid var(--border);color:var(--text-muted);font-weight:600;width:44%">Feature</th>
+          <th style="text-align:center;padding:.75rem 1rem;border-bottom:2px solid var(--border);font-weight:700;width:28%">
+            Open Source<br><span style="font-size:.75rem;color:var(--text-muted);font-weight:400">@cerberus-ai/core · MIT</span>
+          </th>
+          <th style="text-align:center;padding:.75rem 1rem;border-bottom:2px solid #4299e1;font-weight:700;width:28%;background:rgba(66,153,225,0.06);border-radius:8px 8px 0 0">
+            Enterprise<br><span style="font-size:.75rem;color:#4299e1;font-weight:400">Self-hosted · Annual license</span>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:.65rem 1rem;color:var(--text-muted);font-size:.85rem" colspan="3"><strong style="color:var(--text)">Detection Engine</strong></td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:.65rem 1rem">4-layer detection (L1–L4)</td>
+          <td style="text-align:center;padding:.65rem 1rem">✓</td>
+          <td style="text-align:center;padding:.65rem 1rem;background:rgba(66,153,225,0.04)">✓</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:.65rem 1rem">7 sub-classifiers incl. MCP scanner</td>
+          <td style="text-align:center;padding:.65rem 1rem">✓</td>
+          <td style="text-align:center;padding:.65rem 1rem;background:rgba(66,153,225,0.04)">✓</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:.65rem 1rem">LangChain, Vercel AI, OpenAI Agents adapters</td>
+          <td style="text-align:center;padding:.65rem 1rem">✓</td>
+          <td style="text-align:center;padding:.65rem 1rem;background:rgba(66,153,225,0.04)">✓</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:.65rem 1rem">OpenTelemetry metrics export</td>
+          <td style="text-align:center;padding:.65rem 1rem">✓</td>
+          <td style="text-align:center;padding:.65rem 1rem;background:rgba(66,153,225,0.04)">✓</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:.65rem 1rem;color:var(--text-muted);font-size:.85rem" colspan="3"><strong style="color:var(--text)">Production Infrastructure</strong></td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:.65rem 1rem">Cerberus Gateway — zero-code-change HTTP proxy</td>
+          <td style="text-align:center;padding:.65rem 1rem;color:var(--text-muted)">—</td>
+          <td style="text-align:center;padding:.65rem 1rem;background:rgba(66,153,225,0.04);color:#4299e1;font-weight:700">✓</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:.65rem 1rem">Grafana dashboard — 16 security panels</td>
+          <td style="text-align:center;padding:.65rem 1rem;color:var(--text-muted)">—</td>
+          <td style="text-align:center;padding:.65rem 1rem;background:rgba(66,153,225,0.04);color:#4299e1;font-weight:700">✓</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:.65rem 1rem">Prometheus + Alertmanager (Slack, PagerDuty, email)</td>
+          <td style="text-align:center;padding:.65rem 1rem;color:var(--text-muted)">—</td>
+          <td style="text-align:center;padding:.65rem 1rem;background:rgba(66,153,225,0.04);color:#4299e1;font-weight:700">✓</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:.65rem 1rem">Tamper-evident chained audit log</td>
+          <td style="text-align:center;padding:.65rem 1rem;color:var(--text-muted)">—</td>
+          <td style="text-align:center;padding:.65rem 1rem;background:rgba(66,153,225,0.04);color:#4299e1;font-weight:700">✓</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:.65rem 1rem">License validation + rate limiting</td>
+          <td style="text-align:center;padding:.65rem 1rem;color:var(--text-muted)">—</td>
+          <td style="text-align:center;padding:.65rem 1rem;background:rgba(66,153,225,0.04);color:#4299e1;font-weight:700">✓</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:.65rem 1rem">Docker Compose — one command, 5-container stack</td>
+          <td style="text-align:center;padding:.65rem 1rem;color:var(--text-muted)">—</td>
+          <td style="text-align:center;padding:.65rem 1rem;background:rgba(66,153,225,0.04);color:#4299e1;font-weight:700">✓</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:.65rem 1rem;color:var(--text-muted);font-size:.85rem" colspan="3"><strong style="color:var(--text)">Support & Compliance</strong></td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:.65rem 1rem">Community support (GitHub issues)</td>
+          <td style="text-align:center;padding:.65rem 1rem">✓</td>
+          <td style="text-align:center;padding:.65rem 1rem;background:rgba(66,153,225,0.04)">✓</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:.65rem 1rem">Email support + setup assistance</td>
+          <td style="text-align:center;padding:.65rem 1rem;color:var(--text-muted)">—</td>
+          <td style="text-align:center;padding:.65rem 1rem;background:rgba(66,153,225,0.04);color:#4299e1;font-weight:700">✓</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:.65rem 1rem">SLA — 99.9% uptime, P1 4h response (Premium)</td>
+          <td style="text-align:center;padding:.65rem 1rem;color:var(--text-muted)">—</td>
+          <td style="text-align:center;padding:.65rem 1rem;background:rgba(66,153,225,0.04);color:#4299e1;font-weight:700">✓</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:.65rem 1rem">MSA, DPA, GDPR/CCPA/HIPAA documentation</td>
+          <td style="text-align:center;padding:.65rem 1rem;color:var(--text-muted)">—</td>
+          <td style="text-align:center;padding:.65rem 1rem;background:rgba(66,153,225,0.04);color:#4299e1;font-weight:700">✓</td>
+        </tr>
+        <tr>
+          <td style="padding:.65rem 1rem">Your data stays in your VPC</td>
+          <td style="text-align:center;padding:.65rem 1rem">✓</td>
+          <td style="text-align:center;padding:.65rem 1rem;background:rgba(66,153,225,0.04);border-radius:0 0 8px 0">✓</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 
-  <div style="text-align:center;margin-top:2.5rem">
+  <div style="text-align:center;margin-top:2rem">
     <a href="mailto:enterprise@sixsenseenterprise.com?subject=Cerberus Enterprise Inquiry"
-       class="btn btn-primary" style="font-size:1.05rem;padding:.85rem 2rem">
-      Contact Us →
+       class="btn btn-primary" style="font-size:1.05rem;padding:.85rem 2rem;background:#4299e1;border-color:#4299e1">
+      Contact Us for Pricing →
     </a>
-    <a href="http://demo.cerberus.sixsenseenterprise.com" target="_blank" class="btn btn-secondary">
+    <a href="https://demo.cerberus.sixsenseenterprise.com" target="_blank" class="btn btn-secondary">
       Try Live Demo First
     </a>
     <p style="margin-top:1rem;font-size:0.8rem;color:var(--text-muted)">
-      Annual license · Setup support included · Your data stays in your VPC
+      Annual license · Contact-us pricing · Your data stays in your VPC
     </p>
   </div>
 </section>
@@ -799,8 +869,8 @@
   <h2>Watch Cerberus block a <em>live attack</em></h2>
   <p>Run real attack scenarios — prompt injection, data exfiltration, the full Lethal Trifecta —<br>and watch Cerberus detect and block them in real time with live Grafana metrics.</p>
   <div class="hero-actions">
-    <a href="http://demo.cerberus.sixsenseenterprise.com" target="_blank" class="btn btn-primary" style="background:var(--red);border-color:var(--red);font-size:1.05rem;padding:0.85rem 2rem">▶ Launch Live Demo</a>
-    <a href="http://grafana.cerberus.sixsenseenterprise.com" target="_blank" class="btn btn-secondary">View Grafana Dashboard</a>
+    <a href="https://demo.cerberus.sixsenseenterprise.com" target="_blank" class="btn btn-primary" style="background:var(--red);border-color:var(--red);font-size:1.05rem;padding:0.85rem 2rem">▶ Launch Live Demo</a>
+    <a href="https://grafana.cerberus.sixsenseenterprise.com" target="_blank" class="btn btn-secondary">View Grafana Dashboard</a>
   </div>
   <p style="margin-top:1.5rem;font-size:0.8rem;color:var(--text-muted)">No sign-up required · Enterprise APT scenario runs 19 tool calls in ~10 seconds</p>
 </div>
@@ -808,11 +878,15 @@
 <!-- ── CTA ───────────────────────────────────────────────────────────────── -->
 <div class="cta-section">
   <h2>Start protecting your agents <em>today</em></h2>
-  <p>Open source. MIT license. Zero runtime dependencies beyond SQLite.</p>
+  <p>The core SDK is open source and free. Drop it into your agent in minutes.</p>
   <div class="hero-actions">
     <a href="https://www.npmjs.com/package/@cerberus-ai/core" class="btn btn-primary">npm install @cerberus-ai/core</a>
     <a href="https://github.com/Odingard/cerberus" class="btn btn-secondary">Star on GitHub</a>
   </div>
+  <p style="margin-top:1rem;font-size:0.8rem;color:var(--text-muted)">
+    Need production infrastructure, monitoring, and SLA?
+    <a href="#enterprise" style="color:var(--text);text-decoration:underline">See Enterprise →</a>
+  </p>
 </div>
 
 <!-- ── Footer ────────────────────────────────────────────────────────────── -->
