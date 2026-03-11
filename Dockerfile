@@ -13,6 +13,6 @@ RUN npm ci
 
 # Copy source
 COPY src/ ./src/
-COPY docker/ ./docker/
+COPY playground/ ./playground/
 
-CMD ["npx", "tsx", "docker/demo.ts"]
+CMD ["npx", "tsx", "playground/src/server.ts"]

@@ -71,6 +71,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
+          file: playground/Dockerfile
           push: true
           tags: |
             ghcr.io/odingard/cerberus-demo:latest
