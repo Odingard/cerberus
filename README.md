@@ -3,8 +3,9 @@
 **Agentic AI Runtime Security Platform**
 
 [![CI](https://github.com/Odingard/cerberus/actions/workflows/ci.yml/badge.svg)](https://github.com/Odingard/cerberus/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Release](https://github.com/Odingard/cerberus/actions/workflows/release.yml/badge.svg)](https://github.com/Odingard/cerberus/actions/workflows/release.yml)
 [![npm version](https://img.shields.io/npm/v/@cerberus-ai/core.svg)](https://www.npmjs.com/package/@cerberus-ai/core)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Cerberus detects, correlates, and interrupts the **Lethal Trifecta** attack pattern across all agentic AI systems — in real time, at the tool-call level, before data leaves your perimeter.
 
@@ -96,7 +97,11 @@ Sub-classifiers emit signals with existing layer tags (L1/L2/L3), so they contri
 
 ## Try It Now
 
-**Docker demo** — see the attack and the block, no API keys required:
+**Live playground** — interactive attack demo, no signup required:
+
+> **[demo.cerberus.sixsenseenterprise.com](https://demo.cerberus.sixsenseenterprise.com)**
+
+**Docker demo** — run locally, see the attack and the block, no API keys required:
 
 ```bash
 git clone https://github.com/Odingard/cerberus
@@ -457,7 +462,7 @@ npx tsx harness/bench.ts
 - **Language**: TypeScript (strict mode)
 - **Runtime**: Node.js >= 20
 - **Primary Harness**: OpenAI, Anthropic, Google Gemini (multi-provider)
-- **Testing**: Vitest (776 tests, 98%+ coverage)
+- **Testing**: Vitest (776 tests, 98%+ coverage, 46 test files, 1.1s runtime)
 - **Memory Store**: SQLite via better-sqlite3
 - **Validation**: Zod
 
@@ -469,7 +474,7 @@ npx tsx harness/bench.ts
 cerberus/
 ├── src/
 │   ├── layers/           # L1-L4 core detection layers
-│   ├── classifiers/      # Advanced sub-classifiers (secrets, injection, encoding, domain, outbound, MCP, drift)
+│   ├── classifiers/      # 7 sub-classifiers (secrets, injection, encoding, domain, outbound correlator, MCP, drift)
 │   ├── engine/           # Correlation engine + interceptor
 │   ├── graph/            # Memory contamination graph + provenance ledger
 │   ├── middleware/       # Developer-facing guard() API
@@ -477,26 +482,36 @@ cerberus/
 │   ├── proxy/            # HTTP proxy/gateway mode (createProxy)
 │   ├── telemetry/        # OpenTelemetry instrumentation (spans + metrics)
 │   └── types/            # Shared TypeScript interfaces
+├── enterprise/           # Self-hosted enterprise package
+│   ├── gateway/          # Cerberus Gateway — zero-code-change proxy (Dockerfile, server.ts, license-client.ts)
+│   ├── docker-compose.yml
+│   ├── setup.sh          # Interactive setup: prereqs → .env → health check
+│   ├── .env.example
+│   └── cerberus.config.yml.example
+├── license-server/       # License issuance + Stripe webhook handler
+│   └── src/              # server.ts, db.ts (SQLite), mailer.ts (Resend)
+├── playground/           # Interactive live demo (port 4040)
+│   ├── server.ts         # SSE streaming + embedded Grafana
+│   └── Dockerfile
 ├── harness/              # Attack research instrument
 │   ├── providers/        # Multi-provider abstraction (OpenAI, Anthropic, Google)
 │   ├── traces/           # Labeled execution logs (JSON)
-│   ├── agent.ts          # 3-tool attack agent (OpenAI)
-│   ├── agent-multi.ts    # Multi-provider attack agent
-│   ├── tools.ts          # Tool A, B, C definitions
 │   ├── payloads.ts       # 30 injection payloads across 6 categories
 │   ├── runner.ts         # Automated attack executor + multi-trial stress
-│   ├── bench.ts          # Performance benchmark — Cerberus overhead vs raw execution
-│   └── analyze.ts        # Run comparison + trace analysis CLI
+│   ├── bench.ts          # Performance benchmark
+│   └── validation/       # Scientific validation protocol (11 modules, 127 tests)
 ├── tests/
-│   ├── classifiers/      # Sub-classifier unit tests
-│   ├── integration/      # 5-phase severity test suite
+│   ├── classifiers/      # Sub-classifier unit tests (121 tests)
+│   ├── integration/      # 5-phase severity test suite (48 tests)
 │   └── ...               # Mirrors src/ structure
-├── monitoring/           # Grafana + Prometheus + OTel Collector stack
-│   ├── docker-compose.yml
+├── monitoring/           # Production observability stack (6 Docker services)
+│   ├── docker-compose.yml  # otel-collector, prometheus, alertmanager, grafana, playground, license-server
 │   ├── otel-collector.yml
 │   ├── prometheus.yml
-│   └── grafana/          # Auto-provisioned datasource + dashboard
-├── docs/                 # Architecture, research, API reference
+│   ├── alerts.yml        # 6 pre-configured alert rules
+│   └── grafana/          # 16-panel auto-provisioned dashboard
+├── docs/                 # Architecture, research, API reference, enterprise guides
+├── legal/                # EULA, SLA, Privacy Policy, Terms of Service
 └── examples/             # Runnable demo integrations
 ```
 
@@ -504,16 +519,20 @@ cerberus/
 
 ## Roadmap
 
-| Phase   | Deliverable                                                          | Status       |
-| ------- | -------------------------------------------------------------------- | ------------ |
-| **0**   | Repository scaffold, toolchain, CI                                   | **Complete** |
-| **1**   | Attack harness — 3-tool agent, 21 injection payloads, labeled traces | **Complete** |
-| **1.5** | Hardening — retry/timeout, safeParse, error traces, 88 tests         | **Complete** |
-| **1.6** | Stress testing — multi-trial, prompt variants, advanced payloads     | **Complete** |
-| **2**   | Detection middleware — L1+L2+L3 + Correlation Engine                 | **Complete** |
-| **3**   | Memory Contamination Graph — L4 + temporal attack detection          | **Complete** |
-| **4**   | npm SDK packaging, developer docs, examples                          | **Complete** |
-| **5**   | GitHub Release, security advisory, conference submission             | **Complete** |
+| Phase   | Deliverable                                                                      | Status       |
+| ------- | -------------------------------------------------------------------------------- | ------------ |
+| **0**   | Repository scaffold, toolchain, CI                                               | **Complete** |
+| **1**   | Attack harness — 3-tool agent, 30 injection payloads, labeled traces             | **Complete** |
+| **1.5** | Hardening — retry/timeout, safeParse, error traces, 88 tests                     | **Complete** |
+| **1.6** | Stress testing — multi-trial, prompt variants, advanced payloads                 | **Complete** |
+| **2**   | Detection middleware — L1+L2+L3 + Correlation Engine                             | **Complete** |
+| **3**   | Memory Contamination Graph — L4 + temporal attack detection                      | **Complete** |
+| **4**   | npm SDK packaging, developer docs, examples                                      | **Complete** |
+| **5**   | GitHub Release, security advisory, conference submission                         | **Complete** |
+| **P2**  | Platform — `createProxy()`, OpenTelemetry, playground, Docker one-liner          | **Complete** |
+| **P3**  | Observability — Grafana dashboard (16 panels), 6 alert rules, Alertmanager       | **Complete** |
+| **P4**  | Advanced classifiers — 7 sub-classifiers, MCP scanner, outbound correlator       | **Complete** |
+| **P5**  | Enterprise — self-hosted package, license server, Stripe checkout, security docs | **Complete** |
 
 ---
 
@@ -534,6 +553,33 @@ cerberus/
 
 ---
 
+## Enterprise — Self-Hosted
+
+Deploy the full Cerberus detection stack inside your own VPC. Zero data leaves your infrastructure.
+
+```bash
+# After purchasing a license at cerberus.sixsenseenterprise.com
+tar xzf cerberus-enterprise-1.0.1.tar.gz
+cd cerberus-enterprise-1.0.1
+cp .env.example .env          # set CERBERUS_LICENSE_KEY
+./setup.sh                    # prereq check → Docker stack → health verify
+```
+
+**What's included:**
+- **Cerberus Gateway** (`:4000`) — zero-code-change proxy; route agent tool calls through it
+- **Grafana** (`:3000`) — 16 security panels, pre-configured, login required
+- **Prometheus + Alertmanager** — metrics pipeline + Slack/PagerDuty/email routing
+- **OpenTelemetry Collector** — spans + metrics collection
+- **Tamper-evident audit log** — SHA-256 chained JSONL, SIEM-ready
+
+**Two integration paths:**
+1. **Gateway mode** — zero code change; point your agent's tool calls to `http://cerberus-gateway:4000/tool/<name>`
+2. **SDK mode** — `npm install @cerberus-ai/core` + `guard()` wrapper
+
+Contact: [enterprise@sixsenseenterprise.com](mailto:enterprise@sixsenseenterprise.com) · [cerberus.sixsenseenterprise.com](https://cerberus.sixsenseenterprise.com)
+
+---
+
 ## Documentation
 
 | Doc | Contents |
@@ -543,6 +589,8 @@ cerberus/
 | [Architecture](docs/architecture.md) | Detection pipeline, layer design, correlation engine |
 | [Research Results](docs/research-results.md) | N=285 validation, per-payload breakdown, statistical methodology |
 | [Monitoring](monitoring/README.md) | Grafana dashboard — OTel metrics, block rates, risk scores |
+| [Enterprise Deployment](docs/enterprise-deployment.md) | AWS/GCP/Azure deployment, TLS, sizing, upgrades |
+| [Enterprise Configuration](docs/enterprise-configuration.md) | `cerberus.config.yml` full reference |
 
 ---
 
