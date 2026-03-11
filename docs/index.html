@@ -420,9 +420,18 @@
 </head>
 <body>
 
+<!-- ── Company Banner ───────────────────────────────────────────────────── -->
+<div style="background:#07070C;border-bottom:1px solid #191921;padding:0 2rem;height:32px;display:flex;align-items:center;justify-content:space-between;font-size:0.7rem;letter-spacing:0.08em;font-family:'IBM Plex Mono',monospace">
+  <a href="https://www.sixsenseenterprise.com" style="color:#C4A96B;text-decoration:none;text-transform:uppercase">← Odingard Security</a>
+  <span style="color:#5C5C74;text-transform:uppercase">Six Sense Enterprise Services</span>
+</div>
+
 <!-- ── Nav ──────────────────────────────────────────────────────────────── -->
 <nav>
-  <div class="nav-logo">cerberus<span>.</span>dev</div>
+  <div class="nav-logo">
+    <div>cerberus<span>.</span></div>
+    <div style="font-size:0.55rem;color:#5C5C74;letter-spacing:0.1em;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;margin-top:1px">by Odingard Security</div>
+  </div>
   <div class="nav-links">
     <a href="#how-it-works" class="hide-mobile">How It Works</a>
     <a href="#research" class="hide-mobile">Research</a>
@@ -430,6 +439,7 @@
     <a href="https://demo.cerberus.sixsenseenterprise.com" target="_blank" class="hide-mobile">Live Demo</a>
     <a href="https://github.com/Odingard/cerberus" class="hide-mobile">GitHub</a>
     <a href="pricing.html" class="hide-mobile" style="color:var(--blue);font-weight:600">Enterprise</a>
+    <a href="https://www.sixsenseenterprise.com" class="hide-mobile" style="color:#C4A96B;font-size:0.8rem">← sixsenseenterprise.com</a>
     <a href="https://www.npmjs.com/package/@cerberus-ai/core" class="nav-cta">npm install</a>
   </div>
 </nav>
@@ -852,13 +862,13 @@
 
   <div style="text-align:center;margin-top:2rem">
     <a href="pricing.html"
-       class="btn btn-primary" style="font-size:1.05rem;padding:.85rem 2rem;background:#4299e1;border-color:#4299e1">
+       class="btn btn-primary" style="font-size:1.1rem;padding:.9rem 2.25rem;background:#4299e1;border-color:#4299e1;box-shadow:0 0 24px rgba(66,153,225,0.35);font-weight:700">
       See Plans &amp; Pricing →
     </a>
-    <a href="https://demo.cerberus.sixsenseenterprise.com" target="_blank" class="btn btn-secondary">
+    <a href="https://demo.cerberus.sixsenseenterprise.com" target="_blank" class="btn btn-secondary" style="margin-left:0.75rem">
       Try Live Demo First
     </a>
-    <p style="margin-top:1rem;font-size:0.8rem;color:var(--text-muted)">
+    <p style="margin-top:1rem;font-size:0.8rem;color:var(--text-dim)">
       Annual license · $15K Standard · $30K Premium · Setup support included
     </p>
   </div>
@@ -892,22 +902,28 @@
 
 <!-- ── Footer ────────────────────────────────────────────────────────────── -->
 <footer>
-  <div class="footer-logo">cerberus<span>.</span>dev &nbsp;·&nbsp; Six Sense Enterprise Services LLC</div>
+  <div>
+    <div class="footer-logo">Cerberus — <span>Agentic AI Runtime Security</span></div>
+    <div style="font-size:0.75rem;color:var(--muted);margin-top:0.25rem;font-family:var(--mono)">
+      by <a href="https://www.sixsenseenterprise.com" style="color:#C4A96B;text-decoration:none">Odingard Security</a>
+      &nbsp;|&nbsp; Six Sense Enterprise Services LLC
+    </div>
+  </div>
   <div class="footer-links">
+    <a href="index.html">Home</a>
+    <a href="pricing.html">Enterprise</a>
     <a href="https://github.com/Odingard/cerberus">GitHub</a>
-    <a href="https://www.npmjs.com/package/@cerberus-ai/core">npm</a>
-    <a href="https://github.com/Odingard/cerberus/blob/main/docs/getting-started.md">Docs</a>
-    <a href="https://github.com/Odingard/cerberus/blob/main/docs/api.md">API</a>
-    <a href="https://github.com/Odingard/cerberus/blob/main/SECURITY.md">Security</a>
+    <a href="mailto:enterprise@sixsenseenterprise.com">Contact</a>
   </div>
   <div class="footer-links" style="margin-top:0.5rem;font-size:0.75rem">
+    <a href="https://github.com/Odingard/cerberus/blob/main/docs/getting-started.md">Docs</a>
+    <a href="https://github.com/Odingard/cerberus/blob/main/docs/api.md">API</a>
     <a href="https://github.com/Odingard/cerberus/blob/main/legal/PRIVACY.md">Privacy</a>
     <a href="https://github.com/Odingard/cerberus/blob/main/legal/EULA.md">Terms</a>
     <a href="https://github.com/Odingard/cerberus/blob/main/legal/SLA.md">SLA</a>
-    <a href="https://github.com/Odingard/cerberus/blob/main/legal/COMPLIANCE.md">Compliance</a>
-    <a href="https://github.com/Odingard/cerberus/blob/main/docs/troubleshooting.md">Support</a>
+    <a href="https://github.com/Odingard/cerberus/blob/main/SECURITY.md">Security</a>
   </div>
-  <p style="margin-top:0.75rem;font-size:0.7rem;color:var(--text-muted)">&copy; 2017-2026 Six Sense Enterprise Services LLC. All rights reserved.</p>
+  <p style="margin-top:0.75rem;font-size:0.7rem;color:var(--muted)">&copy; 2017-2026 Six Sense Enterprise Services LLC. All rights reserved.</p>
 </footer>
 
 </body>
