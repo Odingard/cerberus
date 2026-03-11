@@ -6,20 +6,29 @@
   <title>Cerberus Enterprise — Pricing</title>
   <meta name="description" content="Self-hosted enterprise AI security. Deploy in your VPC. Annual license." />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:       #0a0c10;
-      --surface:  #0f1117;
-      --border:   #1e2230;
-      --red:      #e53e3e;
-      --green:    #38a169;
-      --blue:     #4299e1;
-      --gold:     #ecc94b;
-      --muted:    #6b7280;
-      --text:     #e2e8f0;
-      --text-dim: #94a3b8;
+      --bg:       #080a0f;
+      --bg-alt:   #0b0e14;
+      --surface:  #0d1018;
+      --border:   #1a1f2e;
+      --border-2: #222840;
+      --red:      #dc2626;
+      --red-bright: #ef4444;
+      --green:    #10b981;
+      --blue:     #3b82f6;
+      --blue-dim: rgba(59,130,246,0.12);
+      --blue-glow: rgba(59,130,246,0.25);
+      --gold:     #C4A96B;
+      --muted:    #475569;
+      --text:     #f1f5f9;
+      --text-dim: #64748b;
+      --text-2:   #cbd5e1;
       --mono:     'JetBrains Mono', 'Fira Code', monospace;
     }
 
@@ -27,7 +36,7 @@
     body {
       background: var(--bg);
       color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
       font-size: 16px;
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
@@ -37,20 +46,66 @@
     a { color: var(--blue); text-decoration: none; }
     a:hover { text-decoration: underline; }
 
+    /* Company banner */
+    .company-banner {
+      background: #07070c;
+      border-bottom: 1px solid #12121c;
+      padding: 0 2rem;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.68rem;
+      letter-spacing: 0.09em;
+      font-family: var(--mono);
+      text-transform: uppercase;
+    }
+    .company-banner a { color: var(--gold); text-decoration: none; }
+    .company-banner a:hover { color: #d4b97b; text-decoration: none; }
+    .company-banner-right { color: #3d3d52; }
+
     nav {
       position: sticky; top: 0; z-index: 100;
-      background: rgba(10,12,16,0.92);
-      backdrop-filter: blur(8px);
+      background: rgba(8,10,15,0.88);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--border);
       padding: 0 2rem;
       display: flex; align-items: center; justify-content: space-between;
-      height: 56px;
+      height: 60px;
     }
-    .nav-logo { font-family: var(--mono); font-weight: 700; font-size: 1.1rem; color: var(--text); letter-spacing: -0.02em; }
-    .nav-logo span { color: var(--red); }
-    .nav-links { display: flex; gap: 1.5rem; align-items: center; }
-    .nav-links a { color: var(--text-dim); font-size: 0.875rem; }
-    .nav-links a:hover { color: var(--text); text-decoration: none; }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      text-decoration: none;
+    }
+    .nav-logo-icon {
+      width: 28px; height: 28px;
+      background: var(--red);
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .nav-logo-icon svg { width: 16px; height: 16px; fill: #fff; }
+    .nav-logo-text {
+      font-size: 1rem; font-weight: 800; letter-spacing: -0.03em; color: #fff;
+    }
+    .nav-logo-text span { color: var(--red); }
+
+    .nav-links { display: flex; gap: 0.5rem; align-items: center; }
+    .nav-links a {
+      color: var(--text-2); font-size: 0.875rem; font-weight: 500;
+      padding: 0.4rem 0.75rem; border-radius: 6px;
+      transition: color 0.15s, background 0.15s;
+      text-decoration: none;
+    }
+    .nav-links a:hover { color: #fff; background: rgba(255,255,255,0.05); text-decoration: none; }
+    .nav-links .nav-btn-primary {
+      background: var(--red); color: #fff !important; font-weight: 600 !important;
+      border-radius: 20px !important; padding: 0.45rem 1.1rem !important;
+    }
+    .nav-links .nav-btn-primary:hover { background: var(--red-bright) !important; }
 
     main { max-width: 900px; margin: 0 auto; padding: 5rem 2rem 6rem; }
 
@@ -130,7 +185,7 @@
     .guarantee p { color: var(--text-dim); font-size: 0.875rem; }
     .guarantee strong { color: var(--text); }
 
-    footer { text-align: center; padding: 3rem 2rem 2rem; color: var(--muted); font-size: 0.8rem; border-top: 1px solid var(--border); margin-top: 4rem; }
+    footer { text-align: center; padding: 3rem 2rem 2rem; color: var(--muted); font-size: 0.8rem; border-top: 1px solid var(--border); margin-top: 4rem; background: #07080e; }
     footer a { color: var(--muted); }
 
     @media (max-width: 640px) {
@@ -141,17 +196,24 @@
 <body>
 
 <!-- ── Company Banner ───────────────────────────────────────────────────── -->
-<div style="background:#07070C;border-bottom:1px solid #191921;padding:0 2rem;height:32px;display:flex;align-items:center;justify-content:space-between;font-size:0.7rem;letter-spacing:0.08em;font-family:'IBM Plex Mono',monospace">
-  <a href="https://www.sixsenseenterprise.com" style="color:#C4A96B;text-decoration:none;text-transform:uppercase">← Odingard Security</a>
-  <span style="color:#5C5C74;text-transform:uppercase">Six Sense Enterprise Services</span>
+<div class="company-banner">
+  <a href="https://www.sixsenseenterprise.com">&#8592; Odingard Security</a>
+  <span class="company-banner-right">Six Sense Enterprise Services</span>
 </div>
 
 <nav>
-  <a href="index.html" class="nav-logo">cerberus<span>.</span></a>
+  <a href="index.html" class="nav-logo">
+    <div class="nav-logo-icon">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+    </div>
+    <div class="nav-logo-text">CERBERUS<span>.</span></div>
+  </a>
   <div class="nav-links">
     <a href="index.html">Home</a>
-    <a href="index.html#enterprise">Enterprise</a>
-    <a href="mailto:enterprise@sixsenseenterprise.com">Contact</a>
+    <a href="index.html#detection">Detection</a>
+    <a href="index.html#research">Research</a>
+    <a href="https://demo.cerberus.sixsenseenterprise.com" target="_blank">Live Demo &#8599;</a>
+    <a href="mailto:enterprise@sixsenseenterprise.com" class="nav-btn-primary">Contact Sales</a>
   </div>
 </nav>
 

