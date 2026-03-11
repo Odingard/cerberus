@@ -8,7 +8,7 @@
 const RESEND_API_KEY = process.env['RESEND_API_KEY'] ?? '';
 const FROM_EMAIL = 'noreply@cerberus.sixsenseenterprise.com';
 
-const DOWNLOAD_BASE = process.env['DOWNLOAD_BASE_URL'] ?? 'https://releases.cerberus.sixsenseenterprise.com';
+const DOWNLOAD_BASE = process.env['DOWNLOAD_BASE'] ?? process.env['DOWNLOAD_BASE_URL'] ?? 'https://releases.cerberus.sixsenseenterprise.com';
 
 export async function sendLicenseEmail(opts: {
   to: string;
@@ -62,9 +62,9 @@ export async function sendLicenseEmail(opts: {
 
 <h3>Documentation</h3>
 <p>
-  <a href="https://cerberus.dev/docs/enterprise-deployment.md">Deployment Guide</a> &middot;
-  <a href="https://cerberus.dev/docs/enterprise-configuration.md">Configuration Reference</a> &middot;
-  <a href="https://cerberus.dev/docs/troubleshooting.md">Troubleshooting</a>
+  <a href="https://cerberus.sixsenseenterprise.com/enterprise-deployment.md">Deployment Guide</a> &middot;
+  <a href="https://cerberus.sixsenseenterprise.com/enterprise-configuration.md">Configuration Reference</a> &middot;
+  <a href="https://cerberus.sixsenseenterprise.com/troubleshooting.md">Troubleshooting</a>
 </p>
 
 <h3>Support</h3>
