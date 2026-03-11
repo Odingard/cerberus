@@ -98,15 +98,36 @@ fi
 
 success "cerberus.config.yml found"
 
-# ── 5. Start the stack ────────────────────────────────────────────────────
+# ── 5. Authenticate to GitHub Container Registry ──────────────────────────
+
+info "Authenticating to GitHub Container Registry..."
+echo ""
+echo "  The Cerberus gateway image is hosted at ghcr.io/odingard/cerberus-gateway"
+echo "  You need a GitHub account with access to pull it."
+echo ""
+echo "  Option A — GitHub Personal Access Token (recommended):"
+echo "    Create one at: https://github.com/settings/tokens  (scope: read:packages)"
+echo "    Then run:  echo YOUR_TOKEN | docker login ghcr.io -u YOUR_GITHUB_USERNAME --password-stdin"
+echo ""
+echo "  Option B — GitHub CLI (if installed):"
+echo "    gh auth token | docker login ghcr.io -u YOUR_GITHUB_USERNAME --password-stdin"
+echo ""
+
+if ! docker login ghcr.io --get-login &>/dev/null 2>&1; then
+  warn "Not logged in to ghcr.io. Please authenticate using one of the options above, then re-run ./setup.sh"
+  exit 1
+fi
+success "Authenticated to ghcr.io"
+
+# ── 6. Start the stack ────────────────────────────────────────────────────
 
 info "Pulling images and starting Cerberus Enterprise stack..."
 docker compose pull --quiet 2>/dev/null || true
-docker compose up -d --build
+docker compose up -d
 
 success "Stack started"
 
-# ── 6. Health check ───────────────────────────────────────────────────────
+# ── 7. Health check ───────────────────────────────────────────────────────
 
 info "Waiting for gateway to be ready..."
 GATEWAY_PORT=$(grep 'port:' cerberus.config.yml 2>/dev/null | awk '{print $2}' | head -1)
@@ -129,7 +150,7 @@ done
 HEALTH=$(curl -s "http://localhost:${GATEWAY_PORT}/health")
 success "Gateway healthy: ${HEALTH}"
 
-# ── 7. Summary ────────────────────────────────────────────────────────────
+# ── 8. Summary ────────────────────────────────────────────────────────────
 
 GRAFANA_PASS=$(grep '^GRAFANA_ADMIN_PASSWORD=' .env | cut -d= -f2- | tr -d '"' | xargs)
 

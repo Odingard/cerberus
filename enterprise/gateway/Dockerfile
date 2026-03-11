@@ -1,5 +1,9 @@
 FROM node:20-alpine
 
+LABEL org.opencontainers.image.source="https://github.com/Odingard/cerberus"
+LABEL org.opencontainers.image.description="Cerberus Enterprise Gateway — agentic AI runtime security"
+LABEL org.opencontainers.image.licenses="SEE LICENSE IN legal/EULA.md"
+
 WORKDIR /app
 
 # Non-root user for security
