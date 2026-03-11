@@ -2,8 +2,9 @@
  * Cerberus Enterprise License Server
  *
  * Endpoints:
+ *   POST /checkout/session       — create Stripe checkout session
  *   POST /v1/license/validate    — validate a license key
- *   POST /v1/webhooks/stripe     — Stripe invoice.payment_succeeded webhook
+ *   POST /v1/webhooks/stripe     — Stripe webhook handler
  *   GET  /health                 — health check
  *
  * Environment variables:
@@ -11,8 +12,11 @@
  *   LICENSE_SIGNING_SECRET  Secret for HMAC key derivation
  *   STRIPE_SECRET_KEY       Stripe API key
  *   STRIPE_WEBHOOK_SECRET   Stripe webhook signing secret
+ *   STRIPE_PRICE_STANDARD   Stripe price ID for standard tier
+ *   STRIPE_PRICE_PREMIUM    Stripe price ID for premium tier
  *   RESEND_API_KEY          Resend API key for email delivery
  *   PORT                    Listen port (default: 8080)
+ *   PUBLIC_URL              Public base URL (default: https://cerberus.sixsenseenterprise.com)
  */
 
 import * as http from 'node:http';
@@ -21,12 +25,18 @@ import { findLicense, insertLicense, generateKey } from './db.js';
 import { sendLicenseEmail } from './mailer.js';
 
 const PORT = parseInt(process.env['PORT'] ?? '8080', 10);
+const PUBLIC_URL = process.env['PUBLIC_URL'] ?? 'https://cerberus.sixsenseenterprise.com';
 
 const stripe = new Stripe(process.env['STRIPE_SECRET_KEY'] ?? '', {
   apiVersion: '2023-10-16',
 });
 
 const WEBHOOK_SECRET = process.env['STRIPE_WEBHOOK_SECRET'] ?? '';
+
+const PRICE_IDS: Record<string, string> = {
+  standard: process.env['STRIPE_PRICE_STANDARD'] ?? '',
+  premium: process.env['STRIPE_PRICE_PREMIUM'] ?? '',
+};
 
 // ── Request helpers ───────────────────────────────────────────────────────
 
@@ -98,6 +108,45 @@ async function handleValidate(
   });
 }
 
+async function handleCreateCheckoutSession(
+  req: http.IncomingMessage,
+  res: http.ServerResponse,
+): Promise<void> {
+  const body = await readBody(req);
+  let parsed: { plan?: unknown };
+  try {
+    parsed = JSON.parse(body.toString()) as { plan?: unknown };
+  } catch {
+    json(res, 400, { error: 'Invalid JSON' });
+    return;
+  }
+
+  const plan = parsed.plan;
+  if (plan !== 'standard' && plan !== 'premium') {
+    json(res, 400, { error: 'plan must be "standard" or "premium"' });
+    return;
+  }
+
+  const priceId = PRICE_IDS[plan];
+  if (!priceId) {
+    console.error(`[License] Missing STRIPE_PRICE_${plan.toUpperCase()} env var`);
+    json(res, 500, { error: 'Price not configured' });
+    return;
+  }
+
+  const session = await stripe.checkout.sessions.create({
+    mode: 'subscription',
+    line_items: [{ price: priceId, quantity: 1 }],
+    metadata: { plan },
+    success_url: `${PUBLIC_URL}/checkout-success.html?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${PUBLIC_URL}/checkout-cancel.html`,
+    allow_promotion_codes: true,
+    billing_address_collection: 'required',
+  });
+
+  json(res, 200, { url: session.url });
+}
+
 async function handleStripeWebhook(
   req: http.IncomingMessage,
   res: http.ServerResponse,
@@ -119,48 +168,70 @@ async function handleStripeWebhook(
     return;
   }
 
-  if (event.type !== 'invoice.payment_succeeded') {
-    json(res, 200, { received: true, ignored: true });
+  // Handle checkout.session.completed — self-serve purchase
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object as Stripe.Checkout.Session;
+    const customerEmail = session.customer_details?.email ?? null;
+    const plan = (session.metadata?.['plan'] as string | undefined) ?? 'standard';
+
+    if (!customerEmail) {
+      console.error('[License] checkout.session.completed missing customer email', session.id);
+      json(res, 200, { received: true, error: 'No customer email on session' });
+      return;
+    }
+
+    const key = generateKey();
+    const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] ?? null;
+
+    insertLicense({ key, plan, stripeSessionId: session.id, customerEmail, expiresAt });
+
+    try {
+      const version = process.env['CERBERUS_VERSION'] ?? '1.0.0';
+      await sendLicenseEmail({ to: customerEmail, licenseKey: key, plan, expiresAt, version });
+      console.log(`[License] Key issued and emailed to ${customerEmail} (${plan})`);
+    } catch (err) {
+      console.error(`[License] Email delivery failed for ${customerEmail}:`, err);
+    }
+
+    json(res, 200, { received: true });
     return;
   }
 
-  const invoice = event.data.object as Stripe.Invoice;
-  const customerEmail = invoice.customer_email;
+  // Handle invoice.payment_succeeded — renewal
+  if (event.type === 'invoice.payment_succeeded') {
+    const invoice = event.data.object as Stripe.Invoice;
+    const customerEmail = invoice.customer_email;
 
-  if (!customerEmail) {
-    console.error('[License] invoice.payment_succeeded missing customer_email', invoice.id);
-    json(res, 200, { received: true, error: 'No customer email on invoice' });
+    // Only issue new keys on initial payment (billing_reason = subscription_create)
+    if (invoice.billing_reason !== 'subscription_create') {
+      json(res, 200, { received: true, ignored: true });
+      return;
+    }
+
+    if (!customerEmail) {
+      console.error('[License] invoice.payment_succeeded missing customer_email', invoice.id);
+      json(res, 200, { received: true, error: 'No customer email on invoice' });
+      return;
+    }
+
+    const key = generateKey();
+    const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] ?? null;
+
+    insertLicense({ key, plan: 'enterprise', stripeSessionId: invoice.id, customerEmail, expiresAt });
+
+    try {
+      const version = process.env['CERBERUS_VERSION'] ?? '1.0.0';
+      await sendLicenseEmail({ to: customerEmail, licenseKey: key, plan: 'enterprise', expiresAt, version });
+      console.log(`[License] Key issued and emailed to ${customerEmail}`);
+    } catch (err) {
+      console.error(`[License] Email delivery failed for ${customerEmail}:`, err);
+    }
+
+    json(res, 200, { received: true });
     return;
   }
 
-  // Generate license key — annual license, expires 365 days from now
-  const key = generateKey();
-  const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] ?? null;
-
-  insertLicense({
-    key,
-    plan: 'enterprise',
-    stripeSessionId: invoice.id,
-    customerEmail,
-    expiresAt,
-  });
-
-  try {
-    const version = process.env['CERBERUS_VERSION'] ?? '1.0.0';
-    await sendLicenseEmail({
-      to: customerEmail,
-      licenseKey: key,
-      plan: 'enterprise',
-      expiresAt,
-      version,
-    });
-    console.log(`[License] Key issued and emailed to ${customerEmail}`);
-  } catch (err) {
-    console.error(`[License] Email delivery failed for ${customerEmail}:`, err);
-    // Key is still in DB — support can resend manually
-  }
-
-  json(res, 200, { received: true });
+  json(res, 200, { received: true, ignored: true });
 }
 
 // ── Server ────────────────────────────────────────────────────────────────
@@ -175,6 +246,11 @@ async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse
 
   if (req.method === 'GET' && req.url === '/health') {
     handleHealth(res);
+    return;
+  }
+
+  if (req.method === 'POST' && req.url === '/checkout/session') {
+    await handleCreateCheckoutSession(req, res);
     return;
   }
 
