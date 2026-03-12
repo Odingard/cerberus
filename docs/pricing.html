@@ -120,57 +120,9 @@
     h1 em { color: var(--blue); font-style: normal; }
     .subtitle { color: var(--text-dim); font-size: 1.05rem; max-width: 540px; margin: 0 auto; }
 
-    /* Plans grid */
-    .plans { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 3rem; }
-
-    .plan-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 2rem;
-      display: flex; flex-direction: column;
-      position: relative;
-    }
-    .plan-card.featured {
-      border-color: var(--blue);
-      box-shadow: 0 0 0 1px rgba(66,153,225,0.3), 0 4px 32px rgba(66,153,225,0.08);
-    }
-    .popular-badge {
-      position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
-      background: var(--blue); color: #fff;
-      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
-      padding: .2rem .8rem; border-radius: 999px;
-    }
-
-    .plan-name { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: .5rem; }
-    .plan-price { font-size: 2.5rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1; margin-bottom: .25rem; }
-    .plan-price sub { font-size: 1rem; font-weight: 400; color: var(--text-dim); vertical-align: baseline; margin-left: .1rem; }
-    .plan-period { color: var(--text-dim); font-size: 0.85rem; margin-bottom: 1.5rem; }
-    .plan-desc { color: var(--text-dim); font-size: 0.9rem; margin-bottom: 1.75rem; line-height: 1.5; }
-
-    .plan-features { list-style: none; margin-bottom: 2rem; display: flex; flex-direction: column; gap: .6rem; flex: 1; }
-    .plan-features li { font-size: 0.875rem; display: flex; align-items: flex-start; gap: .5rem; }
-    .plan-features li::before { content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0; margin-top: 1px; }
-    .plan-features li.dim { color: var(--text-dim); }
-
-    .btn {
-      display: inline-block; padding: .75rem 1.5rem;
-      border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer;
-      border: none; text-align: center; transition: opacity .15s, transform .1s;
-      width: 100%;
-    }
-    .btn:hover { opacity: .88; transform: translateY(-1px); text-decoration: none; }
-    .btn:active { transform: translateY(0); }
-    .btn-primary { background: var(--blue); color: #fff; }
-    .btn-outline { background: transparent; color: var(--blue); border: 1px solid rgba(66,153,225,0.5); }
-    .btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
-
-    .spinner { display: none; }
-    .btn.loading .btn-label { display: none; }
-    .btn.loading .spinner { display: inline; }
-
-    .coupon-hint {
-      margin-top: .6rem; font-size: 0.75rem; color: var(--text-dim); text-align: center;
+    /* Stripe pricing table wrapper */
+    .stripe-table-wrap {
+      margin-bottom: 2rem;
     }
 
     .tax-note {
@@ -198,7 +150,7 @@
     footer a { color: var(--muted); }
 
     @media (max-width: 640px) {
-      .plans { grid-template-columns: 1fr; }
+      main { padding: 3rem 1rem 4rem; }
     }
   </style>
 </head>
@@ -233,55 +185,13 @@
     <p class="subtitle">Annual license. Deployed in your VPC. Your data never leaves your infrastructure.</p>
   </header>
 
-  <div class="plans">
-
-    <!-- Standard -->
-    <div class="plan-card">
-      <p class="plan-name">Standard</p>
-      <div class="plan-price">$15,000 <sub>/yr</sub></div>
-      <p class="plan-period">Billed annually · auto-renews</p>
-      <p class="plan-desc">Full detection stack for teams running production AI agents. Everything you need to go from zero to protected.</p>
-      <ul class="plan-features">
-        <li>Full 4-layer detection engine</li>
-        <li>Cerberus Gateway (zero code change)</li>
-        <li>Grafana dashboard (16 panels)</li>
-        <li>6 alert rules + Slack / PagerDuty</li>
-        <li>Docker Compose deployment</li>
-        <li>SDK + Gateway integration paths</li>
-        <li>Email support (48h SLA)</li>
-        <li>1-year license key · annual renewal</li>
-      </ul>
-      <button class="btn btn-outline" data-plan="standard" onclick="checkout('standard', this)">
-        <span class="btn-label">Get Standard →</span>
-        <span class="spinner">Processing…</span>
-      </button>
-      <p class="coupon-hint">Have a coupon? Enter it at checkout.</p>
-    </div>
-
-    <!-- Premium -->
-    <div class="plan-card featured">
-      <div class="popular-badge">Most Popular</div>
-      <p class="plan-name">Premium</p>
-      <div class="plan-price">$30,000 <sub>/yr</sub></div>
-      <p class="plan-period">Billed annually · auto-renews</p>
-      <p class="plan-desc">Everything in Standard plus priority onboarding, dedicated Slack channel, and direct engineering access.</p>
-      <ul class="plan-features">
-        <li>Everything in Standard</li>
-        <li>Priority onboarding call (1h)</li>
-        <li>Dedicated Slack channel</li>
-        <li>Direct engineering access</li>
-        <li>Custom detection rule review</li>
-        <li>Quarterly security briefings</li>
-        <li>24h SLA on critical issues</li>
-        <li>Architecture review session</li>
-      </ul>
-      <button class="btn btn-primary" data-plan="premium" onclick="checkout('premium', this)">
-        <span class="btn-label">Get Premium →</span>
-        <span class="spinner">Processing…</span>
-      </button>
-      <p class="coupon-hint">Have a coupon? Enter it at checkout.</p>
-    </div>
-
+  <!-- Stripe Pricing Table — managed in Stripe dashboard (prctbl_1TAHuJGdRXoU9c1NwfSdYgOF) -->
+  <div class="stripe-table-wrap">
+    <script async src="https://js.stripe.com/v3/pricing-table.js"></script>
+    <stripe-pricing-table
+      pricing-table-id="prctbl_1TAHuJGdRXoU9c1NwfSdYgOF"
+      publishable-key="pk_live_51RxQBlGdRXoU9c1NZtq1usBZN1LWASxeatKJOgDyaT2xXV9hIBdMZLUmigsMXiMUGguQ6GpN1Tcy1Ab9qyfqOxJX00mGSYyLwp">
+    </stripe-pricing-table>
   </div>
 
   <div class="tax-note">
@@ -332,49 +242,6 @@
   <p>© 2026 Six Sense Enterprise Services LLC &nbsp;·&nbsp; <a href="index.html">Home</a> &nbsp;·&nbsp; <a href="mailto:enterprise@sixsenseenterprise.com">Contact</a></p>
 </footer>
 
-<script>
-  const API = 'https://api.cerberus.sixsenseenterprise.com';
-
-  // Stripe Payment Links — set these once created in Stripe dashboard.
-  // Format: https://buy.stripe.com/<link_id>
-  // If set, clicking a plan button redirects directly (no API call needed).
-  // If null, falls back to the checkout session API (POST /checkout/session).
-  const PAYMENT_LINKS = {
-    standard: 'https://buy.stripe.com/4gM9ATfxd96Za9P5UZ1wY00',
-    premium:  'https://buy.stripe.com/4gMaEX98P4QJ5Tz6Z31wY01',
-  };
-
-  async function checkout(plan, btn) {
-    // Fast path: use Stripe Payment Link if configured
-    if (PAYMENT_LINKS[plan]) {
-      window.location.href = PAYMENT_LINKS[plan];
-      return;
-    }
-
-    // Fallback: create a checkout session via API
-    btn.disabled = true;
-    btn.classList.add('loading');
-    try {
-      const res = await fetch(API + '/checkout/session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan }),
-      });
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        alert('Something went wrong. Please email enterprise@sixsenseenterprise.com');
-        btn.disabled = false;
-        btn.classList.remove('loading');
-      }
-    } catch {
-      alert('Unable to connect. Please email enterprise@sixsenseenterprise.com');
-      btn.disabled = false;
-      btn.classList.remove('loading');
-    }
-  }
-</script>
 
 </body>
 </html>
