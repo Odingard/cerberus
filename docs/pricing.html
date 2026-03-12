@@ -169,6 +169,15 @@
     .btn.loading .btn-label { display: none; }
     .btn.loading .spinner { display: inline; }
 
+    .coupon-hint {
+      margin-top: .6rem; font-size: 0.75rem; color: var(--text-dim); text-align: center;
+    }
+
+    .tax-note {
+      margin-top: 1rem; margin-bottom: 1.5rem; text-align: center;
+      font-size: 0.8rem; color: var(--text-dim); line-height: 1.5;
+    }
+
     /* FAQ */
     .faq { margin-top: 4rem; }
     .faq h2 { font-size: 1.3rem; font-weight: 700; margin-bottom: 2rem; text-align: center; }
@@ -242,10 +251,11 @@
         <li>Email support (48h SLA)</li>
         <li>1-year license key · annual renewal</li>
       </ul>
-      <button class="btn btn-outline" onclick="checkout('standard', this)">
+      <button class="btn btn-outline" data-plan="standard" onclick="checkout('standard', this)">
         <span class="btn-label">Get Standard →</span>
         <span class="spinner">Processing…</span>
       </button>
+      <p class="coupon-hint">Have a coupon? Enter it at checkout.</p>
     </div>
 
     <!-- Premium -->
@@ -265,12 +275,17 @@
         <li>24h SLA on critical issues</li>
         <li>Architecture review session</li>
       </ul>
-      <button class="btn btn-primary" onclick="checkout('premium', this)">
+      <button class="btn btn-primary" data-plan="premium" onclick="checkout('premium', this)">
         <span class="btn-label">Get Premium →</span>
         <span class="spinner">Processing…</span>
       </button>
+      <p class="coupon-hint">Have a coupon? Enter it at checkout.</p>
     </div>
 
+  </div>
+
+  <div class="tax-note">
+    <p>Prices shown exclude applicable taxes. Tax is calculated automatically at checkout based on your billing address. B2B customers can enter their tax ID (VAT, GST, EIN) during checkout.</p>
   </div>
 
   <div class="guarantee">
@@ -320,7 +335,23 @@
 <script>
   const API = 'https://api.cerberus.sixsenseenterprise.com';
 
+  // Stripe Payment Links — set these once created in Stripe dashboard.
+  // Format: https://buy.stripe.com/<link_id>
+  // If set, clicking a plan button redirects directly (no API call needed).
+  // If null, falls back to the checkout session API (POST /checkout/session).
+  const PAYMENT_LINKS = {
+    standard: 'https://buy.stripe.com/4gM9ATfxd96Za9P5UZ1wY00',
+    premium:  'https://buy.stripe.com/4gMaEX98P4QJ5Tz6Z31wY01',
+  };
+
   async function checkout(plan, btn) {
+    // Fast path: use Stripe Payment Link if configured
+    if (PAYMENT_LINKS[plan]) {
+      window.location.href = PAYMENT_LINKS[plan];
+      return;
+    }
+
+    // Fallback: create a checkout session via API
     btn.disabled = true;
     btn.classList.add('loading');
     try {
@@ -337,7 +368,7 @@
         btn.disabled = false;
         btn.classList.remove('loading');
       }
-    } catch (err) {
+    } catch {
       alert('Unable to connect. Please email enterprise@sixsenseenterprise.com');
       btn.disabled = false;
       btn.classList.remove('loading');

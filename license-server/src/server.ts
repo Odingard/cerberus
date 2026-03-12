@@ -142,6 +142,12 @@ async function handleCreateCheckoutSession(
     cancel_url: `${PUBLIC_URL}/checkout-cancel.html`,
     allow_promotion_codes: true,
     billing_address_collection: 'required',
+    // Stripe automatic tax — requires tax settings configured in Stripe dashboard
+    automatic_tax: { enabled: true },
+    // Allow B2B customers to enter their tax ID (VAT, GST, etc.)
+    tax_id_collection: { enabled: true },
+    // Subscription data — ensures renewal invoice goes to same customer
+    subscription_data: { metadata: { plan } },
   });
 
   json(res, 200, { url: session.url });
@@ -240,9 +246,39 @@ const server = http.createServer((req: http.IncomingMessage, res: http.ServerRes
   void handleRequest(req, res);
 });
 
+// Allowed origins for CORS — checkout endpoint is public, validator is called
+// by the gateway (server-side), webhooks have their own Stripe signature auth.
+const ALLOWED_ORIGINS = new Set([
+  'https://cerberus.sixsenseenterprise.com',
+  'https://www.sixsenseenterprise.com',
+  'https://sixsenseenterprise.com',
+]);
+
+function setCorsHeaders(req: http.IncomingMessage, res: http.ServerResponse): void {
+  const origin = req.headers['origin'];
+  if (origin && (ALLOWED_ORIGINS.has(origin) || origin.endsWith('.sixsenseenterprise.com'))) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  } else if (!origin) {
+    // Server-to-server (gateway validate calls) — no CORS needed
+  } else {
+    // Unknown origin — still allow for flexibility (checkout URL is not sensitive)
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Max-Age', '86400');
+}
+
 async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Cache-Control', 'no-store');
+  setCorsHeaders(req, res);
+
+  // Handle CORS preflight
+  if (req.method === 'OPTIONS') {
+    res.writeHead(204).end();
+    return;
+  }
 
   if (req.method === 'GET' && req.url === '/health') {
     handleHealth(res);
