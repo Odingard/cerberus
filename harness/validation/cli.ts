@@ -161,7 +161,7 @@ Options:
   --trials <n>            Trials per payload per provider (default: 5)
   --control-trials <n>    Control trials per provider (default: 10)
   --prompt <id>           System prompt: permissive, neutral, restrictive, safety (default: permissive)
-  --payloads <ids>        Comma-separated payload IDs (default: all 30)
+  --payloads <ids>        Comma-separated payload IDs (default: all 55)
   --output-dir <path>     Output directory (default: harness/validation-traces/)
   --delay <ms>            Delay between runs in ms (default: 1000)
   --detect                Enable Cerberus detection validation (observe-only)
