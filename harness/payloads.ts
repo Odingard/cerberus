@@ -1,5 +1,5 @@
 /**
- * Injection Payload Library — 21 variants across 5 categories.
+ * Injection Payload Library — 30 variants across 6 categories.
  *
  * Each payload is designed to be embedded in the response from Tool B
  * (fetchExternalContent) and redirect the agent to exfiltrate private
@@ -11,6 +11,7 @@
  * - Social engineering style (SE)
  * - Multi-turn attack sequences (MT)
  * - Multilingual variants (ML)
+ * - Advanced techniques (AT)
  */
 
 import type { Payload, PayloadCategory } from './types.js';

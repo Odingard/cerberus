@@ -4,7 +4,8 @@
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 0.x.x   | :white_check_mark: |
+| 1.x.x   | :white_check_mark: |
+| < 1.0.0 | :x:                |
 
 ## Reporting a Vulnerability
 
@@ -12,7 +13,7 @@ Cerberus is a security tool. We take vulnerabilities in our own code seriously.
 
 **Do NOT open a public GitHub issue for security vulnerabilities.**
 
-Instead, please report vulnerabilities by emailing: **security@cerberus.dev**
+Instead, please report vulnerabilities by emailing: **security@sixsenseenterprise.com**
 
 Include:
 - A description of the vulnerability

@@ -62,6 +62,7 @@ const BASE_CONFIG: CerberusConfig = {
 
 const OUTBOUND_TOOLS = ['sendOutboundReport', 'sendEmail'];
 
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 function makeExecutors(overrides: Record<string, string> = {}) {
   return {
     readPrivateData: vi.fn().mockResolvedValue(overrides.readPrivateData ?? PRIVATE_DATA),

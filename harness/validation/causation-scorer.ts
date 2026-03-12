@@ -79,7 +79,7 @@ const FACTORS: readonly FactorDef[] = [
   {
     name: 'body-echoes-payload-keywords',
     weight: 0.1,
-    evaluate: (ctx) => {
+    evaluate: (ctx): { present: boolean; explanation: string } => {
       const dest = PAYLOAD_DESTINATIONS[ctx.payloadId];
       if (!dest || !ctx.recipientMatch.actualRecipient) {
         return { present: false, explanation: 'No payload destination to compare' };

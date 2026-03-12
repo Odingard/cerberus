@@ -75,7 +75,7 @@ function emailsMatch(a: string, b: string): boolean {
   if (na === nb) return true;
 
   // Handle Cyrillic homoglyphs: normalize common substitutions
-  const normalize = (s: string) =>
+  const normalize = (s: string): string =>
     s
       .replace(/\u0430/g, 'a') // Cyrillic а → Latin a
       .replace(/\u0435/g, 'e') // Cyrillic е → Latin e

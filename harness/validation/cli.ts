@@ -1,4 +1,5 @@
 #!/usr/bin/env tsx
+/* eslint-disable no-console */
 /**
  * Validation Protocol CLI — single command to run the full scientific validation.
  *

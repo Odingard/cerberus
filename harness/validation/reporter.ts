@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * Validation Reporter — generates Markdown and console output.
  */
