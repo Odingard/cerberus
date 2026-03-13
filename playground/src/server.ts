@@ -18,6 +18,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { guard } from '../../src/middleware/wrap.js';
+import type { MemoryGuardOptions } from '../../src/middleware/wrap.js';
 import { SCENARIOS, getScenario } from './scenarios.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -129,12 +130,27 @@ async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse
       return;
     }
 
-    // Wrap executors with guard()
+    // Wrap executors with guard() — pass memoryOptions if scenario has L4 memory tools
+    const memoryOptions: MemoryGuardOptions | undefined = scenario.memoryTools
+      ? { memoryTools: [...scenario.memoryTools] }
+      : undefined;
+
     const guarded = guard(
       scenario.executors as Record<string, (args: Record<string, unknown>) => Promise<string>>,
       scenario.cerberusConfig,
       scenario.outboundTools as string[],
+      memoryOptions,
     );
+
+    // Pre-contamination: simulate a prior session writing to the memory graph so L4 can fire
+    if (scenario.preContaminationSteps && scenario.preContaminationSteps.length > 0) {
+      for (const step of scenario.preContaminationSteps) {
+        const exec = guarded.executors[step.toolName];
+        if (exec) await exec(step.args);
+      }
+      // Reset to a new session ID — graph/ledger persist, enabling cross-session taint detection
+      guarded.reset();
+    }
 
     sendEvent(res, 'start', { scenarioId, totalSteps: scenario.steps.length });
 

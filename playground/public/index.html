@@ -521,24 +521,26 @@
       40% { background: rgba(239,68,68,0.35); }
     }
 
-    /* ── Grafana iframe ── */
-    .grafana-section {
+    /* ── Incident Intelligence Panel ── */
+    .incident-panel {
       flex: 1;
       display: flex;
       flex-direction: column;
       min-height: 0;
-      padding: 0;
+      overflow: hidden;
+      border-top: 1px solid var(--border);
     }
 
-    .grafana-header {
+    .incident-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 16px;
+      padding: 10px 16px;
       border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
     }
 
-    .grafana-title {
+    .incident-title {
       font-size: 11px;
       font-weight: 600;
       text-transform: uppercase;
@@ -546,41 +548,125 @@
       color: var(--text-muted);
     }
 
-    .grafana-link {
+    .grafana-link-sm {
       font-size: 11px;
-      color: var(--accent);
+      color: var(--text-muted);
       text-decoration: none;
-      display: flex;
-      align-items: center;
-      gap: 4px;
+      opacity: 0.6;
     }
+    .grafana-link-sm:hover { opacity: 1; color: var(--accent); }
 
-    .grafana-link:hover { text-decoration: underline; }
-
-    .grafana-frame {
+    .incident-body {
       flex: 1;
-      border: none;
-      background: #0a0a0f;
-      min-height: 240px;
-    }
-
-    .grafana-unavailable {
-      flex: 1;
+      overflow-y: auto;
+      padding: 12px 16px;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      color: var(--text-muted);
-      font-size: 13px;
-      gap: 8px;
-      padding: 20px;
-      text-align: center;
+      gap: 12px;
     }
 
-    .grafana-unavailable a {
-      color: var(--accent);
+    .incident-context {
       font-size: 12px;
+      color: var(--text-dim);
+      line-height: 1.5;
+      padding: 10px 12px;
+      background: var(--surface2);
+      border-radius: 6px;
+      border-left: 3px solid var(--border);
     }
+
+    .incident-context.active {
+      border-left-color: var(--accent);
+      color: var(--text);
+    }
+
+    .narrative-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .narrative-log {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .narrative-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-dim);
+      line-height: 1.4;
+      animation: slideIn 0.25s ease;
+    }
+
+    .narrative-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--border);
+      flex-shrink: 0;
+      margin-top: 4px;
+    }
+
+    .narrative-item.l1 .narrative-dot { background: var(--l1); }
+    .narrative-item.l2 .narrative-dot { background: var(--l2); }
+    .narrative-item.l3-pass .narrative-dot { background: var(--green); }
+    .narrative-item.l3-block .narrative-dot { background: var(--red); }
+    .narrative-item.l4 .narrative-dot { background: var(--l4); }
+
+    .narrative-item.l1 { color: rgba(16,185,129,0.9); }
+    .narrative-item.l2 { color: rgba(245,158,11,0.9); }
+    .narrative-item.l3-block { color: var(--red); font-weight: 600; }
+    .narrative-item.l4 { color: rgba(168,85,247,0.9); }
+
+    .incident-metrics {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .metric-cell {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 10px;
+    }
+
+    .metric-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-muted);
+      margin-bottom: 3px;
+    }
+
+    .metric-value {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .metric-value.danger { color: var(--red); }
+    .metric-value.safe { color: var(--green); }
+    .metric-value.warn { color: var(--yellow); }
+
+    .outcome-banner {
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      text-align: center;
+      display: none;
+    }
+    .outcome-banner.show { display: block; }
+    .outcome-banner.blocked { background: rgba(239,68,68,0.1); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+    .outcome-banner.safe { background: rgba(16,185,129,0.1); color: var(--green); border: 1px solid rgba(16,185,129,0.3); }
 
     /* ── Status bar ── */
     .status-bar {
@@ -707,21 +793,43 @@
       </div>
     </div>
 
-    <!-- Grafana Live Panel -->
-    <div class="grafana-section">
-      <div class="grafana-header">
-        <span class="grafana-title">Live Attack Traffic</span>
-        <a href="http://localhost:3030/d/cerberus-main" target="_blank" class="grafana-link" id="nav-full-dashboard">
-          Full Dashboard ↗
-        </a>
+    <!-- Incident Intelligence -->
+    <div class="incident-panel">
+      <div class="incident-header">
+        <span class="incident-title">Incident Intelligence</span>
+        <a href="#" class="grafana-link-sm" id="grafana-link-sm" target="_blank">Metrics Dashboard ↗</a>
       </div>
-      <iframe
-        id="grafana-frame"
-        class="grafana-frame"
-        src="http://localhost:3030/d-solo/cerberus-main/cerberus-ai-security-monitor?orgId=1&panelId=10&refresh=5s&theme=dark"
-        title="Live Attack Traffic"
-        loading="lazy"
-      ></iframe>
+      <div class="incident-body">
+        <div class="incident-context" id="incident-context">
+          Select a scenario to see what's at stake.
+        </div>
+
+        <div id="narrative-section" style="display:none">
+          <div class="narrative-title">What Cerberus Detected</div>
+          <div class="narrative-log" id="narrative-log"></div>
+        </div>
+
+        <div class="incident-metrics" id="incident-metrics" style="display:none">
+          <div class="metric-cell">
+            <div class="metric-label">Data at Risk</div>
+            <div class="metric-value danger" id="metric-data">—</div>
+          </div>
+          <div class="metric-cell">
+            <div class="metric-label">Attack Vector</div>
+            <div class="metric-value warn" id="metric-vector">—</div>
+          </div>
+          <div class="metric-cell">
+            <div class="metric-label">Financial Exposure</div>
+            <div class="metric-value danger" id="metric-financial">—</div>
+          </div>
+          <div class="metric-cell">
+            <div class="metric-label">Detection Overhead</div>
+            <div class="metric-value safe" id="metric-overhead">&lt; 1ms</div>
+          </div>
+        </div>
+
+        <div class="outcome-banner" id="outcome-banner"></div>
+      </div>
     </div>
 
     <!-- Status -->
@@ -755,30 +863,143 @@
     interrupt: 'BLOCKED',
   };
 
+  // ── Scenario intelligence map ─────────────────────────────────────────────────
+  const SCENARIO_INTEL = {
+    'clean-run':              { context: 'Normal operation: an AI agent reads an internal summary and sends a routine report. No attack in this scenario — this is the control baseline.', data: 'Internal summary', vector: 'None (control)', financial: 'None' },
+    'data-exfil':             { context: 'An AI agent reads customer PII and sends it to an external address — no injection needed. This tests L1 + L3 detection without an injection payload.', data: 'Customer PII', vector: 'Direct exfiltration', financial: 'Regulatory exposure' },
+    'prompt-injection':       { context: 'An AI agent fetches external content containing hidden instructions. This isolates the L2 injection detection layer — no data access, no outbound send.', data: 'N/A', vector: 'Direct injection', financial: 'N/A' },
+    'lethal-trifecta':        { context: 'The complete attack: an AI agent reads customer PII, fetches attacker-controlled content with a hidden directive, then attempts to send all data to the attacker. The Lethal Trifecta — all 3 conditions met.', data: 'Customer PII + financials', vector: 'Direct injection', financial: 'Regulatory + reputational' },
+    'encoded-injection':      { context: 'Same as the Lethal Trifecta, but the injection payload is Base64-encoded to evade simple string matching. Tests the encoding detector sub-classifier.', data: 'Customer PII', vector: 'Base64-encoded injection', financial: 'Regulatory exposure' },
+    'social-engineering':     { context: 'A subtle attack: no "IGNORE PREVIOUS INSTRUCTIONS" — instead a plausible compliance notice instructs the agent to submit data to a "third-party auditor." Mimics real-world business email compromise.', data: 'Customer portfolio ($2.3M)', vector: 'Social engineering', financial: '$2.3M AUM at risk' },
+    'enterprise-apt':         { context: 'A 20-step enterprise attack: the agent conducts 13 legitimate internal operations (HR, finance, CRM, payroll, secrets vault), then fetches an attacker page hidden among clean vendor URLs. Realistic APT simulation.', data: '12,442 customers + 847 employees + API keys', vector: 'APT — delayed injection', financial: '$47.2M revenue data + credentials' },
+    'healthcare-hipaa':       { context: 'A hospital AI assistant reads 847 patient records — PHI including diagnoses, SSNs, insurance IDs — then fetches billing guidelines containing a fake HIPAA audit directive ordering the records to be sent to an attacker.', data: '847 patient PHI records', vector: 'Fake regulatory directive', financial: 'HIPAA fine: up to $1.9M' },
+    'financial-trading':      { context: 'An AI wealth management agent holds a $4.2M portfolio. It fetches market analysis from an attacker-controlled page that contains a hidden order to liquidate all positions and wire the proceeds to a fraudulent brokerage account.', data: '$4.2M portfolio + account credentials', vector: 'Fake risk management order', financial: '$4,247,831 at risk' },
+    'multilingual-injection': { context: "The injection payload is written in Spanish, disguised as a GDPR compliance notice. Real attackers use the target's native language to appear more legitimate. Tests multilingual detection.", data: 'Customer financial records', vector: 'Multilingual injection (Spanish)', financial: '$287,440 account balance' },
+    'multi-turn-persistent':  { context: 'The attacker delivers a "persistent session rule" in turn 2, then lies dormant through 2 clean turns before the agent acts on it in turn 5. Tests behavioral drift detection across the session timeline.', data: '2,847 customer accounts + CRM data', vector: 'Persistent rule injection', financial: '$8.4M revenue at risk' },
+    'mcp-tool-poisoning':     { context: 'The attack lives in the tool catalog itself — a hidden instruction embedded inside a legitimate tool description. The agent never sees an injection in content. Cerberus scans tool descriptions at session start.', data: '1,247 customer records', vector: 'MCP tool poisoning', financial: '$47M ARR customer data' },
+    'supply-chain-cicd':      { context: 'An AI DevOps agent reads CI environment secrets (AWS keys, npm tokens, Docker credentials, code signing keys) then fetches a dependency changelog from a compromised CDN containing a supply chain directive.', data: 'AWS keys + npm tokens + signing keys', vector: 'Supply chain — compromised CDN', financial: 'Full cloud infrastructure access' },
+    'supply-chain-npm':       { context: "An AI dependency manager finds an auto-added package, fetches its README from a malicious CDN, and is instructed to exfiltrate npm tokens, GitHub secrets, and AWS credentials to the package's \"license server.\" Analog to the XZ Utils backdoor.", data: 'npm tokens + GitHub + AWS credentials', vector: 'Malicious NPM package', financial: 'Full CI/CD pipeline access' },
+    'banking-wire-fraud':     { context: "A retail bank's AI customer service agent manages 12,847 accounts totaling $2.1B in deposits. It fetches \"Federal Reserve wire guidelines\" from an attacker-controlled page containing a fake FinCEN directive ordering an immediate $2.1M wire transfer.", data: '12,847 customer accounts ($2.1B deposits)', vector: 'Fake FinCEN regulatory order', financial: '$2,100,000 wire fraud' },
+    'logistics-cargo-leak':   { context: 'A freight AI manages 340 active shipments including pharmaceutical cold-chain, high-value electronics ($4.2M), and HAZMAT cargo. A fake "route optimization update" attempts to leak the full cargo database plus real-time GPS locations of 847 drivers to a competitor.', data: '340 shipments + 847 driver GPS locations', vector: 'Fake dispatch directive', financial: '$4.2M cargo + driver safety risk' },
+  };
+
   // ── State ─────────────────────────────────────────────────────────────────────
   let scenarios = [];
   let running = false;
   let runCount = 0;
+  let injectionTurnIndex = -1;
 
   // ── DOM refs ──────────────────────────────────────────────────────────────────
-  const select       = document.getElementById('scenario-select');
-  const btnRun       = document.getElementById('btn-run');
-  const btnReset     = document.getElementById('btn-reset');
-  const stepsEl      = document.getElementById('steps');
-  const descEl       = document.getElementById('scenario-desc');
-  const runBanner    = document.getElementById('run-banner');
-  const statusDot    = document.getElementById('status-dot');
-  const statusText   = document.getElementById('status-text');
-  const runCountEl   = document.getElementById('run-count');
-  const scoreBar     = document.getElementById('score-bar');
-  const scoreValue   = document.getElementById('score-value');
-  const actionDisplay= document.getElementById('action-display');
-  const cellL1       = document.getElementById('cell-L1');
-  const cellL2       = document.getElementById('cell-L2');
-  const cellL3       = document.getElementById('cell-L3');
-  const cellL4       = document.getElementById('cell-L4');
+  const select        = document.getElementById('scenario-select');
+  const btnRun        = document.getElementById('btn-run');
+  const btnReset      = document.getElementById('btn-reset');
+  const stepsEl       = document.getElementById('steps');
+  const descEl        = document.getElementById('scenario-desc');
+  const runBanner     = document.getElementById('run-banner');
+  const statusDot     = document.getElementById('status-dot');
+  const statusText    = document.getElementById('status-text');
+  const runCountEl    = document.getElementById('run-count');
+  const scoreBar      = document.getElementById('score-bar');
+  const scoreValue    = document.getElementById('score-value');
+  const actionDisplay = document.getElementById('action-display');
+  const cellL1        = document.getElementById('cell-L1');
+  const cellL2        = document.getElementById('cell-L2');
+  const cellL3        = document.getElementById('cell-L3');
+  const cellL4        = document.getElementById('cell-L4');
+  const incidentCtx   = document.getElementById('incident-context');
+  const narrativeSec  = document.getElementById('narrative-section');
+  const narrativeLog  = document.getElementById('narrative-log');
+  const incidentMetrics = document.getElementById('incident-metrics');
+  const metricData    = document.getElementById('metric-data');
+  const metricVector  = document.getElementById('metric-vector');
+  const metricFinancial = document.getElementById('metric-financial');
+  const outcomeBanner = document.getElementById('outcome-banner');
 
   const SCORE_COLORS = ['#10b981', '#10b981', '#f59e0b', '#f97316', '#ef4444'];
+
+  // ── Incident Intelligence helpers ──────────────────────────────────────────────
+  function updateIncidentContext(scenarioId) {
+    const intel = SCENARIO_INTEL[scenarioId];
+    if (!intel) {
+      incidentCtx.textContent = 'Select a scenario to see what\'s at stake.';
+      incidentCtx.classList.remove('active');
+      incidentMetrics.style.display = 'none';
+      return;
+    }
+    incidentCtx.textContent = intel.context;
+    incidentCtx.classList.add('active');
+    metricData.textContent = intel.data;
+    metricVector.textContent = intel.vector;
+    metricFinancial.textContent = intel.financial;
+    incidentMetrics.style.display = 'grid';
+  }
+
+  function addNarrativeItem(stepData) {
+    const { layer, blocked, assessment } = stepData;
+    const signals = (assessment && assessment.signals) ? assessment.signals : [];
+
+    let cls = '';
+    let text = '';
+
+    if (layer === 'L1') {
+      cls = 'l1';
+      text = 'Sensitive data accessed — records and PII entered the agent context.';
+      if (signals.includes('SECRET_DETECTED')) {
+        text += ' Credentials/secrets were also exposed in this context.';
+      }
+    } else if (layer === 'L2') {
+      cls = 'l2';
+      if (signals.includes('PROMPT_INJECTION_DETECTED') || signals.includes('ENCODED_PAYLOAD_DETECTED') || signals.includes('MCP_TOOL_POISONING')) {
+        text = 'Injection payload detected in external content. Hidden instructions were embedded in the fetched page.';
+        injectionTurnIndex = stepData.index;
+      } else {
+        text = 'External content fetched and scanned — no injection found.';
+      }
+    } else if (layer === 'L3') {
+      if (blocked) {
+        cls = 'l3-block';
+        if (signals.includes('INJECTION_CORRELATED_OUTBOUND') && injectionTurnIndex >= 0) {
+          const turnDelta = stepData.index - injectionTurnIndex;
+          text = `Cerberus correlated this outbound call to the injection payload delivered ${turnDelta} turn${turnDelta === 1 ? '' : 's'} earlier. BLOCKED — no data left the organization.`;
+        } else {
+          text = 'BLOCKED — Cerberus intercepted an unauthorized outbound attempt before any data left the organization.';
+        }
+        if (signals.includes('BEHAVIORAL_DRIFT_DETECTED')) {
+          text += ' Behavioral drift detected — the agent\'s actions changed after injection delivery.';
+        }
+      } else {
+        cls = 'l3-pass';
+        text = 'Outbound call to authorized destination — allowed.';
+      }
+    } else if (layer === 'L4') {
+      cls = 'l4';
+      if (signals.includes('CONTAMINATED_MEMORY_ACTIVE')) {
+        text = 'L4 Memory Contamination: this agent read from memory written by an attacker-controlled session. The taint crossed session boundaries — prior compromise is influencing current actions.';
+      } else {
+        text = 'Memory read scanned — no cross-session contamination detected.';
+      }
+    }
+
+    if (!text) return;
+
+    narrativeSec.style.display = 'block';
+    const item = document.createElement('div');
+    item.className = 'narrative-item ' + cls;
+    item.innerHTML = `<div class="narrative-dot"></div><span>${text}</span>`;
+    narrativeLog.appendChild(item);
+    narrativeLog.scrollTop = narrativeLog.scrollHeight;
+  }
+
+  function resetIncidentPanel() {
+    incidentCtx.textContent = 'Select a scenario to see what\'s at stake.';
+    incidentCtx.classList.remove('active');
+    narrativeSec.style.display = 'none';
+    narrativeLog.innerHTML = '';
+    incidentMetrics.style.display = 'none';
+    outcomeBanner.className = 'outcome-banner';
+    outcomeBanner.textContent = '';
+    injectionTurnIndex = -1;
+  }
 
   // ── Load scenarios ─────────────────────────────────────────────────────────────
   async function loadScenarios() {
@@ -799,6 +1020,7 @@
     const id = select.value;
     const scenario = scenarios.find(s => s.id === id);
     descEl.textContent = scenario ? scenario.description : 'Select a scenario to begin.';
+    updateIncidentContext(id);
   }
 
   select.addEventListener('change', onScenarioChange);
@@ -816,6 +1038,9 @@
     updateAction('WAITING', 'waiting');
     clearLayers();
     setStatus('Ready', false);
+    resetIncidentPanel();
+    // Re-populate context for current scenario
+    updateIncidentContext(select.value);
   }
 
   btnReset.addEventListener('click', () => { if (!running) reset(); });
@@ -928,6 +1153,10 @@
     updateScore(0);
     updateAction('RUNNING…', 'running');
     setStatus('Attack running…', true);
+    narrativeSec.style.display = 'none';
+    narrativeLog.innerHTML = '';
+    outcomeBanner.className = 'outcome-banner';
+    injectionTurnIndex = -1;
 
     let finalScore = 0;
     let finalAction = 'log';
@@ -977,6 +1206,7 @@
             const card = renderStep(data);
             stepsEl.appendChild(card);
             card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            addNarrativeItem(data);
 
             if (data.assessment) {
               updateScore(data.assessment.score);
@@ -1007,6 +1237,22 @@
             finalAction = data.action;
             runCount++;
             runCountEl.textContent = runCount + ' run' + (runCount === 1 ? '' : 's');
+
+            // Show outcome banner in incident panel
+            const wasBlocked = finalAction === 'interrupt';
+            outcomeBanner.className = 'outcome-banner show ' + (wasBlocked ? 'blocked' : 'safe');
+            outcomeBanner.textContent = wasBlocked
+              ? 'BLOCKED — Cerberus stopped the threat before data left the organization.'
+              : 'Run complete — no threat blocked.';
+
+            // Populate metrics from intel
+            const intel = SCENARIO_INTEL[scenarioId];
+            if (intel) {
+              metricData.textContent = intel.data;
+              metricVector.textContent = intel.vector;
+              metricFinancial.textContent = intel.financial;
+              incidentMetrics.style.display = 'grid';
+            }
           }
 
           if (eventType === 'error') {
@@ -1034,21 +1280,6 @@
 
   // ── Init ───────────────────────────────────────────────────────────────────────
   await loadScenarios();
-
-  const grafanaFrame = document.getElementById('grafana-frame');
-  grafanaFrame.addEventListener('error', () => {
-    grafanaFrame.style.display = 'none';
-    const parent = grafanaFrame.parentElement;
-    const msg = document.createElement('div');
-    msg.className = 'grafana-unavailable';
-    msg.innerHTML = `
-      <div style="font-size:24px">📊</div>
-      <div>Live metrics not available</div>
-      <div style="font-size:12px;color:var(--text-muted)">Start the monitoring stack to see real-time attack traffic</div>
-      <code style="font-size:11px;background:var(--surface2);padding:4px 8px;border-radius:4px;">docker compose -f monitoring/docker-compose.yml up -d</code>
-    `;
-    parent.appendChild(msg);
-  });
 </script>
 
 <script>
@@ -1057,12 +1288,8 @@
     const base = (window.__GRAFANA_URL__ || 'http://localhost:3030').replace(/\/$/, '');
     const navLink = document.getElementById('nav-dashboard-link');
     if (navLink) navLink.href = base;
-    const dashLink = document.getElementById('nav-full-dashboard');
-    if (dashLink) dashLink.href = base + '/d/cerberus-main';
-    const iframe = document.getElementById('grafana-frame');
-    if (iframe) {
-      iframe.src = base + '/d-solo/cerberus-main/cerberus-ai-security-monitor?orgId=1&panelId=10&refresh=5s&theme=dark';
-    }
+    const grafanaLinkSm = document.getElementById('grafana-link-sm');
+    if (grafanaLinkSm) grafanaLinkSm.href = base + '/d/cerberus-main';
   })();
 </script>
 
