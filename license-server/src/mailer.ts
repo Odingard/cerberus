@@ -62,10 +62,11 @@ export async function sendLicenseEmail(opts: {
 
 <h3>Documentation</h3>
 <p>
-  <a href="https://cerberus.sixsenseenterprise.com/enterprise-deployment.md">Deployment Guide</a> &middot;
-  <a href="https://cerberus.sixsenseenterprise.com/enterprise-configuration.md">Configuration Reference</a> &middot;
-  <a href="https://cerberus.sixsenseenterprise.com/troubleshooting.md">Troubleshooting</a>
+  <a href="https://cerberus.sixsenseenterprise.com/enterprise-deployment">Deployment Guide</a> &middot;
+  <a href="https://cerberus.sixsenseenterprise.com/enterprise-configuration">Configuration Reference</a> &middot;
+  <a href="https://cerberus.sixsenseenterprise.com/troubleshooting">Troubleshooting</a>
 </p>
+<p style="font-size:0.85em;color:#666">All docs are also included in your download at <code>./docs/</code> for offline reference.</p>
 
 <h3>Support</h3>
 <p>
