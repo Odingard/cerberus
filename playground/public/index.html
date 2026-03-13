@@ -668,6 +668,24 @@
     .outcome-banner.blocked { background: rgba(239,68,68,0.1); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
     .outcome-banner.safe { background: rgba(16,185,129,0.1); color: var(--green); border: 1px solid rgba(16,185,129,0.3); }
 
+    /* ── Session tally ── */
+    .session-tally {
+      padding: 7px 16px;
+      border-top: 1px solid var(--border);
+      background: rgba(0,0,0,0.2);
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .tally-item { display: flex; align-items: center; gap: 4px; }
+    .tally-val { font-weight: 700; font-size: 13px; font-variant-numeric: tabular-nums; }
+    .tally-lbl { color: var(--text-muted); }
+    .tally-sep { color: var(--border); }
+    .tally-blocked .tally-val { color: var(--red); }
+    .tally-safe .tally-val { color: var(--green); }
+
     /* ── Status bar ── */
     .status-bar {
       padding: 8px 16px;
@@ -832,6 +850,15 @@
       </div>
     </div>
 
+    <!-- Session Tally -->
+    <div class="session-tally" id="session-tally" style="display:none">
+      <span class="tally-item"><span class="tally-val" id="tally-runs">0</span> <span class="tally-lbl">attacks run</span></span>
+      <span class="tally-sep">·</span>
+      <span class="tally-item tally-blocked"><span class="tally-val" id="tally-blocked">0</span> <span class="tally-lbl">threats stopped</span></span>
+      <span class="tally-sep">·</span>
+      <span class="tally-item tally-safe"><span class="tally-val" id="tally-records">0</span> <span class="tally-lbl">records protected</span></span>
+    </div>
+
     <!-- Status -->
     <div class="status-bar">
       <span><span class="status-dot" id="status-dot"></span><span id="status-text">Ready</span></span>
@@ -889,6 +916,19 @@
   let runCount = 0;
   let injectionTurnIndex = -1;
 
+  // Session tally — persists across all runs in this browser session
+  const sessionTally = { runs: 0, blocked: 0, records: 0 };
+
+  // Record counts per scenario (extracted from SCENARIO_INTEL data field)
+  const RECORD_COUNTS = {
+    'clean-run': 0, 'data-exfil': 1, 'prompt-injection': 0, 'lethal-trifecta': 500,
+    'encoded-injection': 500, 'social-engineering': 47, 'enterprise-apt': 13289,
+    'healthcare-hipaa': 847, 'financial-trading': 1, 'multilingual-injection': 1,
+    'multi-turn-persistent': 2847, 'mcp-tool-poisoning': 1247,
+    'supply-chain-cicd': 5, 'supply-chain-npm': 5,
+    'banking-wire-fraud': 12847, 'logistics-cargo-leak': 1187,
+  };
+
   // ── DOM refs ──────────────────────────────────────────────────────────────────
   const select        = document.getElementById('scenario-select');
   const btnRun        = document.getElementById('btn-run');
@@ -914,6 +954,22 @@
   const metricVector  = document.getElementById('metric-vector');
   const metricFinancial = document.getElementById('metric-financial');
   const outcomeBanner = document.getElementById('outcome-banner');
+  const sessionTallyEl  = document.getElementById('session-tally');
+  const tallyRunsEl     = document.getElementById('tally-runs');
+  const tallyBlockedEl  = document.getElementById('tally-blocked');
+  const tallyRecordsEl  = document.getElementById('tally-records');
+
+  function updateSessionTally(scenarioId, wasBlocked) {
+    sessionTally.runs++;
+    if (wasBlocked) {
+      sessionTally.blocked++;
+      sessionTally.records += RECORD_COUNTS[scenarioId] ?? 0;
+    }
+    tallyRunsEl.textContent = sessionTally.runs;
+    tallyBlockedEl.textContent = sessionTally.blocked;
+    tallyRecordsEl.textContent = sessionTally.records.toLocaleString();
+    sessionTallyEl.style.display = 'flex';
+  }
 
   const SCORE_COLORS = ['#10b981', '#10b981', '#f59e0b', '#f97316', '#ef4444'];
 
@@ -1244,6 +1300,9 @@
             outcomeBanner.textContent = wasBlocked
               ? 'BLOCKED — Cerberus stopped the threat before data left the organization.'
               : 'Run complete — no threat blocked.';
+
+            // Update session tally
+            updateSessionTally(scenarioId, wasBlocked);
 
             // Populate metrics from intel
             const intel = SCENARIO_INTEL[scenarioId];
