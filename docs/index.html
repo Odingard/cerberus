@@ -4,9 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Cerberus — Agentic AI Runtime Security Platform</title>
-  <meta name="description" content="Cerberus detects and blocks the Lethal Trifecta attack pattern in AI agents — prompt injection, PII exfiltration, memory contamination — at runtime. 52μs overhead. 0% false positives. N=285 validated." />
+  <meta name="description" content="Cerberus detects and blocks the Lethal Trifecta attack pattern in AI agents — prompt injection, PII exfiltration, memory contamination — at runtime. 52μs overhead. 0% false positives. N=525 validated." />
   <meta property="og:title" content="Cerberus — Agentic AI Runtime Security Platform" />
-  <meta property="og:description" content="Real-time threat detection for AI agents. One guard() call. Zero framework changes. N=285 real API calls validated." />
+  <meta property="og:description" content="Real-time threat detection for AI agents. One guard() call. Zero framework changes. N=525 real API calls validated." />
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary_large_image" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -1393,7 +1393,7 @@
       <div class="stat-label">False positive rate<br>on clean control runs</div>
     </div>
     <div class="stat-item">
-      <div class="stat-num">N=285</div>
+      <div class="stat-num">N=525</div>
       <div class="stat-label">Real API calls validated<br>across OpenAI, Anthropic, Google</div>
     </div>
   </div>
@@ -1663,7 +1663,7 @@
     <div class="section-label">Validation</div>
     <h2>Scientifically validated<br>at <em>real-world scale</em></h2>
     <p class="section-sub">
-      N=285 real API calls. 30 payloads &#215; 3 trials &#215; 3 providers. Wilson 95% confidence intervals. 6-factor causation scoring. 5 negative controls per provider — zero false exfiltrations.
+      N=525 real API calls. 55 payloads &#215; 3 trials &#215; 3 providers. Wilson 95% confidence intervals. 6-factor causation scoring. 10 negative controls per provider — zero false exfiltrations.
     </p>
 
     <div class="table-wrap">
@@ -1672,32 +1672,32 @@
           <tr>
             <th>Provider</th>
             <th>Model</th>
-            <th>Any Exfiltration</th>
             <th>Full Injection Compliance</th>
             <th>95% CI</th>
+            <th>Causation Score</th>
           </tr>
         </thead>
         <tbody>
           <tr>
             <td>OpenAI</td>
             <td class="mono">gpt-4o-mini</td>
-            <td class="pct-high">100% (90/90)</td>
-            <td class="pct-med">17.8% (16/90)</td>
-            <td class="mono" style="color:var(--text-muted)">[11.2%, 26.9%]</td>
-          </tr>
-          <tr>
-            <td>Anthropic</td>
-            <td class="mono">claude-sonnet-4</td>
-            <td class="pct-high">100% (90/90)</td>
-            <td class="pct-low">2.2% (2/90)</td>
-            <td class="mono" style="color:var(--text-muted)">[0.6%, 7.7%]</td>
+            <td class="pct-high">90.3% (149/165)</td>
+            <td class="mono" style="color:var(--text-muted)">[84.8%, 93.9%]</td>
+            <td class="pct-high">0.811</td>
           </tr>
           <tr>
             <td>Google</td>
             <td class="mono">gemini-2.5-flash</td>
-            <td class="pct-high">98.9% (89/90)</td>
-            <td class="pct-high">48.9% (44/90)</td>
-            <td class="mono" style="color:var(--text-muted)">[38.8%, 59.0%]</td>
+            <td class="pct-high">82.4% (136/165)</td>
+            <td class="mono" style="color:var(--text-muted)">[75.9%, 87.5%]</td>
+            <td class="pct-med">0.702</td>
+          </tr>
+          <tr>
+            <td>Anthropic</td>
+            <td class="mono">claude-sonnet-4</td>
+            <td class="pct-low">6.7% (11/165)</td>
+            <td class="mono" style="color:var(--text-muted)">[3.8%, 11.5%]</td>
+            <td class="pct-low">0.207</td>
           </tr>
         </tbody>
       </table>

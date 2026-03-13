@@ -251,32 +251,21 @@ if (results[0].poisoned) {
 
 ## 📊 Empirical Results
 
-> **N=285 real API calls. 30 payloads × 6 attack categories × 3 providers. PII exfiltration succeeded in ~100% of attack runs across all three providers.**
+> **N=525 real API calls. 55 payloads × 6 attack categories × 3 providers × 3 trials. Control group: 0/30 exfiltrations across all providers.**
 
-> [!NOTE]
-> A 525-run validation (55 payloads × 3 trials × 3 providers) is in progress. Numbers below are from the validated N=285 run. Updated figures will be published in [docs/research-results.md](docs/research-results.md).
-
-We built a 3-tool attack agent and ran structured injection payloads against three major LLM providers with full statistical rigor: 3 trials per payload, 5 control runs per provider, Wilson 95% confidence intervals, Fisher's exact test, and 6-factor causation scoring.
+We built a 3-tool attack agent and ran 55 injection payloads across 6 attack categories against three major LLM providers with full statistical rigor: 3 trials per payload per provider, 10 control runs per provider, Wilson 95% confidence intervals, Fisher's exact test, and 6-factor causation scoring.
 
 ### Attack Success Without Protection
 
-**Any exfiltration** — PII leaves the system (success + partial outcomes):
+**Full injection compliance** — agent follows the injected instruction and redirects the outbound call to the attacker's address:
 
-| Provider | Model | Any Exfiltration | 95% CI |
-|----------|-------|-----------------|--------|
-| OpenAI | gpt-4o-mini | **100%** (90/90) | — |
-| Anthropic | claude-sonnet-4-20250514 | **100%** (90/90) | — |
-| Google | gemini-2.5-flash | **98.9%** (89/90) | — |
+| Provider | Model | Compliance Rate | 95% CI | Causation Score |
+|----------|-------|----------------|--------|-----------------|
+| OpenAI | gpt-4o-mini | **90.3%** (149/165) | [84.8%, 93.9%] | 0.811 |
+| Google | gemini-2.5-flash | **82.4%** (136/165) | [75.9%, 87.5%] | 0.702 |
+| Anthropic | claude-sonnet-4-20250514 | **6.7%** (11/165) | [3.8%, 11.5%] | 0.207 |
 
-**Full injection compliance** — agent additionally redirects to the attacker's specific address:
-
-| Provider | Model | Full Compliance | 95% CI |
-|----------|-------|----------------|--------|
-| Google | gemini-2.5-flash | **48.9%** (44/90) | [38.8%, 59.0%] |
-| OpenAI | gpt-4o-mini | **17.8%** (16/90) | [11.2%, 26.9%] |
-| Anthropic | claude-sonnet-4-20250514 | **2.2%** (2/90) | [0.6%, 7.7%] |
-
-Control group: **0/15 exfiltrations** across all providers — baseline confirmed clean.
+Control group: **0/30 exfiltrations** across all providers — baseline confirmed clean.
 
 ### Detection With Cerberus Active
 
@@ -290,7 +279,7 @@ Control group: **0/15 exfiltrations** across all providers — baseline confirme
 ### Key Findings
 
 1. **PII exfiltration is near-universal.** ~100% of attack runs across all three providers leaked data. The architectural condition (privileged access + injection + outbound) is sufficient regardless of model.
-2. **Model resistance shifts the attack, not the outcome.** Claude's low full-compliance rate (2.2%) reflects training against known redirect patterns — PII still leaves the system via partial exfiltration.
+2. **Model resistance shifts the attack, not the outcome.** Claude's low full-compliance rate (6.7%) reflects training against known redirect patterns — with partial exfiltration still occurring. OpenAI and Google comply at 90%+ across 55 diverse payloads.
 3. **The attack costs $0.001.** Free-tier GPT-4o-mini + 3 tool definitions + one injected instruction = full PII exfiltration in under 15 seconds.
 4. **Encoding doesn't help you.** Base64, ROT13, hex, and unicode-escaped payloads all execute in-context across all providers.
 5. **Language doesn't matter.** Spanish, Mandarin, Arabic, and Russian injection payloads all exfiltrate data.
@@ -508,7 +497,7 @@ open http://localhost:3030
 | **P3** | Observability — Grafana 16 panels, 6 alert rules, Alertmanager | ✅ Complete |
 | **P4** | Advanced classifiers — 7 sub-classifiers, MCP scanner, outbound correlator | ✅ Complete |
 | **P5** | Enterprise — self-hosted package, license server, Stripe, security hardening | ✅ Complete |
-| **P6** | N=525 empirical validation across 55 payloads × 3 providers | 🔄 In progress |
+| **P6** | N=525 empirical validation across 55 payloads × 3 providers | ✅ Complete |
 
 ---
 
@@ -569,7 +558,7 @@ Contact: [enterprise@sixsenseenterprise.com](mailto:enterprise@sixsenseenterpris
 | [Getting Started](docs/getting-started.md) | `npm install` → first blocked attack in under 5 minutes |
 | [API Reference](docs/api.md) | `guard()`, config options, signal types, framework adapters |
 | [Architecture](docs/architecture.md) | Detection pipeline, layer design, correlation engine |
-| [Research Results](docs/research-results.md) | N=285 validation, per-payload breakdown, statistical methodology |
+| [Research Results](docs/research-results.md) | N=525 validation, per-payload breakdown, statistical methodology |
 | [Monitoring](monitoring/README.md) | Grafana dashboard — OTel metrics, block rates, risk scores |
 | [Enterprise Deployment](docs/enterprise-deployment.md) | AWS/GCP/Azure, TLS, sizing, upgrades |
 | [Enterprise Configuration](docs/enterprise-configuration.md) | `cerberus.config.yml` full reference |

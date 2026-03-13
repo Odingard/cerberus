@@ -33,7 +33,7 @@ Cerberus fires four signals across three layers:
 
 Score 3/4 → interrupt. Zero bytes left the system.
 
-We validated this across **N=525 controlled runs** using OpenAI, Anthropic, and Google models. Attack success without protection: up to 49% full compliance (agent redirects to attacker address), ~100% partial exfiltration.
+We validated this across **N=525 controlled runs** using OpenAI, Anthropic, and Google models. Attack success (full compliance — agent redirects to attacker's address): OpenAI 90.3%, Google 82.4%, Anthropic 6.7%. Control group: 0/30 exfiltrations.
 
 **The core library is MIT and free**: `npm install @cerberus-ai/core`
 **Live attack demo**: https://demo.cerberus.sixsenseenterprise.com
@@ -74,15 +74,14 @@ Every major AI framework ships this by default.
 **Tweet 3:**
 ```
 We ran N=525 controlled tests across OpenAI, Anthropic, and Google.
+55 payloads × 3 trials × 3 providers. Real API calls.
 
-Attack success rate (no protection):
-• Google Gemini: 49% full compliance
-• OpenAI GPT-4o-mini: 18%
-• Anthropic Claude: 2%
+Attack success (agent fully redirects to attacker's address):
+• OpenAI GPT-4o-mini: 90.3% [84.8%, 93.9%]
+• Google Gemini 2.5 Flash: 82.4% [75.9%, 87.5%]
+• Anthropic Claude: 6.7% [3.8%, 11.5%]
 
-~100% partial exfiltration across all three.
-
-These are real API calls. Real models. Real numbers.
+Control group: 0/30 exfiltrations — baseline clean.
 ```
 
 **Tweet 4:**
@@ -177,12 +176,12 @@ We've been working on a runtime security layer for AI agents — specifically ta
 
 We ran a systematic evaluation: 55 injection payloads × 3 providers (OpenAI gpt-4o-mini, Anthropic claude-sonnet-4, Google gemini-2.5-flash) × 3 trials = 525 total runs with real API calls.
 
-**Attack success without protection (full compliance — agent redirects to attacker address):**
-- Google: ~49% [95% CI: 38–59%]
-- OpenAI: ~18% [11–27%]
-- Anthropic: ~2% [0.6–8%]
+**Attack success (full compliance — agent redirects to attacker's address):**
+- OpenAI gpt-4o-mini: 90.3% [84.8%, 93.9%] — causation score 0.811
+- Google gemini-2.5-flash: 82.4% [75.9%, 87.5%] — causation score 0.702
+- Anthropic claude-sonnet-4: 6.7% [3.8%, 11.5%] — causation score 0.207
 
-**Partial exfiltration (PII leaves system):** ~100% across all providers under permissive agent prompts.
+**Control group:** 0/30 exfiltrations across all providers — baseline confirmed clean.
 
 **With Cerberus detection:**
 - L1 (Data Source): 100% detection
@@ -195,4 +194,4 @@ Write-up: [link to framework-attack-surface.md or dev.to article]
 
 ---
 
-*Update these posts with final N=525 numbers once both attack and detection runs complete.*
+*Detection run in progress — update detection rates (L1/L2/L3/FP) when complete.*
