@@ -17,6 +17,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { runValidationProtocol } from './runner.js';
 import { printReportSummary, writeMarkdownReport } from './reporter.js';
 import type { SystemPromptId } from '../runner.js';
+import { PAYLOADS } from '../payloads.js';
 
 // ── Env Loading ──────────────────────────────────────────────────
 
@@ -225,7 +226,7 @@ async function main(): Promise<void> {
   console.log('║         CERBERUS VALIDATION PROTOCOL                     ║');
   console.log('╚══════════════════════════════════════════════════════════╝\n');
 
-  const payloadCount = args.payloads ? args.payloads.length : 30;
+  const payloadCount = args.payloads ? args.payloads.length : PAYLOADS.length;
   const totalRuns =
     providers.length * payloadCount * args.trials + providers.length * args.controlTrials;
   const estimatedMinutes = Math.ceil((totalRuns * (args.delay + 3000)) / 60000); // ~3s per API call + delay
@@ -237,7 +238,7 @@ async function main(): Promise<void> {
   if (args.payloads) {
     console.log(`  Payloads:       ${args.payloads.join(', ')}`);
   } else {
-    console.log(`  Payloads:       all 30`);
+    console.log(`  Payloads:       all ${String(PAYLOADS.length)}`);
   }
   if (args.detect) {
     console.log(`  Detection:      ENABLED (observe-only, alertMode=log, authorized: acme.com)`);
