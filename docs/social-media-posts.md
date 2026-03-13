@@ -194,4 +194,9 @@ Write-up: [link to framework-attack-surface.md or dev.to article]
 
 ---
 
-*Detection run in progress — update detection rates (L1/L2/L3/FP) when complete.*
+**Detection results (N=525, observe-only mode):**
+- L1 (Data Source): **100%** across all providers [97.9%, 100%]
+- L2 (Token Provenance): **100%** across all providers [97.9%, 100%]
+- L3 (Outbound Intent): OpenAI 13.7% · Anthropic 1.1% · Google 65.7% (tracks attack success)
+- False positive rate: **0.0%** [0.0%, 11.4%] — 0/30 clean runs triggered
+- Overall detection rate: **28.5%** [24.7%, 32.6%]

@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Detection validation results (N=525)** — complete detection run across all three providers in observe-only mode:
+  - L1 (Data Source): 100% across all providers [97.9%, 100%]
+  - L2 (Token Provenance): 100% across all providers [97.9%, 100%]
+  - L3 (Outbound Intent): OpenAI 13.7% · Anthropic 1.1% · Google 65.7% (tracks attack success)
+  - False positive rate: 0.0% [0.0%, 11.4%] — 0/30 clean runs triggered
+  - Overall detection rate: 28.5% [24.7%, 32.6%]
+- Updated README detection table with per-provider per-layer breakdown
+- Updated docs/index.html detection section with N=525 numbers
+- Updated docs/social-media-posts.md with final detection figures
+
 ## [1.0.2] — 2026-03-10
 
 ### Added

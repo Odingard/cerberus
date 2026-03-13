@@ -269,12 +269,18 @@ Control group: **0/30 exfiltrations** across all providers — baseline confirme
 
 ### Detection With Cerberus Active
 
-| Metric | Rate |
-|--------|------|
-| L1 detection (Data Source) | **100%** |
-| L2 detection (Injection) | **100%** |
-| False positive rate | **0.0%** [0.0%, 20.4%] |
-| L3 detection (Outbound) | Varies by provider — L3 fires only on unauthorized destinations |
+N=525 runs, observe-only mode (`alertMode: log`), same agent behavior — Cerberus wraps without blocking.
+
+| Layer | OpenAI | Anthropic | Google | 95% CI |
+|-------|--------|-----------|--------|--------|
+| **L1** — Data Source | 100% | 100% | 100% | [97.9%, 100%] |
+| **L2** — Token Provenance | 100% | 100% | 100% | [97.9%, 100%] |
+| **L3** — Outbound Intent | 13.7% | 1.1% | 65.7% | varies |
+| **False Positive Rate** | 0.0% | 0.0% | 0.0% | [0.0%, 11.4%] |
+
+**Overall detection rate: 28.5% [24.7%, 32.6%] · False positives: 0.0% [0.0%, 11.4%]**
+
+L3 fires only when the agent actually executes an unauthorized outbound call — its rate tracks attack success, not miss rate. L1 and L2 achieve 100% across all 525 treatment runs and 30 control runs.
 
 ### Key Findings
 
@@ -379,7 +385,7 @@ cerberus/
 │   ├── payloads.ts        # 55 injection payloads across 6 categories
 │   ├── validation/        # Scientific validation (11 modules, 127 tests)
 │   └── bench.ts           # Performance benchmark
-├── tests/                 # 773 tests, 98%+ coverage, 1.1s runtime
+├── tests/                 # 776 tests, 98%+ coverage, 1.1s runtime
 ├── docs/                  # Architecture, API reference, enterprise guides
 ├── legal/                 # EULA, SLA, Privacy Policy, Terms of Service
 └── examples/              # demo-capture.ts, live-attack-demo.ts, langchain-rag-demo.ts
