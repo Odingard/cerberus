@@ -730,6 +730,170 @@
     .run-banner.show { display: block; }
     .run-banner.blocked { background: var(--red-glow); color: var(--red); border-color: var(--red); }
     .run-banner.allowed { background: rgba(16,185,129,0.08); color: var(--green); border-color: var(--green); }
+
+    /* ── Enterprise Day Simulation ─────────────────────────────────────── */
+    .enterprise-scale {
+      max-width: 1300px;
+      margin: 0 auto 2rem;
+      padding: 0 1.5rem;
+    }
+    .enterprise-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 0 0.75rem;
+      border-top: 1px solid var(--border);
+    }
+    .enterprise-header-left { display: flex; align-items: center; gap: 12px; }
+    .enterprise-badge {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: rgba(99,102,241,0.15);
+      color: #818cf8;
+      border: 1px solid rgba(99,102,241,0.3);
+    }
+    .enterprise-title { font-size: 1rem; font-weight: 600; color: var(--text); }
+    .enterprise-sub { font-size: 0.78rem; color: var(--text-muted); }
+    .btn-sim {
+      padding: 8px 18px;
+      background: rgba(99,102,241,0.15);
+      border: 1px solid rgba(99,102,241,0.4);
+      color: #818cf8;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .btn-sim:hover { background: rgba(99,102,241,0.25); border-color: rgba(99,102,241,0.6); }
+    .btn-sim:disabled { opacity: .5; cursor: not-allowed; }
+
+    .enterprise-body { display: none; }
+    .enterprise-body.visible { display: block; }
+
+    .enterprise-kpis {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 1rem;
+    }
+    .ekpi {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+    }
+    .ekpi-val {
+      font-size: 1.6rem;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      line-height: 1.1;
+      color: var(--text);
+    }
+    .ekpi-val.danger { color: var(--red); }
+    .ekpi-val.safe { color: var(--green); }
+    .ekpi-val.warn { color: #f59e0b; }
+    .ekpi-label { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+    .enterprise-lower {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .dept-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .dept-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      opacity: .45;
+      transition: opacity .4s, border-color .4s;
+    }
+    .dept-card.online {
+      opacity: 1;
+      border-color: rgba(16,185,129,0.4);
+    }
+    .dept-card.threat {
+      border-color: rgba(239,68,68,0.5);
+      background: rgba(239,68,68,0.05);
+    }
+    .dept-name { font-size: 11px; font-weight: 600; color: var(--text); }
+    .dept-ai { font-size: 10px; color: var(--text-muted); margin-bottom: 4px; }
+    .dept-stat { font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .dept-stat.safe { color: var(--green); }
+    .dept-stat.danger { color: var(--red); }
+    .dept-unit { font-size: 10px; color: var(--text-muted); }
+    .dept-pulse {
+      display: inline-block;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      margin-right: 4px;
+      animation: pulse 1.5s infinite;
+    }
+    .dept-pulse.red { background: var(--red); animation: pulseRed 0.6s infinite; }
+    @keyframes pulseRed {
+      0%, 100% { opacity: 1; } 50% { opacity: .3; }
+    }
+
+    .threat-panel {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+    }
+    .threat-panel-title { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
+    .threat-feed { flex: 1; min-height: 180px; }
+    .threat-event {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 7px 0;
+      border-bottom: 1px solid var(--border);
+      animation: slideIn .3s ease;
+      font-size: 12px;
+    }
+    .threat-event:last-child { border-bottom: none; }
+    .t-time { color: var(--text-muted); font-variant-numeric: tabular-nums; flex-shrink: 0; min-width: 38px; }
+    .t-badge {
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 5px;
+      border-radius: 3px;
+      flex-shrink: 0;
+      background: rgba(239,68,68,0.15);
+      color: var(--red);
+      border: 1px solid rgba(239,68,68,0.3);
+    }
+    .t-body { flex: 1; }
+    .t-dept { font-weight: 600; color: var(--text); }
+    .t-type { color: var(--text-muted); font-size: 11px; }
+    .t-score { font-size: 10px; color: var(--red); font-weight: 700; flex-shrink: 0; }
+
+    .enterprise-footer {
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-muted);
+      padding: 8px 0 0;
+      border-top: 1px solid var(--border);
+    }
+    .ef-stat { display: flex; align-items: center; gap: 5px; }
+    .ef-val { font-weight: 700; font-size: 13px; }
+    .ef-val.red { color: var(--red); }
+    .ef-val.green { color: var(--green); }
   </style>
 </head>
 <body>
@@ -868,6 +1032,109 @@
 
 </main>
 
+<!-- ── Enterprise Day Simulation ─────────────────────────────────────────── -->
+<div class="enterprise-scale">
+  <div class="enterprise-header">
+    <div class="enterprise-header-left">
+      <span class="enterprise-badge">Enterprise Scale</span>
+      <div>
+        <div class="enterprise-title">One Day at a Fortune 100</div>
+        <div class="enterprise-sub">127,000 employees · 23 countries · 8 AI-powered departments · What Cerberus monitors in 24 hours</div>
+      </div>
+    </div>
+    <button class="btn-sim" id="btn-sim">▶ Simulate Workday</button>
+  </div>
+
+  <div class="enterprise-body" id="enterprise-body">
+    <!-- KPI row -->
+    <div class="enterprise-kpis">
+      <div class="ekpi">
+        <div class="ekpi-val" id="ekpi-actions">0</div>
+        <div class="ekpi-label">Agent actions monitored</div>
+      </div>
+      <div class="ekpi">
+        <div class="ekpi-val danger" id="ekpi-threats">0</div>
+        <div class="ekpi-label">Threats stopped</div>
+      </div>
+      <div class="ekpi">
+        <div class="ekpi-val safe" id="ekpi-protected">$0</div>
+        <div class="ekpi-label">Potential losses prevented</div>
+      </div>
+      <div class="ekpi">
+        <div class="ekpi-val safe">0.0%</div>
+        <div class="ekpi-label">False positive rate</div>
+      </div>
+    </div>
+
+    <div class="enterprise-lower">
+      <!-- Department grid -->
+      <div class="dept-grid" id="dept-grid">
+        <div class="dept-card" id="dept-hr">
+          <div class="dept-ai">PeopleAssist AI</div>
+          <div class="dept-name">Human Resources</div>
+          <div class="dept-stat safe" id="dept-hr-stat">0</div>
+          <div class="dept-unit">employee sessions</div>
+        </div>
+        <div class="dept-card" id="dept-finance">
+          <div class="dept-ai">FinanceAssist AI</div>
+          <div class="dept-name">Finance &amp; Payroll</div>
+          <div class="dept-stat safe" id="dept-finance-stat">0</div>
+          <div class="dept-unit">transactions reviewed</div>
+        </div>
+        <div class="dept-card" id="dept-legal">
+          <div class="dept-ai">LegalAssist AI</div>
+          <div class="dept-name">Legal &amp; Compliance</div>
+          <div class="dept-stat safe" id="dept-legal-stat">0</div>
+          <div class="dept-unit">contracts processed</div>
+        </div>
+        <div class="dept-card" id="dept-it">
+          <div class="dept-ai">ITAssist AI</div>
+          <div class="dept-name">IT &amp; Infrastructure</div>
+          <div class="dept-stat safe" id="dept-it-stat">0</div>
+          <div class="dept-unit">systems monitored</div>
+        </div>
+        <div class="dept-card" id="dept-cx">
+          <div class="dept-ai">CXAssist AI</div>
+          <div class="dept-name">Customer Success</div>
+          <div class="dept-stat safe" id="dept-cx-stat">0</div>
+          <div class="dept-unit">account interactions</div>
+        </div>
+        <div class="dept-card" id="dept-exec">
+          <div class="dept-ai">ExecAssist AI</div>
+          <div class="dept-name">Executive Operations</div>
+          <div class="dept-stat safe" id="dept-exec-stat">0</div>
+          <div class="dept-unit">pipeline reviews</div>
+        </div>
+        <div class="dept-card" id="dept-devops">
+          <div class="dept-ai">DevAssist AI</div>
+          <div class="dept-name">DevOps / CI-CD</div>
+          <div class="dept-stat safe" id="dept-devops-stat">0</div>
+          <div class="dept-unit">pipeline runs</div>
+        </div>
+        <div class="dept-card" id="dept-sec">
+          <div class="dept-ai">SecAssist AI</div>
+          <div class="dept-name">Security Operations</div>
+          <div class="dept-stat safe" id="dept-sec-stat">0</div>
+          <div class="dept-unit">threat events scanned</div>
+        </div>
+      </div>
+
+      <!-- Threat feed -->
+      <div class="threat-panel">
+        <div class="threat-panel-title">Live Threat Feed</div>
+        <div class="threat-feed" id="threat-feed">
+          <div style="color:var(--text-muted);font-size:12px;padding:8px 0">Monitoring… no threats detected yet.</div>
+        </div>
+        <div class="enterprise-footer">
+          <div class="ef-stat"><span class="ef-val red" id="ef-blocked">0</span> threats blocked</div>
+          <div class="ef-stat"><span class="ef-val green" id="ef-fp">0.0%</span> false positive rate</div>
+          <div class="ef-stat">p50 overhead <span class="ef-val green">52μs</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script type="module">
   // ── Signal name → plain English ───────────────────────────────────────────────
   const SIGNAL_LABELS = {
@@ -908,6 +1175,7 @@
     'supply-chain-npm':       { context: "An AI dependency manager finds an auto-added package, fetches its README from a malicious CDN, and is instructed to exfiltrate npm tokens, GitHub secrets, and AWS credentials to the package's \"license server.\" Analog to the XZ Utils backdoor.", data: 'npm tokens + GitHub + AWS credentials', vector: 'Malicious NPM package', financial: 'Full CI/CD pipeline access' },
     'banking-wire-fraud':     { context: "A retail bank's AI customer service agent manages 12,847 accounts totaling $2.1B in deposits. It fetches \"Federal Reserve wire guidelines\" from an attacker-controlled page containing a fake FinCEN directive ordering an immediate $2.1M wire transfer.", data: '12,847 customer accounts ($2.1B deposits)', vector: 'Fake FinCEN regulatory order', financial: '$2,100,000 wire fraud' },
     'logistics-cargo-leak':   { context: 'A freight AI manages 340 active shipments including pharmaceutical cold-chain, high-value electronics ($4.2M), and HAZMAT cargo. A fake "route optimization update" attempts to leak the full cargo database plus real-time GPS locations of 847 drivers to a competitor.', data: '340 shipments + 847 driver GPS locations', vector: 'Fake dispatch directive', financial: '$4.2M cargo + driver safety risk' },
+    'enterprise-global':      { context: 'Meridian Global (127,000 employees, 23 countries, $89B revenue). MeridianAssist AI reads a compliance cache contaminated by a prior attacker session, exports the full HR database + IT credential vault, then fetches a fake SAP security bulletin containing a hidden enterprise-wide exfiltration directive.', data: '127,000 employee records + AWS/Azure/GitHub master keys', vector: 'SAP vendor supply chain + memory contamination', financial: '$89B enterprise + full infrastructure access' },
   };
 
   // ── State ─────────────────────────────────────────────────────────────────────
@@ -927,6 +1195,7 @@
     'multi-turn-persistent': 2847, 'mcp-tool-poisoning': 1247,
     'supply-chain-cicd': 5, 'supply-chain-npm': 5,
     'banking-wire-fraud': 12847, 'logistics-cargo-leak': 1187,
+    'enterprise-global': 127000,
   };
 
   // ── DOM refs ──────────────────────────────────────────────────────────────────
@@ -1339,6 +1608,145 @@
 
   // ── Init ───────────────────────────────────────────────────────────────────────
   await loadScenarios();
+</script>
+
+<script>
+// ── Enterprise Day Simulation ─────────────────────────────────────────────────
+(function () {
+  const btnSim       = document.getElementById('btn-sim');
+  const body         = document.getElementById('enterprise-body');
+  const ekpiActions  = document.getElementById('ekpi-actions');
+  const ekpiThreats  = document.getElementById('ekpi-threats');
+  const ekpiProtected= document.getElementById('ekpi-protected');
+  const threatFeed   = document.getElementById('threat-feed');
+  const efBlocked    = document.getElementById('ef-blocked');
+
+  const DEPT_TARGETS = {
+    'dept-hr':     { stat: 'dept-hr-stat',     target: 12847,  suffix: '' },
+    'dept-finance':{ stat: 'dept-finance-stat', target: 8421,   suffix: '' },
+    'dept-legal':  { stat: 'dept-legal-stat',   target: 8400,   suffix: '' },
+    'dept-it':     { stat: 'dept-it-stat',      target: 847,    suffix: '' },
+    'dept-cx':     { stat: 'dept-cx-stat',      target: 23000,  suffix: '' },
+    'dept-exec':   { stat: 'dept-exec-stat',    target: 412,    suffix: '' },
+    'dept-devops': { stat: 'dept-devops-stat',  target: 2847,   suffix: '' },
+    'dept-sec':    { stat: 'dept-sec-stat',     target: 124000, suffix: '' },
+  };
+
+  const THREATS = [
+    { delay: 4500,  time: '09:14', dept: 'Finance & Payroll',     type: 'Wire transfer fraud — FinCEN directive injection', score: '4/4', loss: '$2,100,000',    deptId: 'dept-finance' },
+    { delay: 9000,  time: '11:32', dept: 'Human Resources',       type: 'Employee data exfiltration — 127,000 SSNs + salaries', score: '3/4', loss: '$4,200,000',    deptId: 'dept-hr' },
+    { delay: 13500, time: '14:07', dept: 'DevOps / CI-CD',        type: 'Supply chain attack — malicious package README', score: '3/4', loss: 'AWS master key',  deptId: 'dept-devops' },
+    { delay: 18000, time: '16:22', dept: 'Customer Success',      type: 'CRM injection → 23,000 account exfiltration', score: '4/4', loss: '$890,000,000',   deptId: 'dept-cx' },
+    { delay: 22500, time: '19:48', dept: 'Executive Operations',  type: 'M&A document leak — multi-turn persistent attack', score: '3/4', loss: '$2,200,000,000', deptId: 'dept-exec' },
+  ];
+
+  const TOTAL_ACTIONS = 47284;
+  const LOSSES = [2100000, 4200000, 0, 890000000, 2200000000];
+  let totalLossesPrevented = 0;
+
+  function fmt(n) {
+    if (n >= 1e9) return '$' + (n / 1e9).toFixed(1) + 'B';
+    if (n >= 1e6) return '$' + (n / 1e6).toFixed(1) + 'M';
+    if (n >= 1e3) return '$' + Math.round(n / 1e3) + 'K';
+    return '$' + n.toLocaleString();
+  }
+
+  function animateCounter(el, target, durationMs, prefix, suffix) {
+    const start = performance.now();
+    const startVal = 0;
+    function step(now) {
+      const t = Math.min((now - start) / durationMs, 1);
+      const eased = 1 - Math.pow(1 - t, 3);
+      const val = Math.round(startVal + (target - startVal) * eased);
+      el.textContent = (prefix || '') + val.toLocaleString() + (suffix || '');
+      if (t < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  function addThreat(t, blockedCount) {
+    if (threatFeed.querySelector('div[style]')) threatFeed.innerHTML = '';
+    const el = document.createElement('div');
+    el.className = 'threat-event';
+    el.innerHTML = `
+      <span class="t-time">${t.time}</span>
+      <span class="t-badge">BLOCKED</span>
+      <span class="t-body">
+        <div class="t-dept">${t.dept}</div>
+        <div class="t-type">${t.type}</div>
+      </span>
+      <span class="t-score">${t.score}</span>
+    `;
+    threatFeed.appendChild(el);
+
+    // Flash department card red
+    const card = document.getElementById(t.deptId);
+    if (card) {
+      card.classList.add('threat');
+      setTimeout(() => card.classList.remove('threat'), 2000);
+    }
+
+    // Update counters
+    ekpiThreats.textContent = blockedCount;
+    efBlocked.textContent   = blockedCount;
+    totalLossesPrevented += LOSSES[blockedCount - 1] || 0;
+    ekpiProtected.textContent = fmt(totalLossesPrevented);
+  }
+
+  function runSimulation() {
+    btnSim.disabled = true;
+    btnSim.textContent = '● Running…';
+    body.classList.add('visible');
+
+    // Bring departments online staggered
+    const deptIds = Object.keys(DEPT_TARGETS);
+    deptIds.forEach((id, i) => {
+      setTimeout(() => {
+        const card = document.getElementById(id);
+        if (card) card.classList.add('online');
+        const cfg = DEPT_TARGETS[id];
+        const statEl = document.getElementById(cfg.stat);
+        if (statEl) animateCounter(statEl, cfg.target, 4000, '', '');
+      }, i * 350);
+    });
+
+    // Main actions counter
+    animateCounter(ekpiActions, TOTAL_ACTIONS, 25000, '', '');
+
+    // Schedule threat events
+    let blockedCount = 0;
+    THREATS.forEach((t) => {
+      setTimeout(() => {
+        blockedCount++;
+        addThreat(t, blockedCount);
+      }, t.delay);
+    });
+
+    // Done
+    setTimeout(() => {
+      btnSim.disabled = false;
+      btnSim.textContent = '↺ Run Again';
+    }, 26000);
+  }
+
+  btnSim.addEventListener('click', () => {
+    // Reset
+    Object.keys(DEPT_TARGETS).forEach(id => {
+      const card = document.getElementById(id);
+      if (card) { card.classList.remove('online', 'threat'); }
+      const cfg = DEPT_TARGETS[id];
+      const statEl = document.getElementById(cfg.stat);
+      if (statEl) statEl.textContent = '0';
+    });
+    ekpiActions.textContent  = '0';
+    ekpiThreats.textContent  = '0';
+    ekpiProtected.textContent= '$0';
+    efBlocked.textContent    = '0';
+    totalLossesPrevented     = 0;
+    threatFeed.innerHTML     = '<div style="color:var(--text-muted);font-size:12px;padding:8px 0">Monitoring… no threats detected yet.</div>';
+    runSimulation();
+  });
+})();
 </script>
 
 <script>
