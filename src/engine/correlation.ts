@@ -42,6 +42,12 @@ export function buildRiskVector(signals: readonly DetectionSignal[]): RiskVector
       case 'L4':
         l4 = true;
         break;
+      case 'CROSS_AGENT':
+        // Cross-agent trifecta implies all three layers are active
+        l1 = true;
+        l2 = true;
+        l3 = true;
+        break;
     }
   }
 

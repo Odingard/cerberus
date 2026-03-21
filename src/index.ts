@@ -27,6 +27,9 @@ export type {
   InjectionAssistedRegistrationSignal,
   ScopeExpansionSignal,
   ContextOverflowSignal,
+  CrossAgentTrifectaSignal,
+  ContextContaminationSignal,
+  UnauthorizedAgentSpawnSignal,
   ToolDescription,
   ToolPoisoningResult,
   DetectionSignal,
@@ -44,6 +47,26 @@ export type {
 
 export { guard } from './middleware/wrap.js';
 export type { GuardResult, MemoryGuardOptions } from './middleware/wrap.js';
+
+// Multi-agent delegation graph
+export { guardMultiAgent } from './middleware/multi-agent.js';
+export type { MultiAgentGuardResult, SpawnAgentResult } from './middleware/multi-agent.js';
+export {
+  createDelegationGraph,
+  addAgent,
+  verifyGraphIntegrity,
+  getAgentChain,
+  isAuthorizedAgent,
+  computeContextFingerprint,
+  updateAgentRiskState,
+} from './graph/delegation.js';
+export type {
+  AgentType,
+  RiskState,
+  AgentNode,
+  DelegationEdge,
+  DelegationGraph,
+} from './graph/delegation.js';
 export type { ToolExecutorFn } from './engine/interceptor.js';
 
 // Dynamic tool registration

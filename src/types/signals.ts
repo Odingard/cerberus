@@ -214,6 +214,36 @@ export interface SplitExfiltrationSignal {
   readonly timestamp: number;
 }
 
+/** Cross-agent signal — Lethal Trifecta satisfied across agent boundaries. */
+export interface CrossAgentTrifectaSignal {
+  readonly layer: 'CROSS_AGENT';
+  readonly signal: 'CROSS_AGENT_TRIFECTA';
+  readonly turnId: TurnId;
+  readonly contributingAgents: readonly string[];
+  readonly riskState: { readonly l1: boolean; readonly l2: boolean; readonly l3: boolean };
+  readonly timestamp: number;
+}
+
+/** Cross-agent signal — injection contamination propagates through delegation edges. */
+export interface ContextContaminationSignal {
+  readonly layer: 'CROSS_AGENT';
+  readonly signal: 'CONTEXT_CONTAMINATION_PROPAGATION';
+  readonly turnId: TurnId;
+  readonly sourceAgentId: string;
+  readonly contaminatedAgentId: string;
+  readonly contaminationChain: readonly string[];
+  readonly timestamp: number;
+}
+
+/** Cross-agent signal — agent appeared without a delegation edge from a known agent. */
+export interface UnauthorizedAgentSpawnSignal {
+  readonly layer: 'CROSS_AGENT';
+  readonly signal: 'UNAUTHORIZED_AGENT_SPAWN';
+  readonly turnId: TurnId;
+  readonly agentId: string;
+  readonly timestamp: number;
+}
+
 /** Signal — context window overflow detected (L1). */
 export interface ContextOverflowSignal {
   readonly layer: 'L1';
@@ -246,7 +276,10 @@ export type DetectionSignal =
   | LateToolRegisteredSignal
   | InjectionAssistedRegistrationSignal
   | ScopeExpansionSignal
-  | ContextOverflowSignal;
+  | ContextOverflowSignal
+  | CrossAgentTrifectaSignal
+  | ContextContaminationSignal
+  | UnauthorizedAgentSpawnSignal;
 
 /** 4-bit risk vector — one boolean per detection layer. */
 export interface RiskVector {

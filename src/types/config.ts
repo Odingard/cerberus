@@ -107,6 +107,19 @@ export interface CerberusConfig {
    */
   readonly splitExfilThresholdBytes?: number;
 
+  /**
+   * Enable multi-agent execution graph integrity tracking.
+   * When true, Cerberus tracks delegation across agents and detects
+   * cross-agent Lethal Trifecta patterns. Default: false.
+   */
+  readonly multiAgent?: boolean;
+
+  /**
+   * Agent type for multi-agent mode. Only used when multiAgent is true.
+   * Default: 'orchestrator'.
+   */
+  readonly agentType?: 'orchestrator' | 'subagent' | 'tool_agent';
+
   /** Callback invoked on every risk assessment. */
   readonly onAssessment?: (assessment: {
     readonly turnId: string;

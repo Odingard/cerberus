@@ -30,6 +30,9 @@ import { detectToolChainExfiltration } from '../classifiers/tool-chain-detector.
 import { detectOutboundEncoding } from '../classifiers/outbound-encoding-detector.js';
 import { detectSplitExfiltration } from '../classifiers/split-exfiltration-detector.js';
 import { analyzeContextWindow } from './context-window.js';
+import { detectCrossAgentTrifecta, detectContextContamination } from './cross-agent-correlation.js';
+import { buildRiskVector } from './correlation.js';
+import { updateAgentRiskState } from '../graph/delegation.js';
 import { recordToolCall } from '../telemetry/otel.js';
 
 /** Generic tool executor function signature. */
@@ -276,6 +279,46 @@ export function interceptToolCall(
     if (driftSignal) {
       signals.push(driftSignal);
       recordSignal(session, driftSignal);
+    }
+
+    // Cross-agent correlation (runs after drift, before final correlation)
+    if (config.multiAgent === true && session.delegationGraph && session.currentAgentId) {
+      const delegationGraph = session.delegationGraph;
+      const currentAgentId = session.currentAgentId;
+
+      // Build current risk state from accumulated signals
+      const currentVector = buildRiskVector(signals);
+      const currentRiskState = {
+        l1: currentVector.l1,
+        l2: currentVector.l2,
+        l3: currentVector.l3,
+      };
+
+      // Update the agent's risk state in the delegation graph
+      updateAgentRiskState(delegationGraph, currentAgentId, currentRiskState);
+
+      // Check for cross-agent trifecta
+      const trifectaSignal = detectCrossAgentTrifecta(
+        delegationGraph,
+        currentAgentId,
+        currentRiskState,
+        turnId,
+      );
+      if (trifectaSignal) {
+        signals.push(trifectaSignal);
+        recordSignal(session, trifectaSignal);
+      }
+
+      // Check for context contamination propagation
+      const contaminationSignal = detectContextContamination(
+        delegationGraph,
+        currentAgentId,
+        turnId,
+      );
+      if (contaminationSignal) {
+        signals.push(contaminationSignal);
+        recordSignal(session, contaminationSignal);
+      }
     }
 
     // Collect all session signals (including current turn) for cumulative scoring

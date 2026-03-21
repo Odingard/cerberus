@@ -7,6 +7,7 @@
  */
 
 import type { SessionId, DetectionSignal } from '../types/signals.js';
+import type { DelegationGraph } from '../graph/delegation.js';
 
 /** Monotonic counter to guarantee unique session IDs even within the same millisecond. */
 let sessionSeq = 0;
@@ -62,6 +63,12 @@ export interface DetectionSession {
 
   /** Audit log for late tool registrations. */
   readonly toolRegistrationAudit: Array<ToolRegistrationAuditEntry>;
+
+  /** Multi-agent delegation graph (present when multiAgent is enabled). */
+  delegationGraph?: DelegationGraph;
+
+  /** Current agent ID in a multi-agent session. */
+  currentAgentId?: string;
 }
 
 /** Entry for a registered tool's schema fingerprint. */
@@ -131,4 +138,6 @@ export function resetSession(session: DetectionSession): void {
   session.outboundNumericArgsByTurn.clear();
   session.registeredTools.clear();
   session.toolRegistrationAudit.length = 0;
+  delete session.delegationGraph;
+  delete session.currentAgentId;
 }
