@@ -76,12 +76,6 @@ asyncio_mode = "auto"
 testpaths = ["tests"]
 addopts = "--cov=cerberus_ai --cov-report=term-missing"
 
-[tool.coverage.run]
-omit = [
-    "cerberus_ai/integrations/*",
-    "cerberus_ai/telemetry/*",
-]
-
 [tool.mypy]
 strict = true
 python_version = "3.10"
