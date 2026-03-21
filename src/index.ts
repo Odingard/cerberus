@@ -23,6 +23,10 @@ export type {
   SuspiciousDestinationSignal,
   ToolPoisoningSignal,
   BehavioralDriftSignal,
+  LateToolRegisteredSignal,
+  InjectionAssistedRegistrationSignal,
+  ScopeExpansionSignal,
+  ContextOverflowSignal,
   ToolDescription,
   ToolPoisoningResult,
   DetectionSignal,
@@ -31,6 +35,9 @@ export type {
   RiskAssessment,
   AlertMode,
   LogDestination,
+  ContextScoringMode,
+  OverflowAction,
+  AlwaysInspectRegions,
   CerberusConfig,
   ToolCallContext,
 } from './types/index.js';
@@ -38,6 +45,14 @@ export type {
 export { guard } from './middleware/wrap.js';
 export type { GuardResult, MemoryGuardOptions } from './middleware/wrap.js';
 export type { ToolExecutorFn } from './engine/interceptor.js';
+
+// Dynamic tool registration
+export { registerToolLate, computeSchemaHash } from './engine/tool-registration.js';
+export type { ToolSchema, ToolRegistrationResult } from './engine/tool-registration.js';
+
+// Context window management
+export { analyzeContextWindow, estimateTokens, computeEntropy } from './engine/context-window.js';
+export type { ContentSegment, ContextWindowResult } from './engine/context-window.js';
 
 // Standalone MCP tool description scanner
 export { scanToolDescriptions } from './classifiers/mcp-scanner.js';

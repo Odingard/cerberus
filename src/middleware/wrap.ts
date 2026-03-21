@@ -17,6 +17,8 @@ import type { ContaminationGraph } from '../graph/contamination.js';
 import { createContaminationGraph } from '../graph/contamination.js';
 import type { ProvenanceLedger } from '../graph/ledger.js';
 import { createLedger } from '../graph/ledger.js';
+import type { ToolSchema, ToolRegistrationResult } from '../engine/tool-registration.js';
+import { registerToolLate } from '../engine/tool-registration.js';
 
 /** Options for L4 memory contamination tracking. */
 export interface MemoryGuardOptions {
@@ -42,6 +44,16 @@ export interface GuardResult {
   readonly ledger?: ProvenanceLedger;
   /** Tear down all resources (close DB, clear graph). Call when done. */
   readonly destroy: () => void;
+  /**
+   * Register a tool at runtime with security checks.
+   * Blocks if injection patterns are active in the session.
+   * Detects schema expansion if a tool's schema changes after registration.
+   */
+  readonly registerTool: (
+    tool: ToolSchema,
+    reason: string,
+    authorizedBy: string,
+  ) => ToolRegistrationResult;
 }
 
 /**
@@ -121,6 +133,15 @@ export function guard(
     graph?.clear();
   };
 
+  // Register a tool at runtime with full security checks
+  const registerTool = (
+    tool: ToolSchema,
+    reason: string,
+    authorizedBy: string,
+  ): ToolRegistrationResult => {
+    return registerToolLate(tool, reason, authorizedBy, session);
+  };
+
   return {
     executors: wrappedExecutors,
     session,
@@ -129,5 +150,6 @@ export function guard(
     ...(graph ? { graph } : {}),
     ...(ledger ? { ledger } : {}),
     destroy,
+    registerTool,
   };
 }

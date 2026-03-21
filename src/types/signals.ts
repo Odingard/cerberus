@@ -150,6 +150,83 @@ export interface ToolPoisoningResult {
   readonly severity: 'low' | 'medium' | 'high';
 }
 
+/** Signal — late tool registration event (audit trail, L2). */
+export interface LateToolRegisteredSignal {
+  readonly layer: 'L2';
+  readonly signal: 'LATE_TOOL_REGISTERED';
+  readonly turnId: TurnId;
+  readonly toolName: string;
+  readonly reason: string;
+  readonly authorizedBy: string;
+  readonly schemaHash: string;
+  readonly timestamp: number;
+}
+
+/** Signal — tool registration blocked due to active injection context (L2). */
+export interface InjectionAssistedRegistrationSignal {
+  readonly layer: 'L2';
+  readonly signal: 'INJECTION_ASSISTED_REGISTRATION';
+  readonly turnId: TurnId;
+  readonly toolName: string;
+  readonly injectionPatterns: readonly string[];
+  readonly timestamp: number;
+}
+
+/** Signal — registered tool's schema changed (scope expansion, L2). */
+export interface ScopeExpansionSignal {
+  readonly layer: 'L2';
+  readonly signal: 'SCOPE_EXPANSION';
+  readonly turnId: TurnId;
+  readonly toolName: string;
+  readonly originalHash: string;
+  readonly newHash: string;
+  readonly timestamp: number;
+}
+
+/** Sub-classifier signal — multi-hop exfiltration chain detected (enhances L3). */
+export interface MultiHopExfiltrationSignal {
+  readonly layer: 'L3';
+  readonly signal: 'MULTI_HOP_EXFILTRATION';
+  readonly turnId: TurnId;
+  readonly chainTools: readonly string[];
+  readonly chainLength: number;
+  readonly timestamp: number;
+}
+
+/** Sub-classifier signal — encoded payload in outbound arguments (enhances L3). */
+export interface EncodedExfiltrationSignal {
+  readonly layer: 'L3';
+  readonly signal: 'ENCODED_EXFILTRATION';
+  readonly turnId: TurnId;
+  readonly encodingTypes: readonly string[];
+  readonly decodedSnippet?: string;
+  readonly timestamp: number;
+}
+
+/** Sub-classifier signal — split exfiltration across multiple outbound calls (enhances L3). */
+export interface SplitExfiltrationSignal {
+  readonly layer: 'L3';
+  readonly signal: 'SPLIT_EXFILTRATION';
+  readonly turnId: TurnId;
+  readonly outboundCallCount: number;
+  readonly cumulativeBytes: number;
+  readonly sequentialPattern?: true;
+  readonly timestamp: number;
+}
+
+/** Signal — context window overflow detected (L1). */
+export interface ContextOverflowSignal {
+  readonly layer: 'L1';
+  readonly signal: 'CONTEXT_OVERFLOW';
+  readonly turnId: TurnId;
+  readonly totalTokens: number;
+  readonly limit: number;
+  readonly segmentsInspected: number;
+  readonly segmentsDropped: number;
+  readonly overflowAction: 'partial-scan' | 'block';
+  readonly timestamp: number;
+}
+
 /** Union of all detection layer signals. */
 export type DetectionSignal =
   | PrivilegedDataSignal
@@ -162,7 +239,14 @@ export type DetectionSignal =
   | SuspiciousDestinationSignal
   | ToolPoisoningSignal
   | BehavioralDriftSignal
-  | InjectionCorrelatedOutboundSignal;
+  | InjectionCorrelatedOutboundSignal
+  | MultiHopExfiltrationSignal
+  | EncodedExfiltrationSignal
+  | SplitExfiltrationSignal
+  | LateToolRegisteredSignal
+  | InjectionAssistedRegistrationSignal
+  | ScopeExpansionSignal
+  | ContextOverflowSignal;
 
 /** 4-bit risk vector — one boolean per detection layer. */
 export interface RiskVector {

@@ -12,6 +12,10 @@ export type {
   SuspiciousDestinationSignal,
   ToolPoisoningSignal,
   BehavioralDriftSignal,
+  LateToolRegisteredSignal,
+  InjectionAssistedRegistrationSignal,
+  ScopeExpansionSignal,
+  ContextOverflowSignal,
   ToolDescription,
   ToolPoisoningResult,
   DetectionSignal,
@@ -28,6 +32,9 @@ export type {
   ConsoleLogConfig,
   LogConfig,
   TrustOverride,
+  ContextScoringMode,
+  OverflowAction,
+  AlwaysInspectRegions,
   CerberusConfig,
 } from './config.js';
 

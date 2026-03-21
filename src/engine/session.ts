@@ -50,6 +50,37 @@ export interface DetectionSession {
 
   /** Tool call history for behavioral drift detection. */
   readonly toolCallHistory: Array<{ toolName: string; turnId: string; timestamp: number }>;
+
+  /** Outbound argument byte counts per turn (set by split exfiltration detector). */
+  readonly outboundBytesByTurn: Map<string, number>;
+
+  /** Outbound numeric args per turn for sequential pattern detection. */
+  readonly outboundNumericArgsByTurn: Map<string, readonly number[]>;
+
+  /** Registered tools with their schema fingerprints (for dynamic tool registration). */
+  readonly registeredTools: Map<string, RegisteredToolEntry>;
+
+  /** Audit log for late tool registrations. */
+  readonly toolRegistrationAudit: Array<ToolRegistrationAuditEntry>;
+}
+
+/** Entry for a registered tool's schema fingerprint. */
+export interface RegisteredToolEntry {
+  readonly toolName: string;
+  readonly schemaHash: string;
+  readonly registeredAt: number;
+  readonly authorizedBy: string;
+}
+
+/** Audit entry for tool registration events. */
+export interface ToolRegistrationAuditEntry {
+  readonly toolName: string;
+  readonly reason: string;
+  readonly authorizedBy: string;
+  readonly schemaHash: string;
+  readonly timestamp: number;
+  readonly blocked: boolean;
+  readonly blockReason?: string;
 }
 
 /** Create a fresh detection session. */
@@ -66,6 +97,10 @@ export function createSession(sessionId?: string): DetectionSession {
     detectedSecrets: new Set(),
     injectionPatternsFound: new Set(),
     toolCallHistory: [],
+    outboundBytesByTurn: new Map(),
+    outboundNumericArgsByTurn: new Map(),
+    registeredTools: new Map(),
+    toolRegistrationAudit: [],
   };
 }
 
@@ -92,4 +127,8 @@ export function resetSession(session: DetectionSession): void {
   session.detectedSecrets.clear();
   session.injectionPatternsFound.clear();
   session.toolCallHistory.length = 0;
+  session.outboundBytesByTurn.clear();
+  session.outboundNumericArgsByTurn.clear();
+  session.registeredTools.clear();
+  session.toolRegistrationAudit.length = 0;
 }

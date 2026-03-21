@@ -40,6 +40,22 @@ export interface TrustOverride {
   readonly trustLevel: 'trusted' | 'untrusted';
 }
 
+/** Context scoring mode for context window management. */
+export type ContextScoringMode = 'priority-anchor';
+
+/** Action to take when context window overflow is detected. */
+export type OverflowAction = 'partial-scan' | 'block';
+
+/** Regions that are always inspected regardless of context window limit. */
+export interface AlwaysInspectRegions {
+  /** Always inspect system prompts. Default: true. */
+  readonly systemPrompts?: boolean;
+  /** Always inspect tool schemas. Default: true. */
+  readonly toolSchemas?: boolean;
+  /** Always inspect tool results. Default: true. */
+  readonly toolResults?: boolean;
+}
+
 /** Main configuration for cerberus.guard(). */
 export interface CerberusConfig {
   /** Maximum action Cerberus will take. Default: 'alert'. */
@@ -71,6 +87,25 @@ export interface CerberusConfig {
    * Default: false.
    */
   readonly opentelemetry?: boolean;
+
+  /** Maximum token count for context window scanning. Default: 32000. */
+  readonly contextWindowLimit?: number;
+
+  /** Scoring mode for context window segment prioritization. Default: 'priority-anchor'. */
+  readonly contextScoringMode?: ContextScoringMode;
+
+  /** Action when context exceeds the limit. Default: 'partial-scan'. */
+  readonly overflowAction?: OverflowAction;
+
+  /** Regions always inspected regardless of context window limit. */
+  readonly alwaysInspectRegions?: AlwaysInspectRegions;
+
+  /**
+   * Cumulative outbound argument byte threshold for split exfiltration detection.
+   * When outbound volume exceeds this value across 3+ outbound calls with L1 active,
+   * the SPLIT_EXFILTRATION signal fires. Default: 10240 (10 KB).
+   */
+  readonly splitExfilThresholdBytes?: number;
 
   /** Callback invoked on every risk assessment. */
   readonly onAssessment?: (assessment: {
