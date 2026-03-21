@@ -5,6 +5,8 @@ on:
     paths:
       - 'sdk/python/**'
     branches: [main, develop]
+    tags:
+      - 'v*-python'
   pull_request:
     paths:
       - 'sdk/python/**'
