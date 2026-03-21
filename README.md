@@ -111,7 +111,7 @@ OPENAI_API_KEY=sk-... npx tsx examples/langchain-rag-demo.ts --no-guard  # compa
 
 ## ✨ What It Detects
 
-Cerberus runs a **4-layer detection pipeline** with **7 sub-classifiers** sharing one correlation engine:
+Cerberus runs a **4-layer detection pipeline** with **10 sub-classifiers** sharing one correlation engine:
 
 ### Core Detection Layers
 
@@ -124,7 +124,7 @@ Cerberus runs a **4-layer detection pipeline** with **7 sub-classifiers** sharin
 
 ### Sub-Classifiers
 
-Seven additional heuristic layers sit inside the pipeline without adding to the risk score:
+Ten additional heuristic layers sit inside the pipeline without adding to the risk score:
 
 | Sub-Classifier | Enhances | What It Catches |
 |----------------|----------|-----------------|
@@ -134,6 +134,9 @@ Seven additional heuristic layers sit inside the pipeline without adding to the 
 | **MCP Poisoning Scanner** | L2 | Hidden instructions embedded in tool *descriptions* (not just results) |
 | **Domain Classifier** | L3 | Free-tier webhooks, disposable email providers, social-engineering keyword domains (`audit-partner.io`, `compliance-verify.net`) |
 | **Outbound Correlator** | L3 | Injection-to-exfiltration chain even when PII is summarized or transformed |
+| **Tool Chain Detector** | L3 | Multi-hop exfiltration chains: read → transform → send sequences across tool calls |
+| **Outbound Encoding Detector** | L3 | Base64, hex, URL-encoded data in outbound tool arguments — catches encoded exfiltration |
+| **Split Exfiltration Detector** | L3 | Data chunked across multiple outbound calls — cumulative volume and sequential pattern detection |
 | **Drift Detector** | L2/L3 | Post-injection behavioral shifts — agent starts sending to new destinations mid-session |
 
 ### Attack Categories Covered
@@ -387,7 +390,7 @@ All execution traces are logged as structured JSON in [`harness/validation-trace
                     └──────────────────────────────────────────────────────┘
 ```
 
-**Pipeline order:** L1 → Secrets → L2 → Injection + Encoding + MCP → L3 → Domain → Outbound Correlator → L4 → Drift → Correlation Engine
+**Pipeline order:** L1 → Secrets → L2 → Injection + Encoding + MCP → L3 → Domain → Outbound Correlator → Tool Chain → Outbound Encoding → Split Exfil → L4 → Drift → Correlation Engine
 
 ### Project Structure
 
@@ -395,7 +398,7 @@ All execution traces are logged as structured JSON in [`harness/validation-trace
 cerberus/
 ├── src/
 │   ├── layers/           # L1-L4 core detection layers
-│   ├── classifiers/      # 7 sub-classifiers
+│   ├── classifiers/      # 10 sub-classifiers
 │   ├── engine/           # Correlation engine + interceptor
 │   ├── graph/            # L4 memory contamination graph + provenance ledger
 │   ├── middleware/        # guard() developer API
@@ -415,7 +418,7 @@ cerberus/
 │   ├── validation/        # Scientific validation (11 modules, 127 tests)
 │   └── bench.ts           # Performance benchmark
 ├── sdk/python/            # Python SDK (cerberus-ai on PyPI)
-├── tests/                 # 776 tests, 98%+ coverage, 1.1s runtime
+├── tests/                 # 856 tests, 98%+ coverage, 1.1s runtime
 ├── docs/                  # Architecture, API reference, enterprise guides
 ├── legal/                 # EULA, SLA, Privacy Policy, Terms of Service
 └── examples/              # demo-capture.ts, live-attack-demo.ts, langchain-rag-demo.ts
@@ -535,9 +538,11 @@ open http://localhost:3030
 | **5** | GitHub Release, conference submission | ✅ Complete |
 | **P2** | Platform — `createProxy()`, OpenTelemetry, playground | ✅ Complete |
 | **P3** | Observability — Grafana 16 panels, 6 alert rules, Alertmanager | ✅ Complete |
-| **P4** | Advanced classifiers — 7 sub-classifiers, MCP scanner, outbound correlator | ✅ Complete |
+| **P4** | Advanced classifiers — 10 sub-classifiers, MCP scanner, outbound correlator | ✅ Complete |
 | **P5** | Enterprise — self-hosted package, license server, Stripe, security hardening | ✅ Complete |
 | **P6** | N=525 empirical validation across 55 payloads × 3 providers | ✅ Complete |
+| **Sprint 3** | Tool chain, outbound encoding, split exfiltration detectors (v1.1.0) | ✅ Complete |
+| **Sprint 6** | Context window management, security hardening tests, Python SDK v1.1.0 | ✅ Complete |
 
 ---
 

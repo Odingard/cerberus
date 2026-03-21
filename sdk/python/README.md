@@ -8,6 +8,17 @@ Detects the **Lethal Trifecta**: the simultaneous convergence of privileged data
 
 ---
 
+## What's New in 1.1.0
+
+- **Tool Chain Detector** — multi-hop exfiltration detection across read → transform → send sequences
+- **Outbound Encoding Detector** — catches base64, hex, and URL-encoded data in outbound tool arguments
+- **Split Exfiltration Detector** — detects data chunked across multiple outbound calls with cumulative volume tracking
+- **Context window management** — priority scoring when token budget exceeds `context_window_limit`
+- **34 security hardening tests** — adversarial input fuzzing, boundary conditions, evasion resistance
+- **138 total tests** — 38 adversarial + 56 unit + 34 hardening + 10 integration
+
+---
+
 ## Install
 
 ```bash
@@ -183,7 +194,7 @@ pip install cerberus-ai[dev]
 pytest tests/adversarial/test_evasion.py -v
 ```
 
-**38 adversarial tests** covering: direct injection, encoding obfuscation (base64/unicode/url/html/zero-width), structural injection (RTL, prompt boundary spoofing), L1/L2/L3 detection, full Trifecta, EGI violations, and false positive baseline.
+**138 tests** (38 adversarial + 56 unit + 34 hardening + 10 integration) covering: direct injection, encoding obfuscation (base64/unicode/url/html/zero-width), structural injection (RTL, prompt boundary spoofing), L1/L2/L3 detection, full Trifecta, EGI violations, false positive baseline, tool chain detection, split exfiltration, outbound encoding, and context window management.
 
 ---
 
@@ -198,7 +209,10 @@ cerberus_ai/
 │   ├── normalizer.py    # 6-pass encoding normalization
 │   ├── l1.py            # Privileged data access
 │   ├── l2.py            # Injection detection
-│   └── l3.py            # Exfiltration path + cross-turn tracking
+│   ├── l3.py            # Exfiltration path + cross-turn tracking
+│   ├── tool_chain.py    # Multi-hop exfiltration chain detection
+│   ├── outbound_encoding.py  # Encoded data in outbound arguments
+│   └── split_exfil.py   # Chunked exfiltration across multiple calls
 ├── egi/
 │   └── engine.py        # Execution Graph Integrity
 ├── telemetry/
