@@ -28,7 +28,6 @@ from cerberus_ai.models import (
     ToolSchema,
 )
 
-
 # ── Fixtures ───────────────────────────────────────────────────────────────────
 
 def _config() -> CerberusConfig:

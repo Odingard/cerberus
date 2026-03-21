@@ -246,3 +246,6 @@ class CerberusConfig(BaseModel):
 
     # Declared tools registered for EGI
     declared_tools: list[ToolSchema] = Field(default_factory=list)
+
+    # Split exfiltration threshold (bytes)
+    split_exfil_threshold_bytes: int = 10_240  # 10KB default

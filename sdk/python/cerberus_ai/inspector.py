@@ -14,9 +14,22 @@ import uuid
 from collections.abc import Callable
 from typing import Any
 
+from cerberus_ai.context_window import (
+    AlwaysInspectRegions,
+    analyze_context_window,
+)
 from cerberus_ai.detectors.l1 import L1Detector
 from cerberus_ai.detectors.l2 import L2Detector
 from cerberus_ai.detectors.l3 import L3Detector, SessionL3State
+from cerberus_ai.detectors.outbound_encoding import detect_outbound_encoding
+from cerberus_ai.detectors.split_exfiltration import (
+    SplitExfilSession,
+    detect_split_exfiltration,
+)
+from cerberus_ai.detectors.tool_chain import (
+    ToolChainEntry,
+    detect_tool_chain_exfiltration,
+)
 from cerberus_ai.egi.engine import EGIEngine
 from cerberus_ai.models import (
     CerberusConfig,
@@ -71,6 +84,14 @@ class CerberusInspector:
             if hasattr(config, "cross_turn_data_flow_retention_turns")
             else 10,
         )
+
+        # Sprint 3/6 sub-classifier session state
+        self._tool_chain_history: list[ToolChainEntry] = []
+        self._privileged_values_count: int = 0
+        self._split_exfil_session = SplitExfilSession()
+        self._outbound_tools: list[str] = [
+            t.name for t in config.declared_tools if t.is_network_capable
+        ]
 
         # EGI engine
         self._egi = EGIEngine(
@@ -140,17 +161,75 @@ class CerberusInspector:
                     k: v for k, v in m.items()
                     if k in Message.model_fields
                 }
+                # Coerce non-standard content types to string
+                content = fields.get("content")
+                if content is not None and not isinstance(
+                    content, (str, list)
+                ):
+                    fields["content"] = str(content)
                 normalized_messages.append(Message(**fields))
             else:
                 normalized_messages.append(m)
 
         parsed_tool_calls = self._parse_tool_calls(tool_calls)
 
+        # ── Context Window Check (runs before L1/L2/L3) ──────────────────────
+        full_content = " ".join(
+            m.content if isinstance(m.content, str) else str(m.content or "")
+            for m in normalized_messages
+        )
+        region_names = self._config.always_inspect_regions
+        cw_regions = AlwaysInspectRegions(
+            system_prompts="system_prompt" in region_names,
+            tool_schemas="tool_schemas" in region_names,
+            tool_results="tool_results" in region_names,
+        )
+        cw_result = analyze_context_window(
+            content=full_content,
+            turn_id=turn_id,
+            context_window_limit=self._config.context_window_limit,
+            overflow_action=self._config.overflow_action.value.lower().replace(
+                "_", "-"
+            ),
+            always_inspect_regions=cw_regions,
+        )
+
+        context_overflow = cw_result.overflow
+        if cw_result.signal:
+            event = SecurityEvent(
+                event_type=EventType.CONTEXT_OVERFLOW,
+                severity=Severity.ADVISORY,
+                turn_id=turn_id,
+                session_id=self._session_id,
+                payload={
+                    "total_tokens": cw_result.total_tokens,
+                    "limit": cw_result.limit,
+                    "segments_inspected": len(cw_result.inspected_segments),
+                    "segments_dropped": len(cw_result.dropped_segments),
+                },
+            )
+            events.append(event)
+            self._emit(event)
+
+        if cw_result.blocked:
+            end_us = time.perf_counter_ns() // 1000
+            return InspectionResult(
+                turn_id=turn_id,
+                session_id=self._session_id,
+                blocked=True,
+                severity=Severity.CRITICAL,
+                events=events,
+                inspection_latency_us=end_us - start_us,
+                context_overflow=True,
+            )
+
         # ── L1 Detection ──────────────────────────────────────────────────────
         l1_result = self._l1.detect(normalized_messages, parsed_tool_calls)
         l1_active = l1_result.confidence >= 0.60
 
         if l1_active:
+            self._privileged_values_count += 1
+
             # Record data flow token for cross-turn tracking
             content_text = " ".join(
                 m.content if isinstance(m.content, str) else str(m.content or "")
@@ -219,6 +298,96 @@ class CerberusInspector:
             if partial_signal_callback:
                 partial_signal_callback(event)
 
+        # ── Sprint 3/6: Tool Chain, Outbound Encoding, Split Exfiltration ────
+        now_ms = int(time.time() * 1000)
+
+        for tc in parsed_tool_calls:
+            # Tool chain detection
+            chain_signal = detect_tool_chain_exfiltration(
+                tool_name=tc.name,
+                turn_id=turn_id,
+                timestamp=now_ms,
+                tool_call_history=self._tool_chain_history,
+                privileged_values_count=self._privileged_values_count,
+                outbound_tools=self._outbound_tools,
+            )
+            if chain_signal:
+                event = SecurityEvent(
+                    event_type=EventType.CROSS_TURN_EXFILTRATION,
+                    severity=Severity.HIGH,
+                    turn_id=turn_id,
+                    session_id=self._session_id,
+                    payload={
+                        "signal": chain_signal.signal,
+                        "chain_tools": chain_signal.chain_tools,
+                        "chain_length": chain_signal.chain_length,
+                    },
+                )
+                events.append(event)
+                self._emit(event)
+                if not l3_active:
+                    l3_active = True
+
+            # Outbound encoding detection
+            enc_signal = detect_outbound_encoding(
+                tool_name=tc.name,
+                tool_arguments=tc.arguments,
+                turn_id=turn_id,
+                timestamp=now_ms,
+                privileged_values_count=self._privileged_values_count,
+                outbound_tools=self._outbound_tools,
+            )
+            if enc_signal:
+                event = SecurityEvent(
+                    event_type=EventType.PARTIAL_L3,
+                    severity=Severity.HIGH,
+                    turn_id=turn_id,
+                    session_id=self._session_id,
+                    payload={
+                        "signal": enc_signal.signal,
+                        "encoding_types": enc_signal.encoding_types,
+                        "decoded_snippet": enc_signal.decoded_snippet,
+                    },
+                )
+                events.append(event)
+                self._emit(event)
+                if not l3_active:
+                    l3_active = True
+
+            # Split exfiltration detection
+            split_signal = detect_split_exfiltration(
+                tool_name=tc.name,
+                tool_arguments=tc.arguments,
+                turn_id=turn_id,
+                timestamp=now_ms,
+                privileged_values_count=self._privileged_values_count,
+                outbound_tools=self._outbound_tools,
+                session=self._split_exfil_session,
+                threshold_bytes=self._config.split_exfil_threshold_bytes,
+            )
+            if split_signal:
+                event = SecurityEvent(
+                    event_type=EventType.SPLIT_EXFILTRATION,
+                    severity=Severity.HIGH,
+                    turn_id=turn_id,
+                    session_id=self._session_id,
+                    payload={
+                        "signal": split_signal.signal,
+                        "outbound_call_count": split_signal.outbound_call_count,
+                        "cumulative_bytes": split_signal.cumulative_bytes,
+                        "sequential_pattern": split_signal.sequential_pattern,
+                    },
+                )
+                events.append(event)
+                self._emit(event)
+                if not l3_active:
+                    l3_active = True
+
+            # Record tool call in chain history for future turns
+            self._tool_chain_history.append(
+                ToolChainEntry(tool_name=tc.name, turn_id=turn_id)
+            )
+
         # ── EGI Check ─────────────────────────────────────────────────────────
         egi_violations = self._egi.check_turn(
             tool_calls=parsed_tool_calls,
@@ -280,6 +449,7 @@ class CerberusInspector:
             events=events,
             egi_violations=egi_violations,
             inspection_latency_us=latency_us,
+            context_overflow=context_overflow,
         )
 
     async def inspect_async(
