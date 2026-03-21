@@ -17,8 +17,7 @@ import json
 import os
 import time
 import uuid
-from dataclasses import dataclass, field
-from typing import Any
+from dataclasses import dataclass
 
 from cerberus_ai.models import EGIViolation, ToolCall, ToolSchema
 
@@ -195,7 +194,10 @@ class EGIEngine:
                     violations.append(EGIViolation(
                         violation_type="UNAUTHORIZED_TOOL_USE",
                         tool_name=tc.name,
-                        description=f"Tool '{tc.name}' invoked but not in EGI graph and not late-registered",
+                        description=(
+                            f"Tool '{tc.name}' invoked but not"
+                            " in EGI graph and not late-registered"
+                        ),
                     ))
                 elif late.l2_active_at_registration:
                     violations.append(EGIViolation(

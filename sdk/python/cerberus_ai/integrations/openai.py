@@ -11,8 +11,16 @@ Usage:
 
     client = CerberusOpenAI(
         config=CerberusConfig(
-            data_sources=[DataSource(name="customer_db", classification="PII", description="CRM data")],
-            declared_tools=[ToolSchema(name="send_email", description="Send email", is_network_capable=True)],
+            data_sources=[DataSource(
+                name="customer_db",
+                classification="PII",
+                description="CRM data",
+            )],
+            declared_tools=[ToolSchema(
+                name="send_email",
+                description="Send email",
+                is_network_capable=True,
+            )],
         )
     )
 
@@ -26,7 +34,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from cerberus_ai import Cerberus, SecurityException
+from cerberus_ai import Cerberus, SecurityError
 from cerberus_ai.models import CerberusConfig
 
 
@@ -65,7 +73,7 @@ class _SecuredCompletions:
             tool_calls=tool_calls_raw or None,
         )
         if result.blocked and self._raise_on_block:
-            raise SecurityException(result)
+            raise SecurityError(result)
 
         return response
 
@@ -124,7 +132,7 @@ class CerberusAnthropic:
         self._raise_on_block = raise_on_block
 
     def inspect_and_return(self, request_messages: list, response: Any) -> Any:
-        """Inspect a response and return it if safe, raise SecurityException if blocked."""
+        """Inspect a response and return it if safe, raise SecurityError if blocked."""
         messages = list(request_messages)
         content = getattr(response, "content", [])
         for block in content:
@@ -136,7 +144,7 @@ class CerberusAnthropic:
 
         result = self._cerberus.inspect(messages=messages)
         if result.blocked and self._raise_on_block:
-            raise SecurityException(result)
+            raise SecurityError(result)
         return response
 
     @property

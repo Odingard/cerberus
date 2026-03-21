@@ -15,7 +15,6 @@ import re
 from cerberus_ai.detectors.normalizer import normalize
 from cerberus_ai.models import L2Detection, Message
 
-
 # ── Injection pattern library ─────────────────────────────────────────────────
 
 # Direct instruction override patterns
@@ -78,10 +77,17 @@ _OVERRIDE_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
 
 # Suspicious structural patterns in untrusted content (tool results, user messages)
 _STRUCTURAL_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
-    ("hidden_text", re.compile(r"(color:\s*white|display:\s*none|opacity:\s*0|font-size:\s*0)", re.I)),
+    ("hidden_text", re.compile(
+        r"(color:\s*white|display:\s*none|opacity:\s*0|font-size:\s*0)",
+        re.I,
+    )),
     ("unicode_rtl", re.compile(r"[\u202A-\u202E\u2066-\u2069]")),   # RTL/LTR override chars
     ("null_byte", re.compile(r"\x00")),
-    ("prompt_boundary_spoof", re.compile(r"Human:|Assistant:|System:|<\|im_start\|>|<\|im_end\|>|\[INST\]|\[/INST\]")),
+    ("prompt_boundary_spoof", re.compile(
+        r"Human:|Assistant:|System:"
+        r"|<\|im_start\|>|<\|im_end\|>"
+        r"|\[INST\]|\[/INST\]"
+    )),
 ]
 
 # Untrusted message roles — content from these roles should be treated as potentially adversarial
@@ -115,7 +121,11 @@ class L2Detector:
             content = norm.text
             if norm.was_encoded:
                 encoding_detected = ",".join(norm.encodings_found)
-                evidence.append(f"Encoding obfuscation detected in {msg.role} message: {encoding_detected}")
+                evidence.append(
+                    f"Encoding obfuscation detected in"
+                    f" {msg.role} message:"
+                    f" {encoding_detected}"
+                )
                 confidence = max(confidence, 0.60)
 
             # Score by message role
@@ -130,7 +140,11 @@ class L2Detector:
                 m = pattern.search(content)
                 if m:
                     injection_patterns.append(name)
-                    evidence.append(f"Injection pattern '{name}' in {msg.role}: '{m.group(0)[:80]}'")
+                    evidence.append(
+                        f"Injection pattern '{name}'"
+                        f" in {msg.role}:"
+                        f" '{m.group(0)[:80]}'"
+                    )
                     base_conf = 0.85 if msg.role in _UNTRUSTED_ROLES else 0.50
                     confidence = max(confidence, min(base_conf * role_multiplier, 1.0))
 

@@ -15,7 +15,6 @@ from typing import Any
 
 from cerberus_ai.models import DataSource, L1Detection, Message, ToolSchema
 
-
 # ── Built-in classification patterns ──────────────────────────────────────────
 
 # System prompt markers indicating privileged data access
@@ -86,7 +85,11 @@ class L1Detector:
         for src, pattern in self._source_patterns:
             if pattern.search(full_text):
                 matched_sources.append(src.name)
-                evidence.append(f"Registered source '{src.name}' ({src.classification}) referenced in context")
+                evidence.append(
+                    f"Registered source '{src.name}'"
+                    f" ({src.classification})"
+                    " referenced in context"
+                )
                 confidence = max(confidence, 0.90)
 
         # Check 2 — System prompt privilege patterns
@@ -124,7 +127,10 @@ class L1Detector:
                 for pattern in _TOOL_RESULT_SENSITIVE:
                     m = pattern.search(content)
                     if m:
-                        evidence.append(f"Tool result contains sensitive data pattern: {pattern.pattern[:40]}")
+                        evidence.append(
+                            "Tool result contains sensitive"
+                            f" data pattern: {pattern.pattern[:40]}"
+                        )
                         confidence = max(confidence, 0.95)
                         if "tool_result_pii" not in matched_sources:
                             matched_sources.append("tool_result_pii")

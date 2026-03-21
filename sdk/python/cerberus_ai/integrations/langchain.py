@@ -11,13 +11,16 @@ Install: pip install cerberus-ai[langchain]
 """
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING, Any
 
-from cerberus_ai import Cerberus, SecurityException
+from cerberus_ai import Cerberus, SecurityError
 from cerberus_ai.models import CerberusConfig
 
 if TYPE_CHECKING:
     pass
+
+logger = logging.getLogger(__name__)
 
 
 class CerberusCallbackHandler:
@@ -69,12 +72,12 @@ class CerberusCallbackHandler:
                 )
                 self._last_result = result
                 if result.blocked and self._raise_on_block:
-                    raise SecurityException(result)
+                    raise SecurityError(result)
 
-        except SecurityException:
+        except SecurityError:
             raise
         except Exception:
-            pass  # Never break the chain on inspection error — fail open for non-security errors
+            logging.debug("Cerberus inspection error in on_llm_end", exc_info=True)
 
     def on_tool_end(self, output: str, **kwargs: Any) -> None:
         """Called after a tool executes — inspect tool result for injection."""
@@ -84,11 +87,11 @@ class CerberusCallbackHandler:
             )
             self._last_result = result
             if result.blocked and self._raise_on_block:
-                raise SecurityException(result)
-        except SecurityException:
+                raise SecurityError(result)
+        except SecurityError:
             raise
         except Exception:
-            pass
+            logging.debug("Cerberus inspection error in on_tool_end", exc_info=True)
 
     @property
     def last_result(self):

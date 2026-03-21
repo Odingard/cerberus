@@ -7,9 +7,10 @@ Install: pip install cerberus-ai[crewai]
 """
 from __future__ import annotations
 
+import logging
 from typing import Any
 
-from cerberus_ai import Cerberus, SecurityException
+from cerberus_ai import Cerberus, SecurityError
 from cerberus_ai.models import CerberusConfig
 
 
@@ -34,11 +35,11 @@ class CerberusCrewCallback:
                 messages=[{"role": "tool", "content": output_str}]
             )
             if result.blocked and self._raise_on_block:
-                raise SecurityException(result)
-        except SecurityException:
+                raise SecurityError(result)
+        except SecurityError:
             raise
         except Exception:
-            pass
+            logging.debug("Cerberus inspection error in on_task_end", exc_info=True)
 
 
 def wrap_crew(crew: Any, config: CerberusConfig | None = None, raise_on_block: bool = True) -> Any:

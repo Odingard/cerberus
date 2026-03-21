@@ -16,10 +16,10 @@ from __future__ import annotations
 
 import base64
 import html
+import logging
 import re
 import unicodedata
 import urllib.parse
-
 
 # ── Homoglyph mapping (high-value subset) ─────────────────────────────────────
 _HOMOGLYPHS: dict[str, str] = {
@@ -70,7 +70,7 @@ def _decode_base64_segments(text: str) -> tuple[str, bool]:
                 found = True
                 return decoded
         except Exception:
-            pass
+            logging.debug("Failed to decode base64 segment", exc_info=True)
         return m.group(0)
     return _B64_SEGMENT.sub(replacer, text), found
 

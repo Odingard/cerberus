@@ -24,7 +24,6 @@ from typing import Any
 from cerberus_ai.detectors.normalizer import normalize
 from cerberus_ai.models import L3Detection, Message, ToolCall, ToolSchema
 
-
 # ── Network-capable tool heuristics ───────────────────────────────────────────
 
 _NETWORK_TOOL_PATTERNS: list[re.Pattern[str]] = [
@@ -121,7 +120,10 @@ class SessionL3State:
     def advance_turn(self) -> None:
         self.current_turn += 1
         # Expire old tokens
-        self.data_flow_tokens = [t for t in self.data_flow_tokens if t.expires_at_turn >= self.current_turn]
+        self.data_flow_tokens = [
+            t for t in self.data_flow_tokens
+            if t.expires_at_turn >= self.current_turn
+        ]
 
     def record_outbound_call(self, tool_name: str, args_bytes: int) -> None:
         self.split_tracker.cumulative_volume_bytes += args_bytes
@@ -246,7 +248,10 @@ class L3Detector:
             norm = normalize(args_str)
             if norm.was_encoded:
                 intent_score += _INTENT_WEIGHTS["argument_encoding_anomaly"]
-                evidence.append(f"Tool '{tc.name}' arguments contain encoding: {norm.encodings_found}")
+                evidence.append(
+                    f"Tool '{tc.name}' arguments"
+                    f" contain encoding: {norm.encodings_found}"
+                )
 
             # Sensitive field names in arguments
             if _SENSITIVE_ARG_KEYS.search(args_str):

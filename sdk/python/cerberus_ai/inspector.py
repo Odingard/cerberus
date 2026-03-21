@@ -8,9 +8,11 @@ and async inspection API. Emits events to Observe.
 """
 from __future__ import annotations
 
+import logging
 import time
 import uuid
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from cerberus_ai.detectors.l1 import L1Detector
 from cerberus_ai.detectors.l2 import L2Detector
@@ -98,7 +100,7 @@ class CerberusInspector:
                     raw_arguments=str(args),
                 ))
             except Exception:
-                pass
+                logging.debug("Failed to parse tool call: %s", tc, exc_info=True)
         return result
 
     def _emit(self, event: SecurityEvent) -> None:
@@ -134,7 +136,11 @@ class CerberusInspector:
         normalized_messages: list[Message] = []
         for m in messages:
             if isinstance(m, dict):
-                normalized_messages.append(Message(**{k: v for k, v in m.items() if k in Message.model_fields}))
+                fields = {
+                    k: v for k, v in m.items()
+                    if k in Message.model_fields
+                }
+                normalized_messages.append(Message(**fields))
             else:
                 normalized_messages.append(m)
 

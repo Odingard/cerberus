@@ -12,7 +12,6 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-
 # ── Enums ──────────────────────────────────────────────────────────────────────
 
 
@@ -209,7 +208,8 @@ class InspectionResult(BaseModel):
 class ObserveConfig(BaseModel):
     """Telemetry configuration."""
     enabled: bool = True
-    mode: str = "LOCAL_ONLY"                        # LOCAL_ONLY | LOCAL_PLUS_SIEM | LOCAL_PLUS_SYSLOG
+    # LOCAL_ONLY | LOCAL_PLUS_SIEM | LOCAL_PLUS_SYSLOG
+    mode: str = "LOCAL_ONLY"
     siem_endpoint: str | None = None
     log_path: str = "/var/log/cerberus/events"
     emit_partial_signals: bool = True

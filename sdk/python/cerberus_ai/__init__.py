@@ -10,8 +10,14 @@ Usage (sync):
     from cerberus_ai.models import DataSource, ToolSchema
 
     cerberus = Cerberus(CerberusConfig(
-        data_sources=[DataSource(name="customer_db", classification="PII", description="Customer records")],
-        declared_tools=[ToolSchema(name="send_email", description="Send email", is_network_capable=True)],
+        data_sources=[DataSource(
+            name="customer_db", classification="PII",
+            description="Customer records",
+        )],
+        declared_tools=[ToolSchema(
+            name="send_email", description="Send email",
+            is_network_capable=True,
+        )],
     ))
 
     result = cerberus.inspect(messages=messages, tool_calls=tool_calls)
@@ -29,7 +35,8 @@ Usage (streaming):
 from __future__ import annotations
 
 import uuid
-from typing import Any, AsyncGenerator, Callable
+from collections.abc import AsyncGenerator, Callable
+from typing import Any
 
 from cerberus_ai.inspector import CerberusInspector
 from cerberus_ai.models import (
@@ -40,7 +47,7 @@ from cerberus_ai.models import (
 from cerberus_ai.telemetry.observe import ObserveEmitter
 
 
-class SecurityException(Exception):
+class SecurityError(Exception):
     """Raised when Cerberus blocks a turn."""
 
     def __init__(self, result: InspectionResult) -> None:
@@ -84,7 +91,13 @@ class Cerberus:
                 severity=Severity.HIGH,
                 turn_id="config",
                 session_id=self._session_id,
-                payload={"warning": "PASSTHROUGH mode active — streaming detection significantly reduced"},
+                payload={
+                    "warning": (
+                        "PASSTHROUGH mode active"
+                        " — streaming detection"
+                        " significantly reduced"
+                    ),
+                },
             ))
 
     # ── Core inspection API ────────────────────────────────────────────────────
@@ -102,7 +115,7 @@ class Cerberus:
         Args:
             messages: LLM conversation messages
             tool_calls: Tool calls from this turn
-            raise_on_block: If True, raises SecurityException on block
+            raise_on_block: If True, raises SecurityError on block
             partial_signal_callback: Called for each partial detection signal
 
         Returns:
@@ -114,7 +127,7 @@ class Cerberus:
             partial_signal_callback=partial_signal_callback,
         )
         if raise_on_block and result.blocked:
-            raise SecurityException(result)
+            raise SecurityError(result)
         return result
 
     async def inspect_async(
@@ -131,7 +144,7 @@ class Cerberus:
             partial_signal_callback=partial_signal_callback,
         )
         if raise_on_block and result.blocked:
-            raise SecurityException(result)
+            raise SecurityError(result)
         return result
 
     async def stream(
@@ -197,13 +210,13 @@ class Cerberus:
 
     # ── Context manager support ────────────────────────────────────────────────
 
-    async def __aenter__(self) -> "Cerberus":
+    async def __aenter__(self) -> Cerberus:
         return self
 
     async def __aexit__(self, *args: Any) -> None:
         self.close()
 
-    def __enter__(self) -> "Cerberus":
+    def __enter__(self) -> Cerberus:
         return self
 
     def __exit__(self, *args: Any) -> None:
