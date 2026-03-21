@@ -93,8 +93,11 @@ class ObserveEmitter:
         """Best-effort SIEM forward — failure is logged but never silently swallowed."""
         try:
             import httpx
+            endpoint = self._config.siem_endpoint
+            if endpoint is None:
+                return
             httpx.post(
-                self._config.siem_endpoint,
+                endpoint,
                 content=event_json,
                 headers={"Content-Type": "application/x-ndjson"},
                 timeout=2.0,

@@ -15,7 +15,7 @@ import logging
 from typing import TYPE_CHECKING, Any
 
 from cerberus_ai import Cerberus, SecurityError
-from cerberus_ai.models import CerberusConfig
+from cerberus_ai.models import CerberusConfig, InspectionResult
 
 if TYPE_CHECKING:
     pass
@@ -43,7 +43,7 @@ class CerberusCallbackHandler:
     ) -> None:
         self._cerberus = cerberus
         self._raise_on_block = raise_on_block
-        self._last_result = None
+        self._last_result: InspectionResult | None = None
 
     def on_llm_end(self, response: Any, **kwargs: Any) -> None:
         """Called after LLM generates a response — inspect the full turn."""
@@ -94,7 +94,7 @@ class CerberusCallbackHandler:
             logging.debug("Cerberus inspection error in on_tool_end", exc_info=True)
 
     @property
-    def last_result(self):
+    def last_result(self) -> InspectionResult | None:
         return self._last_result
 
 

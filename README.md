@@ -11,10 +11,11 @@
 [![npm version](https://img.shields.io/npm/v/@cerberus-ai/core.svg)](https://www.npmjs.com/package/@cerberus-ai/core)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![npm downloads](https://img.shields.io/npm/dm/@cerberus-ai/core.svg)](https://www.npmjs.com/package/@cerberus-ai/core)
+[![PyPI version](https://img.shields.io/pypi/v/cerberus-ai.svg)](https://pypi.org/project/cerberus-ai/)
 
 Detects, correlates, and interrupts **prompt injection → PII exfiltration** in agentic AI systems — at the tool-call level, before data leaves your perimeter.
 
-[**Live Demo**](https://demo.cerberus.sixsenseenterprise.com) · [**Docs**](https://cerberus.sixsenseenterprise.com) · [**npm**](https://www.npmjs.com/package/@cerberus-ai/core) · [**Enterprise**](mailto:enterprise@sixsenseenterprise.com)
+[**Live Demo**](https://demo.cerberus.sixsenseenterprise.com) · [**Docs**](https://cerberus.sixsenseenterprise.com) · [**npm**](https://www.npmjs.com/package/@cerberus-ai/core) · [**PyPI**](https://pypi.org/project/cerberus-ai/) · [**Enterprise**](mailto:enterprise@sixsenseenterprise.com)
 
 </div>
 
@@ -34,6 +35,7 @@ Detects, correlates, and interrupts **prompt injection → PII exfiltration** in
 - [🚀 Quickstart](#-quickstart)
 - [📊 Empirical Results](#-empirical-results)
 - [🏗️ Architecture](#%EF%B8%8F-architecture)
+- [OWASP Alignment](#owasp-alignment)
 - [🔌 Framework Integrations](#-framework-integrations)
 - [⚡ Performance](#-performance)
 - [🗺️ Roadmap](#%EF%B8%8F-roadmap)
@@ -58,6 +60,8 @@ Cerberus closes this gap by monitoring every tool call in real time, correlating
 
 ```bash
 npm install @cerberus-ai/core
+# or
+pip install cerberus-ai
 ```
 
 ```typescript
@@ -247,6 +251,31 @@ if (results[0].poisoned) {
 }
 ```
 
+### Python SDK
+
+```bash
+pip install cerberus-ai
+```
+
+```python
+from cerberus_ai import Cerberus
+from cerberus_ai.models import CerberusConfig, DataSource, ToolSchema
+
+cerberus = Cerberus(CerberusConfig(
+    data_sources=[DataSource(name="customer_db", classification="PII", description="Customer records")],
+    declared_tools=[
+        ToolSchema(name="send_email", description="Send email", is_network_capable=True),
+        ToolSchema(name="search_db", description="Search CRM", is_data_read=True),
+    ],
+))
+
+result = cerberus.inspect(messages=messages, tool_calls=tool_calls)
+if result.blocked:
+    raise Exception(f"Blocked: {result.severity}")
+```
+
+Framework integrations: LangChain (`wrap_chain`), CrewAI (`wrap_crew`), OpenAI (`CerberusOpenAI`), Anthropic (`CerberusAnthropic`).
+
 ---
 
 ## 📊 Empirical Results
@@ -385,6 +414,7 @@ cerberus/
 │   ├── payloads.ts        # 55 injection payloads across 6 categories
 │   ├── validation/        # Scientific validation (11 modules, 127 tests)
 │   └── bench.ts           # Performance benchmark
+├── sdk/python/            # Python SDK (cerberus-ai on PyPI)
 ├── tests/                 # 776 tests, 98%+ coverage, 1.1s runtime
 ├── docs/                  # Architecture, API reference, enterprise guides
 ├── legal/                 # EULA, SLA, Privacy Policy, Terms of Service
@@ -450,7 +480,11 @@ const agent = new Agent({ tools, inputGuardrails: [guardrail] });
 | OpenAI Function Calling | Via harness | ✅ Supported |
 | Anthropic Tool Use | Via harness | ✅ Supported |
 | Google Gemini | Via harness | ✅ Supported |
-| AutoGen | — | 🚧 Planned |
+| AutoGen | Python SDK | ✅ Supported |
+| LangChain Python | `wrap_chain` | ✅ Supported |
+| CrewAI Python | `wrap_crew` | ✅ Supported |
+| OpenAI Python | `CerberusOpenAI` | ✅ Supported |
+| Anthropic Python | `CerberusAnthropic` | ✅ Supported |
 | Ollama (local models) | — | 🔮 Future |
 
 ---
@@ -568,6 +602,7 @@ Contact: [enterprise@sixsenseenterprise.com](mailto:enterprise@sixsenseenterpris
 | [Monitoring](monitoring/README.md) | Grafana dashboard — OTel metrics, block rates, risk scores |
 | [Enterprise Deployment](docs/enterprise-deployment.md) | AWS/GCP/Azure, TLS, sizing, upgrades |
 | [Enterprise Configuration](docs/enterprise-configuration.md) | `cerberus.config.yml` full reference |
+| [OWASP Alignment](docs/OWASP-ALIGNMENT.md) | OWASP Top 10 for Agentic Applications 2026 coverage mapping |
 | [Framework Attack Surface](docs/research/framework-attack-surface.md) | Per-framework injection vector mapping — LangChain, Vercel AI, OpenAI Agents SDK |
 
 ---

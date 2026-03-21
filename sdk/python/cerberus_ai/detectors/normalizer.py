@@ -71,7 +71,7 @@ def _decode_base64_segments(text: str) -> tuple[str, bool]:
                 return decoded
         except Exception:
             logging.debug("Failed to decode base64 segment", exc_info=True)
-        return m.group(0)
+        return str(m.group(0))
     return _B64_SEGMENT.sub(replacer, text), found
 
 
@@ -86,7 +86,7 @@ def _decode_unicode_escapes(text: str) -> str:
                 return chr(int(hex8, 16))
         except (ValueError, OverflowError):
             pass
-        return m.group(0)
+        return str(m.group(0))
     return _UNICODE_ESCAPE.sub(replacer, text)
 
 
@@ -101,7 +101,7 @@ def _decode_html_entities(text: str) -> str:
             code = int(hex_val, 16) if hex_val else int(dec_val)
             return chr(code)
         except (ValueError, OverflowError):
-            return m.group(0)
+            return str(m.group(0))
     return _HTML_NUMERIC.sub(replacer, result)
 
 

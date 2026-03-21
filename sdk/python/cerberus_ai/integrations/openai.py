@@ -131,7 +131,7 @@ class CerberusAnthropic:
         self._client = anthropic.Anthropic(**anthropic_kwargs)
         self._raise_on_block = raise_on_block
 
-    def inspect_and_return(self, request_messages: list, response: Any) -> Any:
+    def inspect_and_return(self, request_messages: list[Any], response: Any) -> Any:
         """Inspect a response and return it if safe, raise SecurityError if blocked."""
         messages = list(request_messages)
         content = getattr(response, "content", [])
@@ -157,6 +157,6 @@ class _SecuredAnthropicMessages:
         self._messages = messages
         self._parent = parent
 
-    def create(self, messages: list, **kwargs: Any) -> Any:
+    def create(self, messages: list[Any], **kwargs: Any) -> Any:
         response = self._messages.create(messages=messages, **kwargs)
         return self._parent.inspect_and_return(messages, response)
