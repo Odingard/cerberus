@@ -1754,7 +1754,7 @@
   (function () {
     const base = (window.__GRAFANA_URL__ || 'http://localhost:3030').replace(/\/$/, '');
     const navLink = document.getElementById('nav-dashboard-link');
-    if (navLink) navLink.href = base;
+    if (navLink) navLink.href = base + '/d/cerberus-main';
     const grafanaLinkSm = document.getElementById('grafana-link-sm');
     if (grafanaLinkSm) grafanaLinkSm.href = base + '/d/cerberus-main';
   })();
