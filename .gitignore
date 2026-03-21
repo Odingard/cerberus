@@ -14,3 +14,10 @@ harness/traces/*.json
 harness/validation-traces/*.json
 harness/validation-traces/*.md
 *.tgz
+
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+*.eggs/
+uv.lock
