@@ -1,0 +1,221 @@
+# cerberus-ai (Python SDK)
+
+Runtime security for agentic AI — Python SDK.
+
+Detects the **Lethal Trifecta**: the simultaneous convergence of privileged data access, untrusted content injection, and an outbound exfiltration path within a single AI execution turn.
+
+**Validated: N=525 attack trials across OpenAI, Anthropic, Google — 100% L1/L2 detection, 0.0% false positive rate, ~52μs p50 overhead.**
+
+---
+
+## Install
+
+```bash
+pip install cerberus-ai
+```
+
+With framework integrations:
+
+```bash
+pip install cerberus-ai[langchain]
+pip install cerberus-ai[crewai]
+pip install cerberus-ai[openai]
+pip install cerberus-ai[anthropic]
+pip install cerberus-ai[all]
+```
+
+---
+
+## Quickstart
+
+```python
+from cerberus_ai import Cerberus
+from cerberus_ai.models import CerberusConfig, DataSource, ToolSchema
+
+cerberus = Cerberus(CerberusConfig(
+    data_sources=[
+        DataSource(name="customer_db", classification="PII", description="Customer records")
+    ],
+    declared_tools=[
+        ToolSchema(name="send_email", description="Send email", is_network_capable=True),
+        ToolSchema(name="search_db",  description="Search CRM",  is_data_read=True),
+    ],
+))
+
+result = cerberus.inspect(
+    messages=messages,
+    tool_calls=tool_calls,
+)
+
+if result.blocked:
+    raise Exception(f"Security block [{result.severity}]: {[e.event_type for e in result.events]}")
+```
+
+---
+
+## The Lethal Trifecta
+
+| Condition | Description |
+|-----------|-------------|
+| **L1** — Privileged Data Access | Agent has access to sensitive data (RAG, DB, PII, credentials) |
+| **L2** — Untrusted Content Injection | Prompt injection or poisoned content in execution context |
+| **L3** — Outbound Exfiltration Path | Agent has an active mechanism to send data externally |
+
+All three present simultaneously = **LETHAL TRIFECTA → BLOCK**.
+
+Cerberus is **never silent** — each condition triggers graduated detection independently. EGI (Execution Graph Integrity) runs on every turn regardless of Trifecta state.
+
+---
+
+## Async + Streaming
+
+```python
+# Async
+async with Cerberus(config) as cerberus:
+    result = await cerberus.inspect_async(messages=messages, tool_calls=tool_calls)
+
+# Streaming — chunks released only after full-turn inspection passes
+async for chunk in cerberus.stream(messages=messages):
+    print(chunk)
+```
+
+---
+
+## Framework Integrations
+
+### LangChain
+
+```python
+from cerberus_ai.integrations.langchain import wrap_chain, wrap_agent
+
+secured_chain = wrap_chain(my_chain, config=config)
+result = secured_chain.invoke({"input": "Do something"})
+
+secured_agent = wrap_agent(agent_executor, config=config)
+```
+
+### CrewAI
+
+```python
+from cerberus_ai.integrations.crewai import wrap_crew
+
+secured_crew = wrap_crew(my_crew, config=config)
+result = secured_crew.kickoff()
+```
+
+### OpenAI (drop-in)
+
+```python
+from cerberus_ai.integrations.openai import CerberusOpenAI
+
+client = CerberusOpenAI(config=config)   # drop-in for openai.OpenAI()
+response = client.chat.completions.create(model="gpt-4o", messages=messages)
+# SecurityException raised automatically on block
+```
+
+### Anthropic (drop-in)
+
+```python
+from cerberus_ai.integrations.openai import CerberusAnthropic
+
+client = CerberusAnthropic(config=config)
+response = client.messages.create(model="claude-opus-4-6", messages=messages, max_tokens=1024)
+```
+
+---
+
+## Detection Response Matrix
+
+| L1 | L2 | L3 | Severity | Action |
+|----|----|----|----------|--------|
+| ○  | ○  | ○  | BASELINE | Monitor — EGI + audit trail active |
+| ●  | ○  | ○  | LOW      | Log + Watch — session elevated |
+| ○  | ●  | ○  | LOW      | Advisory Alert — injection logged |
+| ○  | ○  | ●  | LOW      | Log + Watch — Cerberus primed |
+| ●  | ○  | ●  | MEDIUM   | Elevated Watch — 2 of 3 active |
+| ○  | ●  | ●  | MEDIUM   | Elevated Watch — 2 of 3 active |
+| ●  | ●  | ○  | HIGH     | High Alert — injection into privileged context |
+| ●  | ●  | ●  | **CRITICAL** | **BLOCK + ALERT — Lethal Trifecta** |
+
+---
+
+## Late Tool Registration
+
+```python
+from cerberus_ai.models import ToolSchema
+
+success, message = cerberus.register_tool_late(
+    tool=ToolSchema(name="new_tool", description="...", is_network_capable=True),
+    reason="user_requested_capability",
+    authorized_by="user_session_id",
+)
+# Blocked automatically if L2 injection was active during registration
+```
+
+---
+
+## Configuration
+
+```python
+from cerberus_ai.models import CerberusConfig, ObserveConfig, StreamingMode
+
+config = CerberusConfig(
+    streaming_mode=StreamingMode.BUFFER_ALL,   # BUFFER_ALL | PARTIAL_SCAN | PASSTHROUGH
+    max_buffer_bytes=2 * 1024 * 1024,          # 2MB turn buffer
+    context_window_limit=32_000,               # tokens before priority scoring
+    l3_behavioral_intent_threshold=0.60,       # L3 intent scoring threshold
+    cross_turn_data_flow_enabled=True,         # track data flow across turns
+    observe=ObserveConfig(
+        mode="LOCAL_ONLY",                     # LOCAL_ONLY | LOCAL_PLUS_SIEM | LOCAL_PLUS_SYSLOG
+        log_path="/var/log/cerberus/events",   # NDJSON, append-only
+    ),
+    data_sources=[...],
+    declared_tools=[...],
+)
+```
+
+---
+
+## Running Tests
+
+```bash
+pip install cerberus-ai[dev]
+pytest tests/adversarial/test_evasion.py -v
+```
+
+**38 adversarial tests** covering: direct injection, encoding obfuscation (base64/unicode/url/html/zero-width), structural injection (RTL, prompt boundary spoofing), L1/L2/L3 detection, full Trifecta, EGI violations, and false positive baseline.
+
+---
+
+## Architecture
+
+```
+cerberus_ai/
+├── __init__.py          # Cerberus public API
+├── models.py            # All data types
+├── inspector.py         # Session orchestrator
+├── detectors/
+│   ├── normalizer.py    # 6-pass encoding normalization
+│   ├── l1.py            # Privileged data access
+│   ├── l2.py            # Injection detection
+│   └── l3.py            # Exfiltration path + cross-turn tracking
+├── egi/
+│   └── engine.py        # Execution Graph Integrity
+├── telemetry/
+│   └── observe.py       # Signed tamper-evident telemetry
+└── integrations/
+    ├── langchain.py     # LangChain callback + wrap_chain/agent
+    ├── crewai.py        # CrewAI wrap_crew
+    └── openai.py        # CerberusOpenAI / CerberusAnthropic drop-ins
+```
+
+---
+
+## TypeScript / Node.js
+
+The TypeScript SDK (`@cerberus-ai/core`) lives in `src/`. The Python SDK is a full-parity port with identical detection logic.
+
+---
+
+**OdinForge Security by Six Sense Enterprise Services**  
+[sixsenseenterprise.com](https://sixsenseenterprise.com) · [github.com/odinforge/cerberus](https://github.com/odinforge/cerberus)
