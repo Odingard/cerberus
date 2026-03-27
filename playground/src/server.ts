@@ -26,6 +26,10 @@ const PUBLIC_DIR = path.join(__dirname, '../public');
 const INDEX_HTML = path.join(PUBLIC_DIR, 'index.html');
 const PORT = parseInt(process.env['PORT'] ?? '4040', 10);
 const GRAFANA_URL = process.env['GRAFANA_URL'] ?? 'http://localhost:3030';
+const CORE_PROOF_PATH = {
+  controlScenarioId: 'clean-run',
+  attackScenarioId: 'lethal-trifecta',
+} as const;
 
 // ── SSE helpers ─────────────────────────────────────────────────────────────
 
@@ -98,9 +102,15 @@ async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse
       description: s.description,
       expectedLayers: s.expectedLayers,
       stepCount: s.steps.length,
+      featured: s.id === CORE_PROOF_PATH.controlScenarioId || s.id === CORE_PROOF_PATH.attackScenarioId,
     }));
     res.setHeader('Content-Type', 'application/json');
-    res.writeHead(200).end(JSON.stringify(metadata));
+    res.writeHead(200).end(
+      JSON.stringify({
+        scenarios: metadata,
+        featured: CORE_PROOF_PATH,
+      }),
+    );
     return;
   }
 

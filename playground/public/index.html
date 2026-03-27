@@ -114,6 +114,13 @@
       color: var(--text);
     }
 
+    .btn-ghost.quickstart-btn {
+      padding: 7px 12px;
+      font-size: 12px;
+      color: var(--text);
+      background: rgba(17,17,24,0.55);
+    }
+
     .btn-primary {
       background: var(--accent);
       border: none;
@@ -197,6 +204,45 @@
       border-bottom: 1px solid var(--border);
       background: var(--surface);
       min-height: 42px;
+    }
+
+    .quickstart-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      background:
+        linear-gradient(135deg, rgba(124,58,237,0.12), rgba(239,68,68,0.08)),
+        var(--surface);
+    }
+
+    .quickstart-copy {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .quickstart-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #c4b5fd;
+    }
+
+    .quickstart-text {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    .quickstart-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
     }
 
     .steps-container {
@@ -580,6 +626,104 @@
       color: var(--text);
     }
 
+    .proof-path {
+      padding: 10px 12px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .proof-path-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .proof-path-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #c4b5fd;
+    }
+
+    .proof-path-status {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    .proof-steps {
+      display: grid;
+      gap: 6px;
+    }
+
+    .proof-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 8px 9px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: rgba(10,10,15,0.35);
+      color: var(--text-dim);
+    }
+
+    .proof-step.active {
+      border-color: rgba(124,58,237,0.5);
+      background: rgba(124,58,237,0.12);
+      color: var(--text);
+    }
+
+    .proof-step.complete {
+      border-color: rgba(16,185,129,0.35);
+      background: rgba(16,185,129,0.08);
+      color: var(--text);
+    }
+
+    .proof-step.complete .proof-step-dot {
+      background: var(--green);
+      color: white;
+      border-color: rgba(16,185,129,0.45);
+    }
+
+    .proof-step-dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 700;
+      flex-shrink: 0;
+      color: var(--text-muted);
+      background: rgba(17,17,24,0.7);
+    }
+
+    .proof-step-copy {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      min-width: 0;
+    }
+
+    .proof-step-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: inherit;
+    }
+
+    .proof-step-text {
+      font-size: 11px;
+      color: var(--text-dim);
+      line-height: 1.35;
+    }
+
     .narrative-title {
       font-size: 11px;
       font-weight: 600;
@@ -929,12 +1073,22 @@
       </div>
     </div>
     <div id="scenario-desc" class="scenario-desc">Select a scenario to begin.</div>
+    <div class="quickstart-bar">
+      <div class="quickstart-copy">
+        <div class="quickstart-label">Core Proof Path</div>
+        <div class="quickstart-text">Run the clean control first, then the Lethal Trifecta attack Cerberus is built to stop.</div>
+      </div>
+      <div class="quickstart-actions">
+        <button id="btn-control" class="btn-ghost quickstart-btn" disabled>Run Control</button>
+        <button id="btn-attack" class="btn-ghost quickstart-btn" disabled>Run Protected Attack</button>
+      </div>
+    </div>
     <div id="run-banner" class="run-banner"></div>
     <div id="steps" class="steps-container">
       <div class="steps-empty">
         <div class="hint">⚡</div>
-        <div>Select a scenario and click <strong>Run Attack</strong></div>
-        <div style="font-size:12px;margin-top:4px">Watch Cerberus detect and block the threat in real time</div>
+        <div>Start with <strong>Run Control</strong>, then <strong>Run Protected Attack</strong></div>
+        <div style="font-size:12px;margin-top:4px">Watch the same runtime path move from normal behavior to an interrupted outbound attack</div>
       </div>
     </div>
   </div>
@@ -984,6 +1138,29 @@
       <div class="incident-body">
         <div class="incident-context" id="incident-context">
           Select a scenario to see what's at stake.
+        </div>
+
+        <div class="proof-path">
+          <div class="proof-path-header">
+            <span class="proof-path-title">Demo Progress</span>
+            <span class="proof-path-status" id="proof-path-status">Start with the clean control.</span>
+          </div>
+          <div class="proof-steps">
+            <div class="proof-step" id="proof-step-control">
+              <span class="proof-step-dot">1</span>
+              <div class="proof-step-copy">
+                <span class="proof-step-label">Run Control</span>
+                <span class="proof-step-text">Show a normal trusted-data workflow that completes without a block.</span>
+              </div>
+            </div>
+            <div class="proof-step" id="proof-step-attack">
+              <span class="proof-step-dot">2</span>
+              <div class="proof-step-copy">
+                <span class="proof-step-label">Run Protected Attack</span>
+                <span class="proof-step-text">Replay the lethal runtime path and watch Cerberus interrupt the outbound action.</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div id="narrative-section" style="display:none">
@@ -1180,6 +1357,7 @@
 
   // ── State ─────────────────────────────────────────────────────────────────────
   let scenarios = [];
+  let featured = null;
   let running = false;
   let runCount = 0;
   let injectionTurnIndex = -1;
@@ -1202,6 +1380,8 @@
   const select        = document.getElementById('scenario-select');
   const btnRun        = document.getElementById('btn-run');
   const btnReset      = document.getElementById('btn-reset');
+  const btnControl    = document.getElementById('btn-control');
+  const btnAttack     = document.getElementById('btn-attack');
   const stepsEl       = document.getElementById('steps');
   const descEl        = document.getElementById('scenario-desc');
   const runBanner     = document.getElementById('run-banner');
@@ -1223,6 +1403,9 @@
   const metricVector  = document.getElementById('metric-vector');
   const metricFinancial = document.getElementById('metric-financial');
   const outcomeBanner = document.getElementById('outcome-banner');
+  const proofPathStatus = document.getElementById('proof-path-status');
+  const proofStepControl = document.getElementById('proof-step-control');
+  const proofStepAttack = document.getElementById('proof-step-attack');
   const sessionTallyEl  = document.getElementById('session-tally');
   const tallyRunsEl     = document.getElementById('tally-runs');
   const tallyBlockedEl  = document.getElementById('tally-blocked');
@@ -1241,6 +1424,42 @@
   }
 
   const SCORE_COLORS = ['#10b981', '#10b981', '#f59e0b', '#f97316', '#ef4444'];
+  const DEFAULT_CORE_PROOF_SCENARIOS = {
+    control: 'clean-run',
+    attack: 'lethal-trifecta',
+  };
+  const proofProgress = {
+    controlCompleted: false,
+    attackCompleted: false,
+  };
+
+  function updateProofPathState(currentScenarioId = select.value) {
+    const controlScenarioId = featured?.controlScenarioId || DEFAULT_CORE_PROOF_SCENARIOS.control;
+    const attackScenarioId = featured?.attackScenarioId || DEFAULT_CORE_PROOF_SCENARIOS.attack;
+
+    proofStepControl.className = 'proof-step';
+    proofStepAttack.className = 'proof-step';
+
+    if (currentScenarioId === controlScenarioId) proofStepControl.classList.add('active');
+    if (currentScenarioId === attackScenarioId) proofStepAttack.classList.add('active');
+    if (proofProgress.controlCompleted) proofStepControl.classList.add('complete');
+    if (proofProgress.attackCompleted) proofStepAttack.classList.add('complete');
+
+    if (running) {
+      proofPathStatus.textContent = currentScenarioId === controlScenarioId
+        ? 'Establishing the clean baseline now.'
+        : 'Running the protected attack path now.';
+      return;
+    }
+
+    if (!proofProgress.controlCompleted) {
+      proofPathStatus.textContent = 'Start with the clean control.';
+    } else if (!proofProgress.attackCompleted) {
+      proofPathStatus.textContent = 'Baseline established. Run the protected attack next.';
+    } else {
+      proofPathStatus.textContent = 'Core proof complete: normal path passed, attack path blocked.';
+    }
+  }
 
   // ── Incident Intelligence helpers ──────────────────────────────────────────────
   function updateIncidentContext(scenarioId) {
@@ -1330,11 +1549,19 @@
   async function loadScenarios() {
     try {
       const res = await fetch('/api/scenarios');
-      scenarios = await res.json();
+      const payload = await res.json();
+      scenarios = Array.isArray(payload) ? payload : (payload.scenarios || []);
+      featured = Array.isArray(payload) ? null : (payload.featured || null);
       select.innerHTML = scenarios.map(s =>
-        `<option value="${s.id}">${s.name}</option>`
+        `<option value="${s.id}">${s.featured ? '★ ' : ''}${s.name}</option>`
       ).join('');
+      const attackScenarioId = featured?.attackScenarioId || DEFAULT_CORE_PROOF_SCENARIOS.attack;
+      if (scenarios.some(s => s.id === attackScenarioId)) {
+        select.value = attackScenarioId;
+      }
       btnRun.disabled = false;
+      btnControl.disabled = false;
+      btnAttack.disabled = false;
       onScenarioChange();
     } catch (e) {
       select.innerHTML = '<option value="">Failed to load — is the server running?</option>';
@@ -1346,6 +1573,7 @@
     const scenario = scenarios.find(s => s.id === id);
     descEl.textContent = scenario ? scenario.description : 'Select a scenario to begin.';
     updateIncidentContext(id);
+    updateProofPathState(id);
   }
 
   select.addEventListener('change', onScenarioChange);
@@ -1355,8 +1583,8 @@
     stepsEl.innerHTML = `
       <div class="steps-empty">
         <div class="hint">⚡</div>
-        <div>Select a scenario and click <strong>Run Attack</strong></div>
-        <div style="font-size:12px;margin-top:4px">Watch Cerberus detect and block the threat in real time</div>
+        <div>Start with <strong>Run Control</strong>, then <strong>Run Protected Attack</strong></div>
+        <div style="font-size:12px;margin-top:4px">Watch the same runtime path move from normal behavior to an interrupted outbound attack</div>
       </div>`;
     runBanner.className = 'run-banner';
     updateScore(0);
@@ -1366,9 +1594,22 @@
     resetIncidentPanel();
     // Re-populate context for current scenario
     updateIncidentContext(select.value);
+    updateProofPathState(select.value);
   }
 
   btnReset.addEventListener('click', () => { if (!running) reset(); });
+  btnControl.addEventListener('click', () => {
+    if (running) return;
+    select.value = featured?.controlScenarioId || DEFAULT_CORE_PROOF_SCENARIOS.control;
+    onScenarioChange();
+    btnRun.click();
+  });
+  btnAttack.addEventListener('click', () => {
+    if (running) return;
+    select.value = featured?.attackScenarioId || DEFAULT_CORE_PROOF_SCENARIOS.attack;
+    onScenarioChange();
+    btnRun.click();
+  });
 
   // ── Risk monitor updates ───────────────────────────────────────────────────────
   function updateScore(score) {
@@ -1482,6 +1723,7 @@
     narrativeLog.innerHTML = '';
     outcomeBanner.className = 'outcome-banner';
     injectionTurnIndex = -1;
+    updateProofPathState(scenarioId);
 
     let finalScore = 0;
     let finalAction = 'log';
@@ -1573,6 +1815,15 @@
             // Update session tally
             updateSessionTally(scenarioId, wasBlocked);
 
+            const controlScenarioId = featured?.controlScenarioId || DEFAULT_CORE_PROOF_SCENARIOS.control;
+            const attackScenarioId = featured?.attackScenarioId || DEFAULT_CORE_PROOF_SCENARIOS.attack;
+            if (scenarioId === controlScenarioId && !wasBlocked) {
+              proofProgress.controlCompleted = true;
+            }
+            if (scenarioId === attackScenarioId && wasBlocked) {
+              proofProgress.attackCompleted = true;
+            }
+
             // Populate metrics from intel
             const intel = SCENARIO_INTEL[scenarioId];
             if (intel) {
@@ -1603,6 +1854,7 @@
         : `✓ Run complete — no threat blocked (threat level: ${finalScore}/4)`;
 
       setStatus(wasBlocked ? 'Attack blocked by Cerberus' : 'Run complete', false);
+      updateProofPathState(select.value);
     }
   });
 
