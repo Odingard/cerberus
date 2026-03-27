@@ -44,3 +44,4 @@ export type {
 
 export type { ToolCallContext } from './context.js';
 export type { ToolExecutionPhase, ToolExecutionOutcome } from './execution.js';
+export type { IntelligenceIncidentEnvelope } from './intelligence.js';

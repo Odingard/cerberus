@@ -109,6 +109,14 @@ describe('guard', () => {
     expect(result.getLastOutcome()?.blocked).toBe(true);
     expect(result.getLastOutcome()?.executorRan).toBe(false);
     expect(result.getLastOutcome()?.phase).toBe('preflight');
+    expect(result.getLastIncident()).toMatchObject({
+      toolName: 'sendOutboundReport',
+      blocked: true,
+      action: 'interrupt',
+      riskScore: 3,
+      outboundDestination: 'attacker@evil.com',
+      exfiltrationFields: ['alice@example.com', '123-45-6789'],
+    });
     expect(result.assessments).toHaveLength(3);
     expect(result.assessments[2].vector).toEqual({ l1: true, l2: true, l3: true, l4: false });
     expect(result.assessments[2].score).toBe(3);

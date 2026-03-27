@@ -9,11 +9,13 @@
 import type { CerberusConfig } from '../types/config.js';
 import type { RiskAssessment } from '../types/signals.js';
 import type { ToolExecutionOutcome } from '../types/execution.js';
+import type { IntelligenceIncidentEnvelope } from '../types/intelligence.js';
 import type { DetectionSession } from '../engine/session.js';
 import { createSession, resetSession } from '../engine/session.js';
 import { interceptToolCall } from '../engine/interceptor.js';
 import type { RawToolExecutorFn, ToolExecutorFn } from '../engine/interceptor.js';
 import { validateCerberusConfig } from '../engine/config-validation.js';
+import { buildIntelligenceIncidentEnvelope } from '../engine/intelligence-envelope.js';
 import type { MemoryToolConfig } from '../layers/l4-memory.js';
 import type { ContaminationGraph } from '../graph/contamination.js';
 import { createContaminationGraph } from '../graph/contamination.js';
@@ -40,6 +42,8 @@ export interface GuardResult {
   readonly assessments: readonly RiskAssessment[];
   /** Structured metadata for the most recent guarded tool invocation. */
   readonly getLastOutcome: () => ToolExecutionOutcome | undefined;
+  /** Structured incident envelope for the most recent guarded invocation. */
+  readonly getLastIncident: () => IntelligenceIncidentEnvelope | undefined;
   /** Reset the session state and assessments for reuse between runs. Graph/ledger persist. */
   readonly reset: () => void;
   /** Contamination graph (present when memoryTracking is enabled). */
@@ -101,6 +105,7 @@ export function guard(
   const session = createSession();
   const assessments: RiskAssessment[] = [];
   let lastOutcome: ToolExecutionOutcome | undefined;
+  let lastIncident: IntelligenceIncidentEnvelope | undefined;
 
   // Initialize L4 resources when memory tracking is enabled
   const memoryTools = memoryOptions?.memoryTools ?? [];
@@ -127,6 +132,10 @@ export function guard(
       },
       (outcome) => {
         lastOutcome = outcome;
+        const latestAssessment = assessments[assessments.length - 1];
+        if (latestAssessment) {
+          lastIncident = buildIntelligenceIncidentEnvelope(session, latestAssessment, outcome);
+        }
       },
       useMemory ? memoryTools : undefined,
       graph,
@@ -139,6 +148,7 @@ export function guard(
     resetSession(session);
     assessments.length = 0;
     lastOutcome = undefined;
+    lastIncident = undefined;
   };
 
   // Destroy tears down everything including DB connection
@@ -161,6 +171,7 @@ export function guard(
     session,
     assessments,
     getLastOutcome: () => lastOutcome,
+    getLastIncident: () => lastIncident,
     reset,
     ...(graph ? { graph } : {}),
     ...(ledger ? { ledger } : {}),
