@@ -1,16 +1,16 @@
 /**
  * Cerberus Demo Capture — Purpose-built for terminal recording
  *
- * Tells the full attack story in ~90 seconds:
- *   Act 1 — No protection: agent reads PII, fetches attacker page, exfiltrates data
- *   Act 2 — Cerberus active: same attack, blocked before data leaves
+ * Tells the full Core proof path in ~90 seconds:
+ *   Control baseline — the unguarded runtime path completes and data leaves
+ *   Protected attack — the same runtime path is blocked before data leaves
  *
  * No API keys required — uses simulated tool executors.
  * Timing is tuned for asciinema recording readability.
  *
  * Usage:
- *   npx tsx examples/demo-capture.ts
- *   asciinema rec demo.cast -c "npx tsx examples/demo-capture.ts"
+ *   npm run demo:capture
+ *   asciinema rec demo.cast -c "npm run demo:capture"
  */
 
 import { guard } from '../src/index.js';

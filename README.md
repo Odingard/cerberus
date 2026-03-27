@@ -79,12 +79,14 @@ const { executors: tools } = guard(rawTools, config, ['sendEmail']);
 No API key required — simulated tool executors, full detection pipeline:
 
 ```bash
-npx tsx examples/demo-capture.ts
+npm run demo:capture
 ```
 
 <div align="center">
 <img src="docs/demo.gif" alt="Cerberus terminal demo — attack blocked in real-time" width="90%" />
 </div>
+
+**Run Control / recorded fallback:** The terminal demo is the canonical fallback proof path when the hosted surface is unavailable. It shows the same runtime story used across Cerberus materials.
 
 **Act 1 — No protection:** Agent reads customer SSNs and emails, fetches a web page containing an injection payload, follows the injected instruction, and POSTs everything to an external attacker address. Data confirmed exfiltrated.
 
@@ -92,7 +94,11 @@ npx tsx examples/demo-capture.ts
 
 **Interactive playground**
 
-The hosted playground is being refreshed so the public demo matches the current hardened branch. Until that refresh lands, use the local demos above as the source of truth.
+The hosted playground is being refreshed so the public demo matches the current hardened branch. Until that refresh lands, use the local Core proof path first:
+
+1. `npm run demo:capture`
+2. `npm run demo:playground`
+3. `OPENAI_API_KEY=... npm run demo:live`
 
 **Live network demo** — real HTTP injection + capture servers, real GPT-4o-mini, real HTTP POST blocked:
 
