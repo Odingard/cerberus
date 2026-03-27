@@ -510,6 +510,15 @@ function aggregateStats(
   const total = runs.length;
   const meanCausation =
     total > 0 ? runs.reduce((sum, r) => sum + r.groundTruth.causation.score, 0) / total : 0;
+  const sampleErrors = [
+    ...new Set(
+      runs.flatMap((r) =>
+        r.agentResult.errors
+          .map((e) => e.message.trim())
+          .filter((message) => message.length > 0),
+      ),
+    ),
+  ].slice(0, 3);
 
   return {
     provider,
@@ -520,6 +529,7 @@ function aggregateStats(
     successRate: total > 0 ? successes / total : 0,
     confidenceInterval: wilsonCI(successes, total),
     meanCausationScore: meanCausation,
+    sampleErrors,
   };
 }
 

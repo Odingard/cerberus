@@ -31,9 +31,9 @@ Cerberus fires four signals across three layers:
 - L3: Outbound call to an unauthorized destination
 - Outbound Correlator: flagged the injection-to-exfiltration chain
 
-Score 3/4 → interrupt. Zero bytes left the system.
+Score 3/4 → interrupt. In the guarded demo path, the outbound action never executes.
 
-We validated this across **N=525 controlled runs** using OpenAI, Anthropic, and Google models. Attack success (full compliance — agent redirects to attacker's address): OpenAI 90.3%, Google 82.4%, Anthropic 6.7%. Control group: 0/30 exfiltrations.
+We have historical controlled validation artifacts across OpenAI, Anthropic, and Google models, and we are refreshing the current-branch benchmark set now. Until that refresh is published, I’m keeping public claims tied to the live demo behavior and the reproducible runtime path shown here.
 
 **The core library is MIT and free**: `npm install @cerberus-ai/core`
 **Live attack demo**: https://demo.cerberus.sixsenseenterprise.com
@@ -73,15 +73,14 @@ Every major AI framework ships this by default.
 
 **Tweet 3:**
 ```
-We ran N=525 controlled tests across OpenAI, Anthropic, and Google.
-55 payloads × 3 trials × 3 providers. Real API calls.
+We have controlled validation artifacts across OpenAI, Anthropic, and Google with real API calls.
 
-Attack success (agent fully redirects to attacker's address):
-• OpenAI GPT-4o-mini: 90.3% [84.8%, 93.9%]
-• Google Gemini 2.5 Flash: 82.4% [75.9%, 87.5%]
-• Anthropic Claude: 6.7% [3.8%, 11.5%]
+I’m refreshing the current-branch benchmark set right now, so I’m not quoting stale mixed numbers here.
 
-Control group: 0/30 exfiltrations — baseline clean.
+What I can stand behind today:
+• the runtime path is real
+• the attack chain is reproducible
+• Cerberus can interrupt the guarded outbound action before it executes
 ```
 
 **Tweet 4:**
@@ -93,7 +92,7 @@ L2 → Token Provenance (injection in untrusted output)
 L3 → Outbound Intent (unauthorized destination)
 L4 → Memory Contamination (persisted injections)
 
-+ 7 sub-classifiers. p99: 0.23ms overhead.
++ sub-classifiers for secrets, encodings, MCP poisoning, outbound correlation, and split exfiltration patterns.
 ```
 
 **Tweet 5:**
@@ -158,7 +157,6 @@ Add to the Products/Services section of the company site.
 >
 > - 4-layer detection pipeline (Data Source · Token Provenance · Outbound Intent · Memory Contamination)
 > - Works with LangChain, Vercel AI SDK, OpenAI Agents SDK — or zero-code via HTTP gateway
-> - p99 overhead: 0.23ms
 > - MIT open-source core · Enterprise self-hosted edition
 >
 > [See Live Demo](https://demo.cerberus.sixsenseenterprise.com) · [Enterprise Licensing](https://cerberus.sixsenseenterprise.com)
@@ -169,24 +167,17 @@ Add to the Products/Services section of the company site.
 
 **r/netsec, r/MachineLearning, Hacker News:**
 
-**Title:** "We ran 525 controlled prompt injection attacks across 3 LLMs — here's what the data shows (and the 2-line fix)"
+**Title:** "We built a runtime guard for the Lethal Trifecta in AI agents — here's the attack path and the 2-line fix"
 
 **Body:**
 We've been working on a runtime security layer for AI agents — specifically targeting what we call the "Lethal Trifecta": an AI agent that (1) reads privileged data, (2) ingests external content, and (3) can send data outbound. Any agent with all three is exploitable today via prompt injection.
 
-We ran a systematic evaluation: 55 injection payloads × 3 providers (OpenAI gpt-4o-mini, Anthropic claude-sonnet-4, Google gemini-2.5-flash) × 3 trials = 525 total runs with real API calls.
-
-**Attack success (full compliance — agent redirects to attacker's address):**
-- OpenAI gpt-4o-mini: 90.3% [84.8%, 93.9%] — causation score 0.811
-- Google gemini-2.5-flash: 82.4% [75.9%, 87.5%] — causation score 0.702
-- Anthropic claude-sonnet-4: 6.7% [3.8%, 11.5%] — causation score 0.207
-
-**Control group:** 0/30 exfiltrations across all providers — baseline confirmed clean.
+We have historical controlled validation artifacts across major providers and are refreshing the current benchmark set on the hardened branch now. Rather than quote mixed historical numbers, this post focuses on the runtime path we can reproduce directly.
 
 **With Cerberus detection:**
-- L1 (Data Source): 100% detection
-- L2 (Token Provenance): 100% detection
-- False positive rate: 0.0% on 30 clean control runs
+- guarded outbound actions can be interrupted before execution
+- session-aware signals accumulate across tool calls
+- the same vulnerable workflow can be shown unprotected vs protected with minimal code changes
 
 The detection library is MIT: `npm install @cerberus-ai/core`
 
@@ -194,9 +185,4 @@ Write-up: [link to framework-attack-surface.md or dev.to article]
 
 ---
 
-**Detection results (N=525, observe-only mode):**
-- L1 (Data Source): **100%** across all providers [97.9%, 100%]
-- L2 (Token Provenance): **100%** across all providers [97.9%, 100%]
-- L3 (Outbound Intent): OpenAI 13.7% · Anthropic 1.1% · Google 65.7% (tracks attack success)
-- False positive rate: **0.0%** [0.0%, 11.4%] — 0/30 clean runs triggered
-- Overall detection rate: **28.5%** [24.7%, 32.6%]
+**When the refreshed benchmark set is published, every number should be tied to one clearly labeled evidence set rather than mixed across paper, historical validation, and current-branch runs.**

@@ -67,6 +67,21 @@ export function generateMarkdownReport(report: ValidationReport): string {
   }
   lines.push('');
 
+  const providerErrorStats = [...Object.entries(report.controlResults), ...Object.entries(report.treatmentResults)]
+    .filter(([, stats]) => stats.outcomes.error > 0 && stats.sampleErrors.length > 0);
+  if (providerErrorStats.length > 0) {
+    lines.push('## Provider Error Samples');
+    lines.push('');
+    lines.push('| Provider | Condition | Error Samples |');
+    lines.push('|----------|-----------|---------------|');
+    for (const [provider, stats] of providerErrorStats) {
+      lines.push(
+        `| ${provider} | ${stats.condition} | ${stats.sampleErrors.map((error) => error.replace(/\|/g, '\\|')).join('<br>')} |`,
+      );
+    }
+    lines.push('');
+  }
+
   // Control vs Treatment Comparison
   lines.push('## Control vs Treatment Comparison');
   lines.push('');
@@ -260,6 +275,9 @@ export function printReportSummary(report: ValidationReport): void {
     console.log(
       `  ${provider}: ${String(stats.outcomes.success)}/${String(stats.totalRuns)} exfiltrations (${pct(stats.successRate)})`,
     );
+    if (stats.outcomes.error > 0 && stats.sampleErrors.length > 0) {
+      console.log(`    errors=${String(stats.outcomes.error)} sample=${stats.sampleErrors[0]}`);
+    }
   }
 
   // Treatment results
@@ -272,6 +290,9 @@ export function printReportSummary(report: ValidationReport): void {
     console.log(
       `    refused=${String(stats.outcomes.refused)} partial=${String(stats.outcomes.partial)} failure=${String(stats.outcomes.failure)} error=${String(stats.outcomes.error)}`,
     );
+    if (stats.outcomes.error > 0 && stats.sampleErrors.length > 0) {
+      console.log(`    sample error: ${stats.sampleErrors[0]}`);
+    }
   }
 
   // Fisher comparison

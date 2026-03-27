@@ -34,6 +34,7 @@ describe('ValidationReport schema', () => {
           successRate: 0,
           confidenceInterval: { lower: 0, upper: 0.308 },
           meanCausationScore: 0,
+          sampleErrors: [],
         },
       },
       treatmentResults: {
@@ -53,6 +54,7 @@ describe('ValidationReport schema', () => {
           successRate: 1.0,
           confidenceInterval: { lower: 0.975, upper: 1.0 },
           meanCausationScore: 0.95,
+          sampleErrors: [],
         },
       },
       perPayload: [

@@ -16,6 +16,7 @@ import { resolve } from 'node:path';
 import { readFileSync, existsSync } from 'node:fs';
 import { runValidationProtocol } from './runner.js';
 import { printReportSummary, writeMarkdownReport } from './reporter.js';
+import { runProviderPreflightChecks } from './preflight.js';
 import type { SystemPromptId } from '../runner.js';
 import { PAYLOADS } from '../payloads.js';
 
@@ -83,6 +84,7 @@ interface CliArgs {
   outputDir: string;
   delay: number;
   detect: boolean;
+  skipPreflight: boolean;
 }
 
 function parseArgs(argv: string[]): CliArgs {
@@ -93,6 +95,7 @@ function parseArgs(argv: string[]): CliArgs {
     outputDir: resolve(process.cwd(), 'harness', 'validation-traces'),
     delay: 1000,
     detect: false,
+    skipPreflight: false,
   };
 
   for (let i = 2; i < argv.length; i++) {
@@ -135,6 +138,9 @@ function parseArgs(argv: string[]): CliArgs {
       case '--detect':
         args.detect = true;
         break;
+      case '--skip-preflight':
+        args.skipPreflight = true;
+        break;
       case '--help':
         printHelp();
         process.exit(0);
@@ -166,6 +172,7 @@ Options:
   --output-dir <path>     Output directory (default: harness/validation-traces/)
   --delay <ms>            Delay between runs in ms (default: 1000)
   --detect                Enable Cerberus detection validation (observe-only)
+  --skip-preflight        Skip provider connectivity/auth preflight checks
   --help                  Show this help
 
 Examples:
@@ -221,6 +228,27 @@ async function main(): Promise<void> {
   const providers = resolveProviders(args);
 
   assertApiKeys(providers);
+
+  if (!args.skipPreflight) {
+    console.log('  Running provider preflight checks...\n');
+    const preflightResults = await runProviderPreflightChecks(providers);
+    const failures = preflightResults.filter((result) => !result.ok);
+
+    for (const result of preflightResults) {
+      if (result.ok) {
+        console.log(`  ✓ ${result.provider} (${result.model}) preflight passed`);
+      } else {
+        console.log(`  ✗ ${result.provider} (${result.model}) preflight failed`);
+        console.log(`    ${result.error}`);
+      }
+    }
+    console.log('');
+
+    if (failures.length > 0) {
+      console.error('Validation aborted: provider preflight checks failed.');
+      process.exit(1);
+    }
+  }
 
   console.log('\n╔══════════════════════════════════════════════════════════╗');
   console.log('║         CERBERUS VALIDATION PROTOCOL                     ║');

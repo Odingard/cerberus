@@ -8,10 +8,12 @@
 
 import type { CerberusConfig } from '../types/config.js';
 import type { RiskAssessment } from '../types/signals.js';
+import type { ToolExecutionOutcome } from '../types/execution.js';
 import type { DetectionSession } from '../engine/session.js';
 import { createSession, resetSession } from '../engine/session.js';
 import { interceptToolCall } from '../engine/interceptor.js';
-import type { ToolExecutorFn } from '../engine/interceptor.js';
+import type { RawToolExecutorFn, ToolExecutorFn } from '../engine/interceptor.js';
+import { validateCerberusConfig } from '../engine/config-validation.js';
 import type { MemoryToolConfig } from '../layers/l4-memory.js';
 import type { ContaminationGraph } from '../graph/contamination.js';
 import { createContaminationGraph } from '../graph/contamination.js';
@@ -36,6 +38,8 @@ export interface GuardResult {
   readonly session: DetectionSession;
   /** All risk assessments produced during the session. */
   readonly assessments: readonly RiskAssessment[];
+  /** Structured metadata for the most recent guarded tool invocation. */
+  readonly getLastOutcome: () => ToolExecutionOutcome | undefined;
   /** Reset the session state and assessments for reuse between runs. Graph/ledger persist. */
   readonly reset: () => void;
   /** Contamination graph (present when memoryTracking is enabled). */
@@ -84,13 +88,19 @@ export interface GuardResult {
  * ```
  */
 export function guard(
-  executors: Record<string, ToolExecutorFn>,
+  executors: Record<string, RawToolExecutorFn>,
   config: CerberusConfig,
   outboundTools: readonly string[],
   memoryOptions?: MemoryGuardOptions,
 ): GuardResult {
+  validateCerberusConfig(config, {
+    outboundTools,
+    memoryTools: memoryOptions?.memoryTools ?? [],
+  });
+
   const session = createSession();
   const assessments: RiskAssessment[] = [];
+  let lastOutcome: ToolExecutionOutcome | undefined;
 
   // Initialize L4 resources when memory tracking is enabled
   const memoryTools = memoryOptions?.memoryTools ?? [];
@@ -115,6 +125,9 @@ export function guard(
       (assessment) => {
         assessments.push(assessment);
       },
+      (outcome) => {
+        lastOutcome = outcome;
+      },
       useMemory ? memoryTools : undefined,
       graph,
       ledger,
@@ -125,6 +138,7 @@ export function guard(
   const reset = (): void => {
     resetSession(session);
     assessments.length = 0;
+    lastOutcome = undefined;
   };
 
   // Destroy tears down everything including DB connection
@@ -146,6 +160,7 @@ export function guard(
     executors: wrappedExecutors,
     session,
     assessments,
+    getLastOutcome: () => lastOutcome,
     reset,
     ...(graph ? { graph } : {}),
     ...(ledger ? { ledger } : {}),

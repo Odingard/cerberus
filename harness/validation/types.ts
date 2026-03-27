@@ -133,6 +133,7 @@ export interface ProviderStats {
   readonly successRate: number;
   readonly confidenceInterval: ConfidenceInterval;
   readonly meanCausationScore: number;
+  readonly sampleErrors: readonly string[];
 }
 
 /** Per-payload results across all providers and trials. */

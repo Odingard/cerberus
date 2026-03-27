@@ -106,6 +106,9 @@ describe('guard', () => {
     // Session-cumulative: L1 + L2 + L3 = score 3, threshold=3 → interrupt
     expect(sendResult).toContain('[Cerberus]');
     expect(sendResult).toContain('blocked');
+    expect(result.getLastOutcome()?.blocked).toBe(true);
+    expect(result.getLastOutcome()?.executorRan).toBe(false);
+    expect(result.getLastOutcome()?.phase).toBe('preflight');
     expect(result.assessments).toHaveLength(3);
     expect(result.assessments[2].vector).toEqual({ l1: true, l2: true, l3: true, l4: false });
     expect(result.assessments[2].score).toBe(3);
@@ -166,6 +169,73 @@ describe('guard', () => {
     expect(result.destroy).toBeInstanceOf(Function);
     result.destroy(); // Should not throw
   });
+
+  it('should buffer async iterable tool results before inspection', async () => {
+    async function* streamPrivateData(): AsyncIterable<string> {
+      await Promise.resolve();
+      yield '{"records":[{"email":"alice@example.com",';
+      await Promise.resolve();
+      yield '"ssn":"123-45-6789"}]}';
+    }
+
+    const result = guard(
+      {
+        ...makeExecutors(),
+        readPrivateData: vi.fn().mockResolvedValue(streamPrivateData()),
+      },
+      CONFIG,
+      OUTBOUND_TOOLS,
+    );
+
+    const readResult = await result.executors.readPrivateData({});
+
+    expect(readResult).toContain('alice@example.com');
+    expect(result.assessments).toHaveLength(1);
+    expect(result.assessments[0].vector.l1).toBe(true);
+    expect(result.session.privilegedValues.has('alice@example.com')).toBe(true);
+  });
+
+  it('should reject stream-like tool results when streamingMode is reject', async () => {
+    async function* streamed(): AsyncIterable<string> {
+      await Promise.resolve();
+      yield 'chunk-1';
+      await Promise.resolve();
+      yield 'chunk-2';
+    }
+
+    const result = guard(
+      {
+        ...makeExecutors(),
+        readPrivateData: vi.fn().mockResolvedValue(streamed()),
+      },
+      { ...CONFIG, streamingMode: 'reject' },
+      OUTBOUND_TOOLS,
+    );
+
+    await expect(result.executors.readPrivateData({})).rejects.toThrow(/stream-like tool results/i);
+  });
+
+  it('should reject interrupt mode when trustOverrides do not classify trusted and untrusted tools', () => {
+    expect(() =>
+      guard(makeExecutors(), { alertMode: 'interrupt', threshold: 3 }, OUTBOUND_TOOLS),
+    ).toThrow(/trusted and one untrusted tool classification/i);
+  });
+
+  it('should reject duplicate trustOverrides', () => {
+    expect(() =>
+      guard(
+        makeExecutors(),
+        {
+          ...CONFIG,
+          trustOverrides: [
+            { toolName: 'readPrivateData', trustLevel: 'trusted' },
+            { toolName: 'readPrivateData', trustLevel: 'untrusted' },
+          ],
+        },
+        OUTBOUND_TOOLS,
+      ),
+    ).toThrow(/Duplicate trust override/i);
+  });
 });
 
 // ── L4 Memory Tracking ─────────────────────────────────────────────
@@ -186,13 +256,9 @@ describe('guard — L4 memory tracking', () => {
     result.destroy();
   });
 
-  it('should not create graph/ledger when no memoryTools provided', () => {
+  it('should reject memoryTracking when no memoryTools provided', () => {
     const memConfig: CerberusConfig = { ...CONFIG, memoryTracking: true };
-    const result = guard(makeExecutors(), memConfig, OUTBOUND_TOOLS);
-
-    expect(result.graph).toBeUndefined();
-    expect(result.ledger).toBeUndefined();
-    result.destroy();
+    expect(() => guard(makeExecutors(), memConfig, OUTBOUND_TOOLS)).toThrow(/memory tools/i);
   });
 
   it('should create graph and ledger when memoryTracking is enabled', () => {

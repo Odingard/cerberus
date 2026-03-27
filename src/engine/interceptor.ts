@@ -9,6 +9,8 @@
 import type { CerberusConfig } from '../types/config.js';
 import type { DetectionSignal, RiskAssessment } from '../types/signals.js';
 import type { ToolCallContext } from '../types/context.js';
+import type { ToolExecutionOutcome } from '../types/execution.js';
+import { formatBlockedToolMessage } from '../types/execution.js';
 import type { DetectionSession } from './session.js';
 import { recordSignal } from './session.js';
 import { classifyDataSource, resolveTrustLevel } from '../layers/l1-classifier.js';
@@ -34,12 +36,25 @@ import { detectCrossAgentTrifecta, detectContextContamination } from './cross-ag
 import { buildRiskVector } from './correlation.js';
 import { updateAgentRiskState } from '../graph/delegation.js';
 import { recordToolCall } from '../telemetry/otel.js';
+import { collectToolResult } from './streaming.js';
 
-/** Generic tool executor function signature. */
+/** Tool result shapes Cerberus can reconstruct into a full inspected string. */
+export type ToolExecutorResult =
+  | string
+  | ReadableStream<Uint8Array | string>
+  | AsyncIterable<string | Uint8Array>
+  | Iterable<string | Uint8Array>;
+
+/** Raw tool executor input signature before Cerberus reconstructs the result. */
+export type RawToolExecutorFn = (args: Record<string, unknown>) => Promise<ToolExecutorResult>;
+
+/** Generic wrapped tool executor function signature. */
 export type ToolExecutorFn = (args: Record<string, unknown>) => Promise<string>;
 
 /** Callback invoked with the full risk assessment after each tool call. */
 export type OnFullAssessmentCallback = (assessment: RiskAssessment) => void;
+/** Callback invoked with structured execution metadata after each tool call. */
+export type OnExecutionOutcomeCallback = (outcome: ToolExecutionOutcome) => void;
 
 /**
  * Create an intercepted version of a tool executor.
@@ -58,16 +73,105 @@ export type OnFullAssessmentCallback = (assessment: RiskAssessment) => void;
  */
 export function interceptToolCall(
   toolName: string,
-  executor: ToolExecutorFn,
+  executor: RawToolExecutorFn,
   session: DetectionSession,
   config: CerberusConfig,
   outboundTools: readonly string[],
   onFullAssessment?: OnFullAssessmentCallback,
+  onExecutionOutcome?: OnExecutionOutcomeCallback,
   memoryTools?: readonly MemoryToolConfig[],
   graph?: ContaminationGraph,
   ledger?: ProvenanceLedger,
 ): ToolExecutorFn {
   const trustOverrides = config.trustOverrides ?? [];
+  const isOutboundTool = outboundTools.includes(toolName);
+
+  const finalizeAssessment = (
+    assessment: RiskAssessment,
+    turnId: string,
+    startMs: number,
+    signals: readonly DetectionSignal[],
+    executorRan: boolean,
+    phase: ToolExecutionOutcome['phase'],
+  ): ToolExecutionOutcome => {
+    onFullAssessment?.(assessment);
+    config.onAssessment?.({
+      turnId: assessment.turnId,
+      toolName,
+      score: assessment.score,
+      action: assessment.action,
+      signals: assessment.signals.map((s) => s.signal),
+    });
+
+    const outcome: ToolExecutionOutcome = {
+      turnId,
+      toolName,
+      action: assessment.action,
+      score: assessment.score,
+      blocked: assessment.action === 'interrupt',
+      executorRan,
+      phase,
+    };
+    onExecutionOutcome?.(outcome);
+
+    if (config.opentelemetry === true) {
+      recordToolCall({
+        toolName,
+        sessionId: session.sessionId,
+        turnId,
+        score: assessment.score,
+        action: assessment.action,
+        blocked: outcome.blocked,
+        signals: signals.map((s) => s.signal),
+        durationMs: Date.now() - startMs,
+      });
+    }
+
+    return outcome;
+  };
+
+  const collectAllSessionSignals = (): DetectionSignal[] => {
+    const allSessionSignals: DetectionSignal[] = [];
+    for (const turnSignals of session.signalsByTurn.values()) {
+      allSessionSignals.push(...turnSignals);
+    }
+    return allSessionSignals;
+  };
+
+  const correlateCrossAgentSignals = (turnId: string, signals: DetectionSignal[]): void => {
+    if (config.multiAgent !== true || !session.delegationGraph || !session.currentAgentId) {
+      return;
+    }
+
+    const delegationGraph = session.delegationGraph;
+    const currentAgentId = session.currentAgentId;
+
+    const currentVector = buildRiskVector(signals);
+    const currentRiskState = {
+      l1: currentVector.l1,
+      l2: currentVector.l2,
+      l3: currentVector.l3,
+    };
+
+    updateAgentRiskState(delegationGraph, currentAgentId, currentRiskState);
+
+    const trifectaSignal = detectCrossAgentTrifecta(
+      delegationGraph,
+      currentAgentId,
+      currentRiskState,
+      turnId,
+    );
+    if (trifectaSignal) {
+      signals.push(trifectaSignal);
+      recordSignal(session, trifectaSignal);
+    }
+
+    const contaminationSignal = detectContextContamination(delegationGraph, currentAgentId, turnId);
+    if (contaminationSignal) {
+      signals.push(contaminationSignal);
+      recordSignal(session, contaminationSignal);
+    }
+  };
 
   return async (args: Record<string, unknown>): Promise<string> => {
     // Generate turn ID
@@ -78,8 +182,106 @@ export function interceptToolCall(
     // Record wall time including tool execution (used for OTel span)
     const startMs = Date.now();
 
+    if (isOutboundTool) {
+      const ctx: ToolCallContext = {
+        turnId,
+        sessionId: session.sessionId,
+        toolName,
+        toolArguments: args,
+        toolResult: '',
+        timestamp: Date.now(),
+      };
+
+      const signals: DetectionSignal[] = [];
+
+      const l3Signal = classifyOutboundIntent(
+        ctx,
+        session,
+        outboundTools,
+        config.authorizedDestinations,
+      );
+      if (l3Signal) {
+        signals.push(l3Signal);
+        recordSignal(session, l3Signal);
+      }
+
+      const domainSignal = classifyOutboundDomain(ctx, session, outboundTools);
+      if (domainSignal) {
+        signals.push(domainSignal);
+        recordSignal(session, domainSignal);
+      }
+
+      const correlatedOutboundSignal = detectInjectionCorrelatedOutbound(
+        ctx,
+        session,
+        outboundTools,
+        config.authorizedDestinations,
+      );
+      if (correlatedOutboundSignal) {
+        signals.push(correlatedOutboundSignal);
+        recordSignal(session, correlatedOutboundSignal);
+      }
+
+      const toolChainSignal = detectToolChainExfiltration(ctx, session, outboundTools);
+      if (toolChainSignal) {
+        signals.push(toolChainSignal);
+        recordSignal(session, toolChainSignal);
+      }
+
+      const outboundEncodingSignal = detectOutboundEncoding(ctx, session, outboundTools);
+      if (outboundEncodingSignal) {
+        signals.push(outboundEncodingSignal);
+        recordSignal(session, outboundEncodingSignal);
+      }
+
+      const splitExfilSignal = detectSplitExfiltration(
+        ctx,
+        session,
+        outboundTools,
+        config.splitExfilThresholdBytes,
+      );
+      if (splitExfilSignal) {
+        signals.push(splitExfilSignal);
+        recordSignal(session, splitExfilSignal);
+      }
+
+      const driftSignal = detectBehavioralDrift(
+        ctx,
+        session,
+        outboundTools,
+        false,
+        config.authorizedDestinations,
+      );
+      if (driftSignal) {
+        signals.push(driftSignal);
+        recordSignal(session, driftSignal);
+      }
+
+      correlateCrossAgentSignals(turnId, signals);
+
+      const assessment = assessRisk(turnId, signals, config, collectAllSessionSignals());
+
+      if (assessment.action === 'interrupt') {
+        const blockedOutcome = finalizeAssessment(
+          assessment,
+          turnId,
+          startMs,
+          signals,
+          false,
+          'preflight',
+        );
+        return formatBlockedToolMessage(blockedOutcome);
+      }
+
+      const rawResult = await executor(args);
+      const result = await collectToolResult(rawResult, config);
+      finalizeAssessment(assessment, turnId, startMs, signals, true, 'preflight');
+      return result;
+    }
+
     // Execute the tool
-    const result = await executor(args);
+    const rawResult = await executor(args);
+    const result = await collectToolResult(rawResult, config);
 
     // Build context for detection layers
     const ctx: ToolCallContext = {
@@ -105,36 +307,18 @@ export function interceptToolCall(
         recordSignal(session, contextResult.signal);
       }
 
-      const allSessionSignals: DetectionSignal[] = [];
-      for (const turnSignals of session.signalsByTurn.values()) {
-        allSessionSignals.push(...turnSignals);
-      }
+      const assessment = assessRisk(turnId, signals, config, collectAllSessionSignals());
+      const outcome = finalizeAssessment(
+        assessment,
+        turnId,
+        startMs,
+        signals,
+        true,
+        'context-window',
+      );
 
-      const assessment = assessRisk(turnId, signals, config, allSessionSignals);
-      onFullAssessment?.(assessment);
-      config.onAssessment?.({
-        turnId: assessment.turnId,
-        toolName,
-        score: assessment.score,
-        action: assessment.action,
-        signals: assessment.signals.map((s) => s.signal),
-      });
-
-      if (config.opentelemetry === true) {
-        recordToolCall({
-          toolName,
-          sessionId: session.sessionId,
-          turnId,
-          score: assessment.score,
-          action: assessment.action,
-          blocked: assessment.action === 'interrupt',
-          signals: signals.map((s) => s.signal),
-          durationMs: Date.now() - startMs,
-        });
-      }
-
-      if (assessment.action === 'interrupt') {
-        return `[Cerberus] Tool call blocked — risk score ${String(assessment.score)}/4`;
+      if (outcome.blocked) {
+        return formatBlockedToolMessage(outcome);
       }
 
       return result;
@@ -282,81 +466,22 @@ export function interceptToolCall(
     }
 
     // Cross-agent correlation (runs after drift, before final correlation)
-    if (config.multiAgent === true && session.delegationGraph && session.currentAgentId) {
-      const delegationGraph = session.delegationGraph;
-      const currentAgentId = session.currentAgentId;
-
-      // Build current risk state from accumulated signals
-      const currentVector = buildRiskVector(signals);
-      const currentRiskState = {
-        l1: currentVector.l1,
-        l2: currentVector.l2,
-        l3: currentVector.l3,
-      };
-
-      // Update the agent's risk state in the delegation graph
-      updateAgentRiskState(delegationGraph, currentAgentId, currentRiskState);
-
-      // Check for cross-agent trifecta
-      const trifectaSignal = detectCrossAgentTrifecta(
-        delegationGraph,
-        currentAgentId,
-        currentRiskState,
-        turnId,
-      );
-      if (trifectaSignal) {
-        signals.push(trifectaSignal);
-        recordSignal(session, trifectaSignal);
-      }
-
-      // Check for context contamination propagation
-      const contaminationSignal = detectContextContamination(
-        delegationGraph,
-        currentAgentId,
-        turnId,
-      );
-      if (contaminationSignal) {
-        signals.push(contaminationSignal);
-        recordSignal(session, contaminationSignal);
-      }
-    }
-
-    // Collect all session signals (including current turn) for cumulative scoring
-    const allSessionSignals: DetectionSignal[] = [];
-    for (const turnSignals of session.signalsByTurn.values()) {
-      allSessionSignals.push(...turnSignals);
-    }
+    correlateCrossAgentSignals(turnId, signals);
 
     // Correlate: vector/score from cumulative session signals, turn signals for inspection
-    const assessment = assessRisk(turnId, signals, config, allSessionSignals);
-
-    // Invoke callbacks
-    onFullAssessment?.(assessment);
-    config.onAssessment?.({
-      turnId: assessment.turnId,
-      toolName,
-      score: assessment.score,
-      action: assessment.action,
-      signals: assessment.signals.map((s) => s.signal),
-    });
-
-    // OpenTelemetry instrumentation
-    if (config.opentelemetry === true) {
-      recordToolCall({
-        toolName,
-        sessionId: session.sessionId,
-        turnId,
-        score: assessment.score,
-        action: assessment.action,
-        blocked: assessment.action === 'interrupt',
-        signals: signals.map((s) => s.signal),
-        durationMs: Date.now() - startMs,
-      });
-    }
+    const assessment = assessRisk(turnId, signals, config, collectAllSessionSignals());
+    const outcome = finalizeAssessment(
+      assessment,
+      turnId,
+      startMs,
+      signals,
+      true,
+      'post-execution',
+    );
 
     // If action is interrupt, return blocked message
-    if (assessment.action === 'interrupt') {
-      return `[Cerberus] Tool call blocked — risk score ${String(assessment.score)}/4`;
+    if (outcome.blocked) {
+      return formatBlockedToolMessage(outcome);
     }
 
     return result;

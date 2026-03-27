@@ -1,10 +1,10 @@
 # cerberus-ai (Python SDK)
 
-Runtime security for agentic AI — Python SDK.
+Runtime security for AI agent execution — Python SDK.
 
 Detects the **Lethal Trifecta**: the simultaneous convergence of privileged data access, untrusted content injection, and an outbound exfiltration path within a single AI execution turn.
 
-**Validated: N=525 attack trials across OpenAI, Anthropic, Google — 100% L1/L2 detection, 0.0% false positive rate, ~52μs p50 overhead.**
+This SDK is part of the Cerberus Core surface. Historical validation artifacts and research writeups exist in the repo, but benchmark claims should always be tied to a specific evidence set and run date.
 
 ---
 
@@ -231,5 +231,5 @@ The TypeScript SDK (`@cerberus-ai/core`) lives in `src/`. The Python SDK is a fu
 
 ---
 
-**OdinForge Security by Six Sense Enterprise Services**  
-[sixsenseenterprise.com](https://sixsenseenterprise.com) · [github.com/odinforge/cerberus](https://github.com/odinforge/cerberus)
+**Odingard Security by Six Sense Enterprise Services**  
+[sixsenseenterprise.com](https://sixsenseenterprise.com) · [github.com/Odingard/cerberus](https://github.com/Odingard/cerberus)

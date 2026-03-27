@@ -38,12 +38,16 @@ export type {
   RiskAssessment,
   AlertMode,
   LogDestination,
+  StreamingMode,
   ContextScoringMode,
   OverflowAction,
   AlwaysInspectRegions,
   CerberusConfig,
   ToolCallContext,
+  ToolExecutionPhase,
+  ToolExecutionOutcome,
 } from './types/index.js';
+export { formatBlockedToolMessage } from './types/execution.js';
 
 export { guard } from './middleware/wrap.js';
 export type { GuardResult, MemoryGuardOptions } from './middleware/wrap.js';

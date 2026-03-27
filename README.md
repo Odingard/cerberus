@@ -4,7 +4,7 @@
 
 # Cerberus
 
-**Agentic AI Runtime Security Platform**
+**Runtime Security For AI Agent Tool Execution**
 
 [![CI](https://github.com/Odingard/cerberus/actions/workflows/ci.yml/badge.svg)](https://github.com/Odingard/cerberus/actions/workflows/ci.yml)
 [![Release](https://github.com/Odingard/cerberus/actions/workflows/release.yml/badge.svg)](https://github.com/Odingard/cerberus/actions/workflows/release.yml)
@@ -13,9 +13,9 @@
 [![npm downloads](https://img.shields.io/npm/dm/@cerberus-ai/core.svg)](https://www.npmjs.com/package/@cerberus-ai/core)
 [![PyPI version](https://img.shields.io/pypi/v/cerberus-ai.svg)](https://pypi.org/project/cerberus-ai/)
 
-Detects, correlates, and interrupts **prompt injection → PII exfiltration** in agentic AI systems — at the tool-call level, before data leaves your perimeter.
+Embeddable runtime enforcement for AI agents. Cerberus correlates privileged data access, untrusted content ingestion, and outbound behavior at the tool-call level, then interrupts guarded outbound actions before they execute.
 
-[**Live Demo**](https://demo.cerberus.sixsenseenterprise.com) · [**Docs**](https://cerberus.sixsenseenterprise.com) · [**npm**](https://www.npmjs.com/package/@cerberus-ai/core) · [**PyPI**](https://pypi.org/project/cerberus-ai/) · [**Enterprise**](mailto:enterprise@sixsenseenterprise.com)
+[**Docs**](https://cerberus.sixsenseenterprise.com) · [**npm**](https://www.npmjs.com/package/@cerberus-ai/core) · [**PyPI**](https://pypi.org/project/cerberus-ai/) · [**Enterprise**](mailto:enterprise@sixsenseenterprise.com)
 
 </div>
 
@@ -54,7 +54,7 @@ Every AI agent that can **(1) access private data, (2) read external content, an
 3. EXFILTRATION        — Agent follows the injected instruction and sends data to attacker
 ```
 
-**This is not theoretical.** We ran N=525 controlled attacks across OpenAI, Anthropic, and Google with real API calls. ~100% partial exfiltration across all three providers. No existing tool detects or interrupts any of these calls — they look like normal agent behavior.
+**This is not theoretical.** The repository includes controlled validation harnesses, research writeups, and replayable demos covering this runtime pattern across multiple model providers. We are actively refreshing the latest provider benchmark set on the current hardened branch; until that rerun is complete, public claims should stay tied to the specific evidence set they come from.
 
 Cerberus closes this gap by monitoring every tool call in real time, correlating signals across the session, and blocking the attack before a single byte leaves your system.
 
@@ -88,11 +88,11 @@ npx tsx examples/demo-capture.ts
 
 **Act 1 — No protection:** Agent reads customer SSNs and emails, fetches a web page containing an injection payload, follows the injected instruction, and POSTs everything to an external attacker address. Data confirmed exfiltrated.
 
-**Act 2 — Cerberus active:** Same attack. Two lines of code. Cerberus fires four signals across three layers, score hits 3/4, outbound call blocked. Zero bytes leave the system.
+**Act 2 — Cerberus active:** Same attack. Two lines of code. Cerberus fires layered runtime signals, the risk score crosses threshold, and the guarded outbound action is interrupted before execution.
 
-**Live playground** — interactive attack scenarios with real-time OTel metrics flowing to Grafana:
+**Interactive playground**
 
-> **[demo.cerberus.sixsenseenterprise.com](https://demo.cerberus.sixsenseenterprise.com)**
+The hosted playground is being refreshed so the public demo matches the current hardened branch. Until that refresh lands, use the local demos above as the source of truth.
 
 **Live network demo** — real HTTP injection + capture servers, real GPT-4o-mini, real HTTP POST blocked:
 
@@ -193,6 +193,7 @@ const { executors: secured, destroy } = guard(
   {
     alertMode: 'interrupt',   // 'log' | 'alert' | 'interrupt'
     threshold: 3,             // score 0–4 needed to trigger action
+    streamingMode: 'buffer',  // reconstruct stream-like tool output before inspection
     trustOverrides: [
       { toolName: 'readDatabase', trustLevel: 'trusted' },
       { toolName: 'fetchUrl',     trustLevel: 'untrusted' },
@@ -240,6 +241,10 @@ const proxy = createProxy({
 await proxy.listen();
 // Agent routes tool calls to http://localhost:4000/tool/:toolName
 ```
+
+If the client omits `X-Cerberus-Session`, the proxy generates an isolated session ID and returns it in the response header. Reuse that header value explicitly if you want multi-turn correlation across subsequent tool calls.
+
+Cerberus also buffers stream-like tool results to a full turn boundary before inspection by default (`streamingMode: 'buffer'`). This prevents partial streamed content from bypassing output-level detection before the full payload is assembled.
 
 ### MCP Tool Poisoning Scan
 
@@ -581,6 +586,7 @@ Contact: [enterprise@sixsenseenterprise.com](mailto:enterprise@sixsenseenterpris
 - It does not cover every possible injection technique — novel payloads that avoid all heuristic patterns may not be detected by L2 sub-classifiers (L1+L3 still fire on the structural condition)
 - It does not replace input validation, output filtering, or network-level controls — it complements them
 - L3 and Drift detection depend on `authorizedDestinations` being correctly configured — misconfiguration produces false negatives, not false positives
+- Startup validation is intentionally strict in production paths: `interrupt` mode with outbound tools requires both trusted and untrusted tool classification, and `memoryTracking` requires configured memory tools
 
 **On false positive rate:**
 - Measured 0.0% FP on clean control runs in our validation protocol

@@ -34,6 +34,7 @@ export type {
   WebhookLogConfig,
   ConsoleLogConfig,
   LogConfig,
+  StreamingMode,
   TrustOverride,
   ContextScoringMode,
   OverflowAction,
@@ -42,3 +43,4 @@ export type {
 } from './config.js';
 
 export type { ToolCallContext } from './context.js';
+export type { ToolExecutionPhase, ToolExecutionOutcome } from './execution.js';

@@ -8,7 +8,7 @@
 
 import type { IncomingMessage } from 'node:http';
 import type { CerberusConfig } from '../types/config.js';
-import type { ToolExecutorFn } from '../engine/interceptor.js';
+import type { RawToolExecutorFn } from '../engine/interceptor.js';
 
 /** Configuration for a single proxied tool. */
 export interface ProxyToolConfig {
@@ -25,7 +25,7 @@ export interface ProxyToolConfig {
    * Use this in tests or when the tool runs in-process.
    * Mutually exclusive with `target`.
    */
-  readonly handler?: ToolExecutorFn;
+  readonly handler?: RawToolExecutorFn;
 
   /** Trust level for L1/L2 detection. Defaults to neutral (no override). */
   readonly trustLevel?: 'trusted' | 'untrusted';

@@ -68,7 +68,8 @@ describe('createCerberusGuardrail', () => {
   });
 
   it('should return tripwireTriggered: true when threshold exceeded', async () => {
-    const guardrail = createCerberusGuardrail(makeConfig());
+    const config = makeConfig();
+    const guardrail = createCerberusGuardrail(config);
 
     // L1: read private data
     await guardrail.execute({
@@ -94,6 +95,7 @@ describe('createCerberusGuardrail', () => {
     expect(result.tripwireTriggered).toBe(true);
     expect(result.outputInfo.score).toBe(3);
     expect(result.outputInfo.vector).toEqual({ l1: true, l2: true, l3: true, l4: false });
+    expect(config.tools.sendOutboundReport).not.toHaveBeenCalled();
     guardrail.destroy();
   });
 

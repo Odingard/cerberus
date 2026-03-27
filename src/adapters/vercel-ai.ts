@@ -12,6 +12,7 @@
 
 import type { CerberusConfig } from '../types/config.js';
 import type { RiskAssessment } from '../types/signals.js';
+import type { ToolExecutorResult } from '../engine/interceptor.js';
 import type { DetectionSession } from '../engine/session.js';
 import type { ContaminationGraph } from '../graph/contamination.js';
 import type { ProvenanceLedger } from '../graph/ledger.js';
@@ -25,7 +26,7 @@ import type { MemoryGuardOptions } from '../middleware/wrap.js';
 export interface VercelAITool {
   readonly description?: string;
   readonly parameters?: unknown;
-  readonly execute?: (args: Record<string, unknown>) => Promise<string>;
+  readonly execute?: (args: Record<string, unknown>) => Promise<ToolExecutorResult>;
 }
 
 /** A named map of Vercel AI tools, as used by generateText(). */
@@ -84,7 +85,8 @@ export function guardVercelAI(
   config: VercelAIGuardConfig,
 ): VercelAIGuardResult {
   // Build executor map from tools that have execute functions
-  const executors: Record<string, (args: Record<string, unknown>) => Promise<string>> = {};
+  const executors: Record<string, (args: Record<string, unknown>) => Promise<ToolExecutorResult>> =
+    {};
   for (const [name, tool] of Object.entries(tools)) {
     if (tool.execute) {
       executors[name] = tool.execute;
@@ -106,7 +108,7 @@ export function guardVercelAI(
       wrappedTools[name] = {
         ...(tool.description !== undefined ? { description: tool.description } : {}),
         ...(tool.parameters !== undefined ? { parameters: tool.parameters } : {}),
-        execute: (args: Record<string, unknown>): Promise<string> =>
+        execute: (args: Record<string, unknown>): Promise<ToolExecutorResult> =>
           guardResult.executors[name](args),
       };
     } else {

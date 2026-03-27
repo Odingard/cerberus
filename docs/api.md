@@ -82,10 +82,12 @@ destroy();
 ## `ToolExecutorFn`
 
 ```typescript
-type ToolExecutorFn = (args: Record<string, unknown>) => Promise<string>;
+type ToolExecutorFn = (
+  args: Record<string, unknown>,
+) => Promise<string | ReadableStream<Uint8Array | string> | AsyncIterable<string | Uint8Array>>;
 ```
 
-Every tool executor must accept a string-keyed argument map and return a string result. This is the universal interface that Cerberus wraps.
+Every tool executor must accept a string-keyed argument map and return a string result or a stream-like result that Cerberus can reconstruct before inspection.
 
 ---
 
@@ -100,6 +102,7 @@ interface CerberusConfig {
   readonly threshold?: number; // Default: 3 (range 0-4)
   readonly toolDescriptions?: readonly ToolDescription[]; // Enable runtime MCP poisoning detection
   readonly authorizedDestinations?: readonly string[]; // Allowlist of outbound destination domains
+  readonly streamingMode?: 'buffer' | 'reject'; // Default: 'buffer'
   readonly onAssessment?: (assessment: {
     readonly turnId: string;
     readonly score: number;
@@ -233,6 +236,19 @@ const cerberus = guard(executors, {
 ```
 
 Use this when your agent legitimately moves PII to known internal systems (data warehouses, CRM backends, reporting services). Without this option, any outbound tool call containing PII triggers L3 — which is correct for zero-trust environments but produces FPs in environments with well-defined authorized data flows.
+
+---
+
+### `streamingMode`
+
+```typescript
+readonly streamingMode?: 'buffer' | 'reject';
+```
+
+Controls how Cerberus handles stream-like tool results before inspection.
+
+- `'buffer'` reconstructs the full tool result at the turn boundary, then runs the normal detection pipeline. This is the default and recommended setting.
+- `'reject'` fails closed when a tool returns stream-like output, which is useful if you want to require explicit buffering decisions at integration time.
 
 ---
 
@@ -382,7 +398,7 @@ interface ProxyServer {
 ```
 POST /tool/:toolName
 Content-Type: application/json
-X-Cerberus-Session: <session-id>   (optional — defaults to "default")
+X-Cerberus-Session: <session-id>   (optional — Cerberus generates one when absent)
 
 { "args": { ... } }
 ```
@@ -391,6 +407,7 @@ X-Cerberus-Session: <session-id>   (optional — defaults to "default")
 ```json
 { "result": "tool output string" }
 ```
+Header: `X-Cerberus-Session: <session-id>`
 
 **Blocked response (403):**
 ```json
@@ -405,7 +422,7 @@ GET /health → 200 { "status": "ok", "sessions": <count> }
 
 ### Session Management
 
-Session state (L1+L2+L3 cumulative scoring) is tracked per `X-Cerberus-Session` header value. Each unique session ID maintains independent detection state so multi-turn attacks are detected across multiple HTTP requests. Sessions without activity beyond `sessionTtlMs` are automatically destroyed.
+Session state (L1+L2+L3 cumulative scoring) is tracked per `X-Cerberus-Session` header value. Each unique session ID maintains independent detection state so multi-turn attacks are detected across multiple HTTP requests. When the header is missing, Cerberus creates a fresh isolated session and returns it in the response header so clients can reuse it intentionally. Sessions without activity beyond `sessionTtlMs` are automatically destroyed.
 
 ### Example
 

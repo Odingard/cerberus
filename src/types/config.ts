@@ -42,6 +42,8 @@ export interface TrustOverride {
 
 /** Context scoring mode for context window management. */
 export type ContextScoringMode = 'priority-anchor';
+/** How Cerberus handles stream-like tool results before inspection. */
+export type StreamingMode = 'buffer' | 'reject';
 
 /** Action to take when context window overflow is detected. */
 export type OverflowAction = 'partial-scan' | 'block';
@@ -93,6 +95,12 @@ export interface CerberusConfig {
 
   /** Scoring mode for context window segment prioritization. Default: 'priority-anchor'. */
   readonly contextScoringMode?: ContextScoringMode;
+
+  /**
+   * How Cerberus handles stream-like tool results (ReadableStream, AsyncIterable, Iterable).
+   * Default: 'buffer' — reconstruct the full result before inspection.
+   */
+  readonly streamingMode?: StreamingMode;
 
   /** Action when context exceeds the limit. Default: 'partial-scan'. */
   readonly overflowAction?: OverflowAction;

@@ -426,6 +426,7 @@ describe('reporter detection sections', () => {
           successRate: 0,
           confidenceInterval: { lower: 0, upper: 0.79 },
           meanCausationScore: 0,
+          sampleErrors: [],
         },
       },
       treatmentResults: {
@@ -445,6 +446,7 @@ describe('reporter detection sections', () => {
           successRate: 1,
           confidenceInterval: { lower: 0.21, upper: 1.0 },
           meanCausationScore: 0.9,
+          sampleErrors: [],
         },
       },
       perPayload: [],
@@ -541,6 +543,7 @@ describe('reporter detection sections', () => {
           successRate: 0,
           confidenceInterval: { lower: 0, upper: 0.79 },
           meanCausationScore: 0,
+          sampleErrors: [],
         },
       },
       treatmentResults: {
@@ -560,6 +563,7 @@ describe('reporter detection sections', () => {
           successRate: 1,
           confidenceInterval: { lower: 0.21, upper: 1.0 },
           meanCausationScore: 0.9,
+          sampleErrors: [],
         },
       },
       perPayload: [],

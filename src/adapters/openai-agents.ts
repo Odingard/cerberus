@@ -13,6 +13,7 @@
 
 import type { CerberusConfig } from '../types/config.js';
 import type { RiskAssessment } from '../types/signals.js';
+import type { ToolExecutorResult } from '../engine/interceptor.js';
 import type { DetectionSession } from '../engine/session.js';
 import type { ContaminationGraph } from '../graph/contamination.js';
 import type { ProvenanceLedger } from '../graph/ledger.js';
@@ -44,7 +45,7 @@ export interface OpenAIAgentsGuardConfig {
   /** Tool names that send data externally (for L3 detection). */
   readonly outboundTools?: readonly string[];
   /** Tool names and their execute functions. */
-  readonly tools: Record<string, (args: Record<string, unknown>) => Promise<string>>;
+  readonly tools: Record<string, (args: Record<string, unknown>) => Promise<ToolExecutorResult>>;
   /** Optional L4 memory contamination tracking. */
   readonly memoryOptions?: MemoryGuardOptions;
 }
@@ -127,8 +128,8 @@ export function createCerberusGuardrail(
     }
 
     // Execute the tool through the guarded pipeline
-    const result = await executor(context.toolInput);
-    const wasBlocked = result.includes('[Cerberus]') && result.includes('blocked');
+    await executor(context.toolInput);
+    const outcome = guardResult.getLastOutcome();
 
     // Get the latest assessment
     const latestAssessment = guardResult.assessments[guardResult.assessments.length - 1];
@@ -140,7 +141,7 @@ export function createCerberusGuardrail(
         action: latestAssessment?.action ?? 'none',
         vector: latestAssessment?.vector ?? { l1: false, l2: false, l3: false, l4: false },
       },
-      tripwireTriggered: wasBlocked,
+      tripwireTriggered: outcome?.blocked === true,
     };
   };
 

@@ -5,16 +5,16 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "cerberus-ai"
 version = "1.1.0"
-description = "Runtime security platform for agentic AI systems. Detects the Lethal Trifecta: simultaneous privileged data access, untrusted content injection, and outbound exfiltration paths."
+description = "Runtime security for AI agent execution. Detects and correlates Lethal Trifecta conditions across privileged data access, untrusted content, and outbound behavior."
 readme = "README.md"
-license = { text = "Apache-2.0" }
+license = { text = "MIT" }
 authors = [{ name = "Six Sense Enterprise Services", email = "security@sixsenseenterprise.com" }]
 keywords = ["ai", "security", "runtime", "prompt-injection", "llm", "agentic", "cerberus"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Intended Audience :: Information Technology",
-    "License :: OSI Approved :: Apache Software License",
+    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -59,10 +59,10 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://sixsenseenterprise.com"
-Repository = "https://github.com/odinforge/cerberus"
-Documentation = "https://docs.cerberus.sixsenseenterprise.com"
-"Bug Tracker" = "https://github.com/odinforge/cerberus/issues"
+Homepage = "https://cerberus.sixsenseenterprise.com"
+Repository = "https://github.com/Odingard/cerberus"
+Documentation = "https://cerberus.sixsenseenterprise.com"
+"Bug Tracker" = "https://github.com/Odingard/cerberus/issues"
 
 [tool.setuptools.packages.find]
 where = ["."]

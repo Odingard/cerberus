@@ -10,7 +10,9 @@
  * Sessions are tracked via the `X-Cerberus-Session` request header.
  * Each unique session ID maintains independent detection state so
  * cumulative scoring (L1+L2+L3 = Lethal Trifecta) works across
- * multiple HTTP requests from the same agent run.
+ * multiple HTTP requests from the same agent run. If the header is
+ * missing, Cerberus creates an isolated ephemeral session and returns
+ * it in the response header.
  *
  * Usage:
  *   const proxy = createProxy({
@@ -26,28 +28,40 @@
  */
 
 import * as http from 'node:http';
+import { randomUUID } from 'node:crypto';
 import { guard } from '../middleware/wrap.js';
 import type { GuardResult } from '../middleware/wrap.js';
-import type { ToolExecutorFn } from '../engine/interceptor.js';
+import type { RawToolExecutorFn } from '../engine/interceptor.js';
+import { validateCerberusConfig } from '../engine/config-validation.js';
 import type { TrustOverride } from '../types/config.js';
 import type { ProxyConfig, ProxyServer, ProxyToolConfig } from './types.js';
 
-const BLOCKED_PREFIX = '[Cerberus]';
-
 /** Build an executor that POSTs `{ args }` to `target` and returns the text response. */
-function makeHttpForwarder(target: string): ToolExecutorFn {
+function makeHttpForwarder(target: string): RawToolExecutorFn {
   return async (args: Record<string, unknown>): Promise<string> => {
     const response = await fetch(target, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ args }),
     });
-    return response.text();
+    const body = await response.text();
+    if (!response.ok) {
+      const snippet = body.slice(0, 200);
+      throw new Error(
+        `[Cerberus Proxy] Upstream target ${target} responded with ${String(response.status)}${snippet.length > 0 ? `: ${snippet}` : ''}`,
+      );
+    }
+    return body;
   };
 }
 
 /** Resolve a ProxyToolConfig into a ToolExecutorFn. */
-function resolveExecutor(toolName: string, cfg: ProxyToolConfig): ToolExecutorFn {
+function resolveExecutor(toolName: string, cfg: ProxyToolConfig): RawToolExecutorFn {
+  if (cfg.handler && cfg.target) {
+    throw new Error(
+      `[Cerberus Proxy] Tool "${toolName}" cannot specify both "target" and "handler". Choose exactly one.`,
+    );
+  }
   if (cfg.handler) return cfg.handler;
   if (cfg.target) return makeHttpForwarder(cfg.target);
   throw new Error(
@@ -76,7 +90,7 @@ interface Session {
  */
 export function createProxy(config: ProxyConfig): ProxyServer {
   // ── Build executors from tool configs ──────────────────────────────────
-  const baseExecutors: Record<string, ToolExecutorFn> = {};
+  const baseExecutors: Record<string, RawToolExecutorFn> = {};
   const outboundTools: string[] = [];
   const toolTrustOverrides: TrustOverride[] = [];
 
@@ -93,6 +107,7 @@ export function createProxy(config: ProxyConfig): ProxyServer {
     ...config.cerberus,
     trustOverrides: [...(config.cerberus.trustOverrides ?? []), ...toolTrustOverrides],
   };
+  validateCerberusConfig(mergedCerberusConfig, { outboundTools });
 
   // ── Session registry ───────────────────────────────────────────────────
   const sessions = new Map<string, Session>();
@@ -177,18 +192,21 @@ export function createProxy(config: ProxyConfig): ProxyServer {
       return;
     }
 
-    // Resolve session
-    const sessionId =
-      (Array.isArray(req.headers['x-cerberus-session'])
-        ? req.headers['x-cerberus-session'][0]
-        : req.headers['x-cerberus-session']) ?? 'default';
+    // Resolve session. Missing headers get a fresh isolated session instead
+    // of sharing a global default session across unrelated callers.
+    const providedSessionId = Array.isArray(req.headers['x-cerberus-session'])
+      ? req.headers['x-cerberus-session'][0]
+      : req.headers['x-cerberus-session'];
+    const sessionId = providedSessionId ?? `anon-${randomUUID()}`;
+    res.setHeader('X-Cerberus-Session', sessionId);
     const session = getOrCreateSession(sessionId);
 
     // Execute through Cerberus detection pipeline
     try {
       const result = await session.guard.executors[toolName](args);
+      const outcome = session.guard.getLastOutcome();
 
-      if (result.startsWith(BLOCKED_PREFIX)) {
+      if (outcome?.blocked === true) {
         res.setHeader('X-Cerberus-Blocked', 'true');
         res.writeHead(403).end(JSON.stringify({ blocked: true, message: result }));
       } else {

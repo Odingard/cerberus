@@ -187,11 +187,16 @@ The gateway maintains per-session state via the `X-Cerberus-Session` request hea
 X-Cerberus-Session: <unique-session-id>
 ```
 
-If the header is absent, all requests share a `default` session.
+If the header is absent, Cerberus creates a fresh isolated session for that request and returns it in the response header:
+
+```http
+X-Cerberus-Session: anon-<generated-id>
+```
 
 **Best practice:** Set `X-Cerberus-Session` to your agent's run/conversation ID. This ensures:
 - L1+L2+L3 signals accumulate correctly across multiple tool calls in the same agent run
 - Different agent runs don't interfere with each other's detection state
+- Anonymous requests do not accidentally contaminate each other
 
 ---
 
@@ -222,6 +227,20 @@ X-Cerberus-Api-Key: <api-key>    (if configured)
 ```
 
 The `X-Cerberus-Blocked: true` header is also set on blocked responses.
+Successful responses also include `X-Cerberus-Session`, allowing clients to reuse a generated session ID explicitly.
+
+---
+
+## Startup validation
+
+Cerberus now fails fast on startup for configurations that materially weaken protection in production:
+
+- `alertMode: interrupt` with outbound tools but without both trusted and untrusted tool classification
+- `memoryTracking: true` without configured memory tools
+- duplicate `trustOverrides` for the same tool
+- invalid `threshold` values outside `0..4`
+
+This is intentional. Cerberus prefers an explicit startup failure over silently running with reduced coverage.
 
 ### Error responses
 
