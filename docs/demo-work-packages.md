@@ -111,18 +111,19 @@ widgets.
 
 ### Outcome
 
-The demo remains credible even if the hosted surface is temporarily unstable.
+The demo remains credible across hosted, dashboard, and fallback surfaces.
 
 ### Tasks
 
-1. Fix the hosted demo surface and deployment path.
-2. Keep a recorded fallback that matches the live canonical scenario.
-3. Remove or update any repo/site references that point to stale or broken demo surfaces.
-4. Make the live and recorded demo reference the same product behavior.
+1. Keep the hosted demo surface current and analyst-safe.
+2. Keep the Grafana dashboard linked as the supporting evidence view, not a separate story.
+3. Keep a recorded fallback that matches the live canonical scenario.
+4. Remove or update any repo/site references that point to stale or broken demo surfaces.
+5. Make the hosted, local, and recorded demo reference the same product behavior.
 
 ### Exit Criteria
 
-- no public link points to a broken or stale Cerberus demo
+- hosted demo and dashboard links resolve to the intended analyst flow
 - there is always a reliable fallback for live sessions
 - demo references are consistent across README, docs, and site copy
 

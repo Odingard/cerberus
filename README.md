@@ -94,11 +94,13 @@ npm run demo:capture
 
 **Interactive playground**
 
-The hosted playground is being refreshed so the public demo matches the current hardened branch. Until that refresh lands, use the local Core proof path first:
+The hosted playground is live and should be the first analyst/customer proof path. Keep the local Core proof path and recorded fallback aligned to the same control-vs-protected story:
 
-1. `npm run demo:capture`
-2. `npm run demo:playground`
-3. `OPENAI_API_KEY=... npm run demo:live`
+1. Hosted playground: `https://demo.cerberus.sixsenseenterprise.com`
+2. Live dashboard: `https://grafana.cerberus.sixsenseenterprise.com/d/cerberus-main/cerberus-e28094-ai-security-monitor?orgId=1&refresh=10s`
+3. Local fallback: `npm run demo:capture`
+4. Local playground: `npm run demo:playground`
+5. Live network demo: `OPENAI_API_KEY=... npm run demo:live`
 
 **Live network demo** — real HTTP injection + capture servers, real GPT-4o-mini, real HTTP POST blocked:
 
