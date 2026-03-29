@@ -307,7 +307,7 @@ Fresh current-branch stamped reruns now exist for two providers on commit `98b87
 
 These March 28-29 reruns improve the current-branch evidence story materially, but they should still be read as a newer provider slice rather than a full replacement for the historical three-provider benchmark set.
 
-### Attack Success Without Protection
+### Historical Attack Success Without Protection
 
 **Full injection compliance** — agent follows the injected instruction and redirects the outbound call to the attacker's address:
 
@@ -319,7 +319,7 @@ These March 28-29 reruns improve the current-branch evidence story materially, b
 
 Control group: **0/30 exfiltrations** across all providers — baseline confirmed clean.
 
-### Detection With Cerberus Active
+### Historical Detection With Cerberus Active
 
 Historical March 13 evidence set: N=525 runs, observe-only mode (`alertMode: log`), same agent behavior — Cerberus wraps without blocking.
 

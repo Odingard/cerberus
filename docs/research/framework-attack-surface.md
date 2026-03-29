@@ -217,12 +217,12 @@ Understanding *which tool role* is the entry point is critical for deployment de
 
 ## Unique Research Contribution
 
-This is, to our knowledge, the **first published systematic mapping of prompt injection attack vectors across multiple production AI agent frameworks** using empirical test data (N=525 controlled runs across 3 LLM providers, 55 injection payloads, 6 attack categories).
+This is, to our knowledge, the **first published systematic mapping of prompt injection attack vectors across multiple production AI agent frameworks** using historical empirical test data (March 2026 `N=525` controlled runs across 3 LLM providers, 55 injection payloads, 6 attack categories).
 
 Prior work (OWASP LLM Top 10, NeMo Guardrails, PromptArmor) addresses prompt injection generically. This work is framework-specific, empirically validated, and tied to a live detection system with <1ms overhead.
 
 ---
 
 *Full empirical results and statistical analysis: `harness/validation-traces/` and `docs/research/validation-report-*.md`*
-*Core proof path: local demo + recorded fallback aligned to the current hardened branch*
+*Hosted demo + dashboard are the primary analyst path; local demo + recorded fallback remain the aligned backup proof path*
 *npm: `@cerberus-ai/core` — MIT licensed*

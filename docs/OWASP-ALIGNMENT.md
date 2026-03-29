@@ -30,7 +30,7 @@ Cerberus provides **PRIMARY** coverage for 5 of the OWASP Top 10 for Agentic App
 - Lethal Trifecta correlation fires when privileged access + injection + exfiltration co-occur in the same session
 - Cross-turn tracking via session risk state persists signals across the full conversation, catching multi-turn hijack sequences
 
-**Acknowledged Gap:** L3 detection rate at 28.5% overall (N=525 validation). L3 fires only when the agent executes an unauthorized outbound call — its rate tracks attack success, not miss rate.
+**Acknowledged Gap:** Historical L3 detection rate at 28.5% overall (March 13 `N=525` validation). L3 fires only when the agent executes an unauthorized outbound call — its rate tracks attack success, not miss rate.
 
 **Primary Cerberus Primitive:** Lethal Trifecta correlation + EGI execution path deviation
 
@@ -96,11 +96,11 @@ Cerberus provides **PRIMARY** coverage for 5 of the OWASP Top 10 for Agentic App
 - L1 detection on sensitive data stores flags when privileged data enters context from potentially poisoned sources
 - Lethal Trifecta correlation is the canonical detection scenario — poisoned content triggers the full injection-to-exfiltration chain
 - L4 memory contamination graph detects injected instructions that persist across conversation turns (cross-session attack)
-- N=525 validated: 100% L1+L2 detection rate across all providers and all 55 payloads
+- Historical `N=525` validation: 100% L1+L2 detection rate across all providers and all 55 payloads
 
 **Acknowledged Gap:** No pre-ingestion scanning of RAG content or memory stores. Cerberus detects poisoned content at runtime when it influences tool calls, not at write time.
 
-**Primary Cerberus Primitive:** Lethal Trifecta (L1+L2+L3+L4) + N=525 empirical validation
+**Primary Cerberus Primitive:** Lethal Trifecta (L1+L2+L3+L4) + historical `N=525` empirical validation
 
 ---
 
@@ -195,7 +195,7 @@ No major enterprise AI security vendor has published an OWASP Agentic Applicatio
 |------------|----------|----------------------|------------------|---------------------|-------------|
 | Published OWASP Agentic mapping | Yes | No | No | No | No |
 | Open source core | Yes (MIT) | No | No | No | No |
-| N=525 empirical validation | Yes | No | No | No | No |
+| Historical N=525 empirical validation | Yes | No | No | No | No |
 | Lethal Trifecta detection | Yes | No | No | No | No |
 | EGI (Execution Graph Integrity) | Yes | No | No | No | No |
 | Tool-call-level detection | Yes | Partial (API-level) | No (network-level) | No (prompt-level) | No (model-level) |
