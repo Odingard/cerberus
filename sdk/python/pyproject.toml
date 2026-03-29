@@ -4,17 +4,16 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cerberus-ai"
-version = "1.1.0"
+version = "1.1.1"
 description = "Runtime security for AI agent execution. Detects and correlates Lethal Trifecta conditions across privileged data access, untrusted content, and outbound behavior."
 readme = "README.md"
-license = { text = "MIT" }
+license = "MIT"
 authors = [{ name = "Six Sense Enterprise Services", email = "security@sixsenseenterprise.com" }]
 keywords = ["ai", "security", "runtime", "prompt-injection", "llm", "agentic", "cerberus"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Intended Audience :: Information Technology",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",

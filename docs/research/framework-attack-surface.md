@@ -224,5 +224,5 @@ Prior work (OWASP LLM Top 10, NeMo Guardrails, PromptArmor) addresses prompt inj
 ---
 
 *Full empirical results and statistical analysis: `harness/validation-traces/` and `docs/research/validation-report-*.md`*
-*Live detection demo: https://demo.cerberus.sixsenseenterprise.com*
+*Core proof path: local demo + recorded fallback aligned to the current hardened branch*
 *npm: `@cerberus-ai/core` — MIT licensed*

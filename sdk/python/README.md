@@ -4,18 +4,16 @@ Runtime security for AI agent execution — Python SDK.
 
 Detects the **Lethal Trifecta**: the simultaneous convergence of privileged data access, untrusted content injection, and an outbound exfiltration path within a single AI execution turn.
 
-This SDK is part of the Cerberus Core surface. Historical validation artifacts and research writeups exist in the repo, but benchmark claims should always be tied to a specific evidence set and run date.
+This SDK is part of the Cerberus Core surface. Historical validation artifacts and research writeups exist in the repo, and fresh current-branch reruns are being added on the hardened branch. Benchmark claims should always be tied to a specific evidence set and run date.
 
 ---
 
-## What's New in 1.1.0
+## What's New in 1.1.1
 
-- **Tool Chain Detector** — multi-hop exfiltration detection across read → transform → send sequences
-- **Outbound Encoding Detector** — catches base64, hex, and URL-encoded data in outbound tool arguments
-- **Split Exfiltration Detector** — detects data chunked across multiple outbound calls with cumulative volume tracking
-- **Context window management** — priority scoring when token budget exceeds `context_window_limit`
-- **34 security hardening tests** — adversarial input fuzzing, boundary conditions, evasion resistance
-- **138 total tests** — 38 adversarial + 56 unit + 34 hardening + 10 integration
+- **Release-surface alignment** — package docs now match the current Cerberus product boundary and evidence framing more closely
+- **Current evidence guidance** — benchmark language now explicitly distinguishes historical March 2026 evidence from fresh current-branch reruns
+- **Core-first packaging language** — the Python SDK is described as part of the Cerberus Core layer, separate from Gateway, Intelligence, and Enterprise / Control Plane
+- **No API changes** — this patch release is for packaging and release-surface consistency
 
 ---
 
