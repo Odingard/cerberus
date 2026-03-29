@@ -51,6 +51,13 @@ Use these evidence buckets carefully and label them explicitly:
    - startup validation and fail-closed behavior
    - streaming-safe inspection buffering
 
+4. Fresh March 28-29, 2026 current-branch reruns
+   - OpenAI attack-behavior rerun: `49/55` (`89.1%`)
+   - OpenAI observe-only detection rerun: `20.0%`, `L1=100%`, `L2=100%`, `L3=19.6%`, `0.0%` FP
+   - Google attack-behavior rerun: `47/55` (`85.5%`)
+   - Google observe-only detection rerun: `72.7%`, `L1=100%`, `L2=100%`, `L3=71.4%`, `0.0%` FP
+   - treat these as the freshest branch-specific evidence slice for analyst conversations
+
 Do not blend these evidence sets casually.
 
 ## Safe Talking Points
@@ -61,6 +68,10 @@ Do not blend these evidence sets casually.
   controls, session correlation, and memory contamination.
 - The right contrast is not "better prompt filtering." It is runtime detection
   and enforcement at the point of action.
+- The cleanest current proof sequence is: hosted demo control run, hosted demo
+  protected attack, then Grafana evidence view.
+- Current release baseline verification is `906` TypeScript tests plus `138`
+  Python SDK tests.
 
 ## Avoid These Claims Unless Revalidated
 
@@ -72,7 +83,10 @@ Do not blend these evidence sets casually.
 
 ## Pre-Meeting Checklist
 
-- rerun validation on the current hardened branch
-- normalize paper, repo, and website benchmark copy
-- restore or replace the live demo URL
+- keep the hosted demo, local proof path, and recorded fallback on the same
+  control-vs-protected storyline
+- use the March 28-29 current-branch reruns as the "fresh evidence" callout,
+  and label the N=525 dataset as historical
 - keep one benchmark table and one evidence summary for the briefing
+- confirm the Grafana dashboard URL and the hosted demo URL are the analyst
+  entrypoints used in meeting materials

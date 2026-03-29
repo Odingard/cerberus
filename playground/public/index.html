@@ -245,6 +245,51 @@
       justify-content: flex-end;
     }
 
+    .evidence-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      background:
+        linear-gradient(180deg, rgba(17,17,24,0.98), rgba(12,12,18,0.98));
+    }
+
+    .evidence-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      min-width: 0;
+    }
+
+    .evidence-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .evidence-value {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.2;
+      margin-bottom: 4px;
+    }
+
+    .evidence-value.safe { color: var(--green); }
+    .evidence-value.warn { color: var(--yellow); }
+    .evidence-value.accent { color: #c4b5fd; }
+
+    .evidence-detail {
+      font-size: 11px;
+      color: var(--text-dim);
+      line-height: 1.4;
+    }
+
     .steps-container {
       flex: 1;
       overflow-y: auto;
@@ -1038,6 +1083,16 @@
     .ef-val { font-weight: 700; font-size: 13px; }
     .ef-val.red { color: var(--red); }
     .ef-val.green { color: var(--green); }
+
+    @media (max-width: 1200px) {
+      .evidence-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 860px) {
+      main { grid-template-columns: 1fr; }
+      .attack-panel { border-right: none; border-bottom: 1px solid var(--border); }
+      .evidence-strip { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -1051,9 +1106,32 @@
   </a>
   <div class="nav-actions">
     <a href="https://github.com/Odingard/cerberus" target="_blank" class="btn-ghost">GitHub ↗</a>
-    <a href="http://localhost:3030" target="_blank" class="btn-ghost" id="nav-dashboard-link">Live Dashboard ↗</a>
+    <a href="https://grafana.cerberus.sixsenseenterprise.com/d/cerberus-main/cerberus-e28094-ai-security-monitor?orgId=1&refresh=10s" target="_blank" class="btn-ghost" id="nav-dashboard-link">Live Dashboard ↗</a>
   </div>
 </nav>
+
+<section class="evidence-strip">
+  <div class="evidence-card">
+    <div class="evidence-label">Fresh Branch Reruns</div>
+    <div class="evidence-value safe">OpenAI 89.1% · Google 85.5%</div>
+    <div class="evidence-detail">Current hardened-branch attack-behavior reruns across the canonical 55-payload slice.</div>
+  </div>
+  <div class="evidence-card">
+    <div class="evidence-label">Observe-Only Detection</div>
+    <div class="evidence-value warn">OpenAI 20.0% · Google 72.7%</div>
+    <div class="evidence-detail">Fresh current-branch detection rates with L1/L2 still deterministic at 100% and 0.0% false positives in these reruns.</div>
+  </div>
+  <div class="evidence-card">
+    <div class="evidence-label">Verification Baseline</div>
+    <div class="evidence-value accent">906 TS tests · 138 Python tests</div>
+    <div class="evidence-detail">Release baseline verified locally across Core, Gateway paths, and the Python SDK package surface.</div>
+  </div>
+  <div class="evidence-card">
+    <div class="evidence-label">Performance + Evidence</div>
+    <div class="evidence-value safe">p50 52μs · Hist. N=525</div>
+    <div class="evidence-detail">Performance figure remains the historical benchmark; fresh reruns are shown separately so this demo does not blend evidence sets.</div>
+  </div>
+</section>
 
 <!-- Main -->
 <main>
@@ -1133,7 +1211,7 @@
     <div class="incident-panel">
       <div class="incident-header">
         <span class="incident-title">Incident Intelligence</span>
-        <a href="#" class="grafana-link-sm" id="grafana-link-sm" target="_blank">Metrics Dashboard ↗</a>
+        <a href="https://grafana.cerberus.sixsenseenterprise.com/d/cerberus-main/cerberus-e28094-ai-security-monitor?orgId=1&refresh=10s" class="grafana-link-sm" id="grafana-link-sm" target="_blank">Metrics Dashboard ↗</a>
       </div>
       <div class="incident-body">
         <div class="incident-context" id="incident-context">
@@ -1238,8 +1316,8 @@
         <div class="ekpi-label">Potential losses prevented</div>
       </div>
       <div class="ekpi">
-        <div class="ekpi-val safe">0.0%</div>
-        <div class="ekpi-label">False positive rate</div>
+          <div class="ekpi-val safe">0.0%</div>
+          <div class="ekpi-label">Fresh rerun false positives</div>
       </div>
     </div>
 
@@ -1304,8 +1382,8 @@
         </div>
         <div class="enterprise-footer">
           <div class="ef-stat"><span class="ef-val red" id="ef-blocked">0</span> threats blocked</div>
-          <div class="ef-stat"><span class="ef-val green" id="ef-fp">0.0%</span> false positive rate</div>
-          <div class="ef-stat">p50 overhead <span class="ef-val green">52μs</span></div>
+          <div class="ef-stat"><span class="ef-val green" id="ef-fp">0.0%</span> fresh rerun FP rate</div>
+          <div class="ef-stat">historical p50 overhead <span class="ef-val green">52μs</span></div>
         </div>
       </div>
     </div>
@@ -2004,7 +2082,7 @@
 <script>
   // Apply GRAFANA_URL injected by server at serve-time.
   (function () {
-    const base = (window.__GRAFANA_URL__ || 'http://localhost:3030').replace(/\/$/, '');
+    const base = (window.__GRAFANA_URL__ || 'https://grafana.cerberus.sixsenseenterprise.com').replace(/\/$/, '');
     const navLink = document.getElementById('nav-dashboard-link');
     if (navLink) navLink.href = base + '/d/cerberus-main';
     const grafanaLinkSm = document.getElementById('grafana-link-sm');
