@@ -1,6 +1,6 @@
 # Cerberus Claims Audit
 
-Date: 2026-03-27
+Date: 2026-03-28
 
 Current branch reference for this audit:
 
@@ -16,6 +16,7 @@ Primary sources reviewed in this pass:
 - `docs/research-results.md`
 - `docs/social-media-posts.md`
 - `Documents/Lethal Trifecta Research Paper.pdf`
+- `docs/evidence-inventory.md`
 
 ## Validation Baseline Status
 
@@ -55,6 +56,10 @@ Current branch validation should be interpreted in three buckets:
    - these runs are tied to commit `98b871b836af400913571bef80d2660fa8e32aae`
    - they improve the current-branch evidence story materially for OpenAI and
      Google, but they are still not the full refreshed benchmark set
+
+Canonical index for these buckets:
+
+- [evidence-inventory.md](/Users/dre/prod/cerberus/docs/evidence-inventory.md)
 
 ## Current State
 

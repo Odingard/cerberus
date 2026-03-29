@@ -1,6 +1,6 @@
 # Cerberus Evidence Inventory
 
-Date: 2026-03-27
+Date: 2026-03-28
 
 Current branch reference for this inventory:
 
@@ -8,6 +8,53 @@ Current branch reference for this inventory:
 
 This document inventories the evidence artifacts currently checked into the
 repo and maps them to the kinds of claims they can support.
+
+## Analyst-Safe Reading Order
+
+If someone needs the shortest path to the current Cerberus evidence story,
+read the artifacts in this order:
+
+1. Historical benchmark baseline
+   - [validation-report-2026-03-13T03-48-27.993Z.md](/Users/dre/prod/cerberus/harness/validation-traces/validation-report-2026-03-13T03-48-27.993Z.md)
+2. Fresh current-branch OpenAI rerun pair
+   - [validation-report-2026-03-28T13-35-35.359Z.md](/Users/dre/prod/cerberus/harness/validation-traces/validation-report-2026-03-28T13-35-35.359Z.md)
+   - [validation-report-2026-03-28T13-52-25.775Z.md](/Users/dre/prod/cerberus/harness/validation-traces/validation-report-2026-03-28T13-52-25.775Z.md)
+3. Fresh current-branch Google rerun pair
+   - [validation-report-2026-03-29T02-13-17.893Z.md](/Users/dre/prod/cerberus/harness/validation-traces/validation-report-2026-03-29T02-13-17.893Z.md)
+   - [validation-report-2026-03-29T02-37-47.733Z.md](/Users/dre/prod/cerberus/harness/validation-traces/validation-report-2026-03-29T02-37-47.733Z.md)
+4. Claim guardrails
+   - [claims-audit.md](/Users/dre/prod/cerberus/docs/claims-audit.md)
+   - [research-results.md](/Users/dre/prod/cerberus/docs/research-results.md)
+
+## Canonical Evidence Buckets
+
+Use these labels consistently in Cerberus briefings, docs, and analyst
+conversations:
+
+| Bucket | What It Is | Safe Use |
+|--------|------------|----------|
+| Historical paper evidence | March 2026 paper-specific claims and framing | Cite as paper-only research evidence |
+| Historical repo benchmark | March 13, 2026 `N=525` checked-in validation report | Cite as historical multi-provider benchmark |
+| Diagnostic failure evidence | March 27, 2026 unhealthy-provider rerun | Cite only as harness/provider failure evidence |
+| Provider sanity reruns | March 27 targeted OpenAI/Google/Anthropic checks | Cite as post-fix provider-health confirmation only |
+| Fresh current-branch reruns | March 28-29 OpenAI and Google stamped rerun pairs on commit `98b871b836af400913571bef80d2660fa8e32aae` | Cite as freshest branch-specific evidence slice |
+
+## Current Branch Evidence Slice
+
+The current hardened-branch evidence slice is not a single unified benchmark.
+It is a stamped provider pair set consisting of:
+
+| Provider | Attack Artifact | Detection Artifact | Headline Use |
+|----------|-----------------|--------------------|--------------|
+| OpenAI | [validation-report-2026-03-28T13-35-35.359Z.md](/Users/dre/prod/cerberus/harness/validation-traces/validation-report-2026-03-28T13-35-35.359Z.md) | [validation-report-2026-03-28T13-52-25.775Z.md](/Users/dre/prod/cerberus/harness/validation-traces/validation-report-2026-03-28T13-52-25.775Z.md) | Fresh current-branch OpenAI attack and observe-only detection behavior |
+| Google | [validation-report-2026-03-29T02-13-17.893Z.md](/Users/dre/prod/cerberus/harness/validation-traces/validation-report-2026-03-29T02-13-17.893Z.md) | [validation-report-2026-03-29T02-37-47.733Z.md](/Users/dre/prod/cerberus/harness/validation-traces/validation-report-2026-03-29T02-37-47.733Z.md) | Fresh current-branch Google attack and observe-only detection behavior |
+
+The right way to describe this slice is:
+
+- it is fresher than the historical `N=525` report
+- it is tied to one hardened commit
+- it currently covers OpenAI and Google only
+- it should not be collapsed into one synthetic cross-provider benchmark
 
 ## Artifact Overview
 
@@ -214,6 +261,8 @@ Safe claims today:
 - Cerberus has checked-in validation reports with provider-specific outcomes.
 - Cerberus has checked-in observe-only detection results with `0%` false
   positives in the cited clean controls.
+- Cerberus now has a current-branch stamped rerun pair for OpenAI and Google
+  that can be cited as the freshest branch-specific evidence slice.
 
 Unsafe claims today:
 
@@ -238,3 +287,20 @@ Unsafe claims today:
 
 3. Normalize all public copy so each benchmark number references exactly one
    evidence set.
+
+## Recommended Forrester Evidence Packet
+
+If Cerberus is being shown before analysts or customers, this is the smallest
+evidence packet that should travel with the demo:
+
+1. Historical benchmark anchor
+   - [validation-report-2026-03-13T03-48-27.993Z.md](/Users/dre/prod/cerberus/harness/validation-traces/validation-report-2026-03-13T03-48-27.993Z.md)
+2. Fresh OpenAI pair
+   - [validation-report-2026-03-28T13-35-35.359Z.md](/Users/dre/prod/cerberus/harness/validation-traces/validation-report-2026-03-28T13-35-35.359Z.md)
+   - [validation-report-2026-03-28T13-52-25.775Z.md](/Users/dre/prod/cerberus/harness/validation-traces/validation-report-2026-03-28T13-52-25.775Z.md)
+3. Fresh Google pair
+   - [validation-report-2026-03-29T02-13-17.893Z.md](/Users/dre/prod/cerberus/harness/validation-traces/validation-report-2026-03-29T02-13-17.893Z.md)
+   - [validation-report-2026-03-29T02-37-47.733Z.md](/Users/dre/prod/cerberus/harness/validation-traces/validation-report-2026-03-29T02-37-47.733Z.md)
+4. Claim framing
+   - [claims-audit.md](/Users/dre/prod/cerberus/docs/claims-audit.md)
+   - [forrester-brief.md](/Users/dre/prod/cerberus/docs/forrester-brief.md)
