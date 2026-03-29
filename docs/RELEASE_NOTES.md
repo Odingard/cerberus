@@ -1,5 +1,31 @@
 # Cerberus — Release Notes
 
+## v1.1.1-python — 2026-03-28
+
+> Python SDK patch release. No API changes. This release aligns the Python package surface with the hardened Cerberus Core product boundary, current evidence framing, and the active Core proof path.
+
+### Highlights
+
+- **PyPI package bumped to `1.1.1`** for the Python SDK in [`sdk/python`](/Users/dre/prod/cerberus/sdk/python)
+- **No API changes** — this is a packaging and release-surface consistency patch
+- **Evidence framing tightened** — Python SDK docs now distinguish historical March 2026 benchmark material from fresh current-branch reruns
+- **Core-first product language** — the SDK is explicitly framed as part of Cerberus Core, separate from Gateway, Intelligence, and Enterprise / Control Plane
+- **Dead demo-host references removed** from release-adjacent public docs in favor of the in-repo Core proof path
+
+### Verification
+
+- Python SDK local tests: `138 passed`
+- Python source distribution built: `cerberus_ai-1.1.1.tar.gz`
+- Python wheel built: `cerberus_ai-1.1.1-py3-none-any.whl`
+- Publish path: GitHub Actions trusted publishing via tag push matching `v*-python`
+
+### Notes
+
+- This patch should be published with the tag `v1.1.1-python`
+- Fresh current-branch OpenAI and Google reruns exist in `harness/validation-traces/` and support the updated evidence language elsewhere in the repo
+
+---
+
 ## v1.0.0 — 2026-03-10
 
 > Production release. All detection layers complete, 773 tests, 14 interactive attack scenarios, scientific validation (N=285 real API calls). Backwards-compatible with v0.3.x.
