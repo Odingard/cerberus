@@ -54,7 +54,7 @@ Every AI agent that can **(1) access private data, (2) read external content, an
 3. EXFILTRATION        — Agent follows the injected instruction and sends data to attacker
 ```
 
-**This is not theoretical.** The repository includes controlled validation harnesses, research writeups, and replayable demos covering this runtime pattern across multiple model providers. We are actively refreshing the latest provider benchmark set on the current hardened branch; until that rerun is complete, public claims should stay tied to the specific evidence set they come from.
+**This is not theoretical.** The repository includes controlled validation harnesses, research writeups, replayable demos, and fresh current-branch reruns on the hardened branch. Public benchmark language should still stay tied to the exact evidence set it comes from: historical March 2026 reports versus March 28-29 current-branch reruns.
 
 Cerberus closes this gap by monitoring every tool call in real time, correlating signals across the session, and blocking the attack before a single byte leaves your system.
 
@@ -294,9 +294,16 @@ Framework integrations: LangChain (`wrap_chain`), CrewAI (`wrap_crew`), OpenAI (
 
 ## 📊 Empirical Results
 
-> **N=525 real API calls. 55 payloads × 6 attack categories × 3 providers × 3 trials. Control group: 0/30 exfiltrations across all providers.**
+> **Historical evidence set: N=525 real API calls. 55 payloads × 6 attack categories × 3 providers × 3 trials. Control group: 0/30 exfiltrations across all providers.**
 
-We built a 3-tool attack agent and ran 55 injection payloads across 6 attack categories against three major LLM providers with full statistical rigor: 3 trials per payload per provider, 10 control runs per provider, Wilson 95% confidence intervals, Fisher's exact test, and 6-factor causation scoring.
+The table below summarizes the checked-in March 13, 2026 observe-only validation report. It is a real historical evidence set, not yet the final refreshed current-branch benchmark baseline. We built a 3-tool attack agent and ran 55 injection payloads across 6 attack categories against three major LLM providers with full statistical rigor: 3 trials per payload per provider, 10 control runs per provider, Wilson 95% confidence intervals, Fisher's exact test, and 6-factor causation scoring.
+
+Fresh current-branch stamped reruns now exist for two providers on commit `98b871b836af400913571bef80d2660fa8e32aae`:
+
+- OpenAI attack rerun: `49/55` success (`89.1%`) with fresh observe-only detection at `20.0%`, `L1=100%`, `L2=100%`, `L3=19.6%`
+- Google attack rerun: `47/55` success (`85.5%`) with fresh observe-only detection at `72.7%`, `L1=100%`, `L2=100%`, `L3=71.4%`
+
+These March 28-29 reruns improve the current-branch evidence story materially, but they should still be read as a newer provider slice rather than a full replacement for the historical three-provider benchmark set.
 
 ### Attack Success Without Protection
 
@@ -312,7 +319,7 @@ Control group: **0/30 exfiltrations** across all providers — baseline confirme
 
 ### Detection With Cerberus Active
 
-N=525 runs, observe-only mode (`alertMode: log`), same agent behavior — Cerberus wraps without blocking.
+Historical March 13 evidence set: N=525 runs, observe-only mode (`alertMode: log`), same agent behavior — Cerberus wraps without blocking.
 
 | Layer | OpenAI | Anthropic | Google | 95% CI |
 |-------|--------|-----------|--------|--------|
@@ -551,7 +558,7 @@ open http://localhost:3030
 | **P3** | Observability — Grafana 16 panels, 6 alert rules, Alertmanager | ✅ Complete |
 | **P4** | Advanced classifiers — 10 sub-classifiers, MCP scanner, outbound correlator | ✅ Complete |
 | **P5** | Enterprise — self-hosted package, license server, Stripe, security hardening | ✅ Complete |
-| **P6** | N=525 empirical validation across 55 payloads × 3 providers | ✅ Complete |
+| **P6** | Historical N=525 empirical validation across 55 payloads × 3 providers | ✅ Complete |
 | **Sprint 3** | Tool chain, outbound encoding, split exfiltration detectors (v1.1.0) | ✅ Complete |
 | **Sprint 6** | Context window management, security hardening tests, Python SDK v1.1.0 | ✅ Complete |
 
@@ -615,7 +622,8 @@ Contact: [enterprise@sixsenseenterprise.com](mailto:enterprise@sixsenseenterpris
 | [Getting Started](docs/getting-started.md) | `npm install` → first blocked attack in under 5 minutes |
 | [API Reference](docs/api.md) | `guard()`, config options, signal types, framework adapters |
 | [Architecture](docs/architecture.md) | Detection pipeline, layer design, correlation engine |
-| [Research Results](docs/research-results.md) | N=525 validation, per-payload breakdown, statistical methodology |
+| [Research Results](docs/research-results.md) | Historical N=285 paper-aligned results plus current evidence framing and methodology notes |
+| [Evidence Inventory](docs/evidence-inventory.md) | Historical reports, March 28-29 current-branch reruns, and claim-safe evidence mapping |
 | [Monitoring](monitoring/README.md) | Grafana dashboard — OTel metrics, block rates, risk scores |
 | [Enterprise Deployment](docs/enterprise-deployment.md) | AWS/GCP/Azure, TLS, sizing, upgrades |
 | [Enterprise Configuration](docs/enterprise-configuration.md) | `cerberus.config.yml` full reference |

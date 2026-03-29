@@ -74,6 +74,11 @@ Primary outputs:
 - customer-environment adoption map
 - packaging alignment narrative
 
+Reference docs:
+
+- [product-tiers.md](/Users/dre/prod/cerberus/docs/product-tiers.md)
+- [customer-deployment-model.md](/Users/dre/prod/cerberus/docs/customer-deployment-model.md)
+
 ## Phase 3: Demo Upgrade Design To Build Plan
 
 Target Window:

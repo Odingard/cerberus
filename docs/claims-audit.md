@@ -2,6 +2,10 @@
 
 Date: 2026-03-27
 
+Current branch reference for this audit:
+
+- commit `98b871b836af400913571bef80d2660fa8e32aae`
+
 This document audits Cerberus public claims against the current repository,
 tests, and checked-in evidence artifacts. The goal is simple: only claim what
 the codebase and reproducible artifacts support today.
@@ -32,8 +36,25 @@ Current branch validation should be interpreted in three buckets:
      `harness/validation-traces/validation-report-2026-03-27T06-51-04.859Z.md`
    - Google minimal rerun at
      `harness/validation-traces/validation-report-2026-03-27T07-20-17.345Z.md`
+   - Anthropic targeted reruns at
+     `harness/validation-traces/validation-report-2026-03-27T08-02-40.373Z.md` and
+     `harness/validation-traces/validation-report-2026-03-27T08-35-20.137Z.md`
    - these runs confirm the provider paths are healthy enough for targeted
-     validation again after fixing quota/key issues and the Gemini preflight bug
+     validation again after fixing quota/key issues and the Gemini preflight bug,
+     but they still do not replace a fresh full current-branch benchmark set
+
+4. Fresh current-branch stamped reruns
+   - OpenAI attack-behavior rerun at
+     `harness/validation-traces/validation-report-2026-03-28T13-35-35.359Z.md`
+   - OpenAI observe-only detection rerun at
+     `harness/validation-traces/validation-report-2026-03-28T13-52-25.775Z.md`
+   - Google attack-behavior rerun at
+     `harness/validation-traces/validation-report-2026-03-29T02-13-17.893Z.md`
+   - Google observe-only detection rerun at
+     `harness/validation-traces/validation-report-2026-03-29T02-37-47.733Z.md`
+   - these runs are tied to commit `98b871b836af400913571bef80d2660fa8e32aae`
+   - they improve the current-branch evidence story materially for OpenAI and
+     Google, but they are still not the full refreshed benchmark set
 
 ## Current State
 
@@ -202,7 +223,9 @@ These should be corrected before strong public amplification:
 
 2. `docs/research-results.md` contains internally inconsistent Anthropic claims:
    one section says Anthropic still showed low redirect success, while a later
-   section says Claude refused all payloads.
+   section says Claude refused all payloads. The latest March 27 targeted
+   Anthropic rerun shows a mixed result profile instead: `1/55` success,
+   `1/55` refusal, and `53/55` partial outcomes.
 
 3. `docs/social-media-posts.md` cites `N=525` controlled runs with specific
    provider outcomes that are not aligned to the paper's `N=285` framing.
@@ -220,8 +243,8 @@ not yet self-evident as the source of truth for those exact published numbers.
    as benchmark evidence.
    - OpenAI and Google provider state were broken at the time of the run
    - the harness did not yet fail fast on bad provider conditions
-   - subsequent minimal reruns on March 27 validated healthy OpenAI and Google
-     provider paths after fixes
+   - subsequent targeted reruns on March 27 validated healthy OpenAI, Google,
+     and Anthropic provider paths after fixes
 
 ## Research-Paper Deep Dive
 

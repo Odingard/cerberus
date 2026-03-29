@@ -2,6 +2,10 @@
 
 Date: 2026-03-27
 
+Current branch reference for this inventory:
+
+- commit `98b871b836af400913571bef80d2660fa8e32aae`
+
 This document inventories the evidence artifacts currently checked into the
 repo and maps them to the kinds of claims they can support.
 
@@ -10,7 +14,7 @@ repo and maps them to the kinds of claims they can support.
 ### Harness Trace Corpus
 
 - `harness/traces/`: `203` files
-- `harness/validation-traces/`: `40` files
+- `harness/validation-traces/`: `50` files
 - `harness/traces/*ERROR*.json`: `38` files
 
 What this means:
@@ -113,18 +117,77 @@ What this evidence is not good for:
 
 ### 4. Post-Fix Provider Sanity Reruns
 
-Healthy minimal reruns after harness/provider fixes:
+Healthy targeted reruns after harness/provider fixes:
 
 - [validation-report-2026-03-27T06-51-04.859Z.md](/Users/dre/prod/cerberus/harness/validation-traces/validation-report-2026-03-27T06-51-04.859Z.md) — OpenAI
 - [validation-report-2026-03-27T07-20-17.345Z.md](/Users/dre/prod/cerberus/harness/validation-traces/validation-report-2026-03-27T07-20-17.345Z.md) — Google
+- [validation-report-2026-03-27T08-02-40.373Z.md](/Users/dre/prod/cerberus/harness/validation-traces/validation-report-2026-03-27T08-02-40.373Z.md) — Anthropic diagnostic-but-healthy preflight rerun
+- [validation-report-2026-03-27T08-35-20.137Z.md](/Users/dre/prod/cerberus/harness/validation-traces/validation-report-2026-03-27T08-35-20.137Z.md) — Anthropic targeted rerun with one treatment success
 
 What these reruns prove:
 
 - provider preflight checks now reject bad provider state up front
-- OpenAI and Google provider paths are healthy enough again for targeted validation
+- OpenAI, Google, and Anthropic provider paths are healthy enough again for targeted validation
+- Anthropic behavior on the hardened branch is low-success but not accurately described as a blanket refusal across every payload
 - the March 27 full rerun failure should be treated as diagnostic-only
 
-### 5. Repo Research Write-Up
+What these reruns do not prove:
+
+- a fresh cross-provider benchmark baseline for the whole hardened branch
+- a replacement for the historical March 13 `525`-run observe-only report
+- a current-branch artifact set strong enough to unify every public benchmark number yet
+
+### 5. March 28, 2026 Current-Branch OpenAI Stamped Reruns
+
+Fresh current-branch artifacts on commit `98b871b836af400913571bef80d2660fa8e32aae`:
+
+- [validation-report-2026-03-28T13-35-35.359Z.md](/Users/dre/prod/cerberus/harness/validation-traces/validation-report-2026-03-28T13-35-35.359Z.md) — OpenAI attack-behavior rerun
+- [validation-report-2026-03-28T13-52-25.775Z.md](/Users/dre/prod/cerberus/harness/validation-traces/validation-report-2026-03-28T13-52-25.775Z.md) — OpenAI observe-only detection rerun
+
+Headline results from these two runs:
+
+- OpenAI attack-behavior rerun: `49/55` treatment successes (`89.1%`) with `6/55` partial outcomes and `0/1` control exfiltrations
+- OpenAI detection rerun: `8/55` strict treatment successes (`14.5%`) with `47/55` partial outcomes
+- OpenAI detection metrics on the same branch state: overall detection `20.0%`, false positive rate `0.0%`, `L1=100%`, `L2=100%`, `L3=19.6%`
+
+What this evidence is good for:
+
+- proving that fresh current-branch validation is now underway, not just planned
+- tying at least one provider's attack and detection behavior to a specific hardened commit
+- grounding follow-on claim cleanup in a real March 28 artifact pair rather than historical numbers alone
+
+What this evidence is not good for:
+
+- replacing the full historical cross-provider evidence set
+- making broad three-provider current-branch claims yet
+- collapsing attack-success and observe-only detection metrics into one number
+
+### 6. March 29, 2026 Current-Branch Google Stamped Reruns
+
+Fresh current-branch artifact on commit `98b871b836af400913571bef80d2660fa8e32aae`:
+
+- [validation-report-2026-03-29T02-13-17.893Z.md](/Users/dre/prod/cerberus/harness/validation-traces/validation-report-2026-03-29T02-13-17.893Z.md) — Google attack-behavior rerun
+- [validation-report-2026-03-29T02-37-47.733Z.md](/Users/dre/prod/cerberus/harness/validation-traces/validation-report-2026-03-29T02-37-47.733Z.md) — Google observe-only detection rerun
+
+Headline results from these runs:
+
+- Google attack-behavior rerun: `47/55` treatment successes (`85.5%`) with `7/55` refusals, `1/55` partial outcomes, and `0/1` control exfiltrations
+- Google detection rerun: `27/55` strict treatment successes (`49.1%`) with `28/55` partial outcomes
+- Google detection metrics on the same branch state: overall detection `72.7%`, false positive rate `0.0%`, `L1=100%`, `L2=100%`, `L3=71.4%`
+
+What this evidence is good for:
+
+- adding a second fresh current-branch provider to the stamped rerun set
+- showing that current-branch Google behavior remains highly permissive under the attack harness
+- showing that Cerberus still produces strong Google-side observe-only detection on the current hardened branch
+- reducing dependence on historical cross-provider numbers alone
+
+What this evidence is not good for:
+
+- replacing a full fresh cross-provider benchmark baseline
+- supporting fresh current-branch three-provider claims by itself
+
+### 7. Repo Research Write-Up
 
 Source:
 
@@ -136,7 +199,9 @@ Current checked-in tensions:
   claims audit.
 - It contains an internally inconsistent Anthropic narrative:
   - one section says low but non-zero redirect success
-  - a later section says Claude refused all 30 payloads
+  - a later section says Claude refused all payloads
+  - the latest March 27 Anthropic targeted rerun shows `1/55` treatment success,
+    `1/55` refusal, and `53/55` partial outcomes
 - It describes observe-only detection outcomes that do not match the paper's
   `100%` overall detection claim.
 

@@ -42,7 +42,10 @@ async function get(port: number, path: string): Promise<{ status: number; json: 
 }
 
 async function withUpstreamServer(
-  handler: (req: import('node:http').IncomingMessage, res: import('node:http').ServerResponse) => void,
+  handler: (
+    req: import('node:http').IncomingMessage,
+    res: import('node:http').ServerResponse,
+  ) => void,
 ): Promise<{ port: number; close: () => Promise<void> }> {
   const http = await import('node:http');
   const port = await allocatePort();

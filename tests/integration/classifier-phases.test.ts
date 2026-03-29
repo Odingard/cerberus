@@ -535,7 +535,10 @@ describe('Phase 4: Stress — edge cases, combined attacks, encoding bypasses', 
     const config: CerberusConfig = {
       alertMode: 'interrupt',
       threshold: 3,
-      trustOverrides: [{ toolName: 'readPrivateData', trustLevel: 'trusted' }],
+      trustOverrides: [
+        { toolName: 'readPrivateData', trustLevel: 'trusted' },
+        { toolName: 'fetchExternalContent', trustLevel: 'untrusted' },
+      ],
     };
 
     const executors = makeExecutors();

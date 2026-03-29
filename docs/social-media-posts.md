@@ -36,7 +36,7 @@ Score 3/4 → interrupt. In the guarded demo path, the outbound action never exe
 We have historical controlled validation artifacts across OpenAI, Anthropic, and Google models, and we are refreshing the current-branch benchmark set now. Until that refresh is published, I’m keeping public claims tied to the live demo behavior and the reproducible runtime path shown here.
 
 **The core library is MIT and free**: `npm install @cerberus-ai/core`
-**Live attack demo**: https://demo.cerberus.sixsenseenterprise.com
+**Core proof path**: local demo + recorded fallback in the repo
 **Enterprise (self-hosted VPC)**: https://cerberus.sixsenseenterprise.com
 
 If you're building AI agents that touch internal data — this is the attack surface that matters.
@@ -113,7 +113,7 @@ MIT licensed: npm install @cerberus-ai/core
 
 **Tweet 6:**
 ```
-Live demo → https://demo.cerberus.sixsenseenterprise.com
+Core proof path → local demo + recorded fallback in the repo
 
 Self-hosted enterprise (your VPC, your data) → https://cerberus.sixsenseenterprise.com
 
@@ -159,7 +159,7 @@ Add to the Products/Services section of the company site.
 > - Works with LangChain, Vercel AI SDK, OpenAI Agents SDK — or zero-code via HTTP gateway
 > - MIT open-source core · Enterprise self-hosted edition
 >
-> [See Live Demo](https://demo.cerberus.sixsenseenterprise.com) · [Enterprise Licensing](https://cerberus.sixsenseenterprise.com)
+> Core proof path available in-repo · [Enterprise Licensing](https://cerberus.sixsenseenterprise.com)
 
 ---
 

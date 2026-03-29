@@ -36,12 +36,10 @@ function makeExecutors(): {
   sendOutboundReport: RawToolExecutorFn;
 } {
   return {
-    readPrivateData: vi.fn(
-      async (_args: Record<string, unknown>): Promise<ToolExecutorResult> => {
-        await Promise.resolve();
-        return PRIVATE_DATA;
-      },
-    ),
+    readPrivateData: vi.fn(async (_args: Record<string, unknown>): Promise<ToolExecutorResult> => {
+      await Promise.resolve();
+      return PRIVATE_DATA;
+    }),
     fetchExternalContent: vi.fn(
       async (_args: Record<string, unknown>): Promise<ToolExecutorResult> => {
         await Promise.resolve();

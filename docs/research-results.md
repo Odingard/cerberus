@@ -420,7 +420,7 @@ Zero false positives across 15 clean control runs.
 
 5. **The cost of attack is negligible.** At ~$0.001 per successful exfiltration using GPT-4o-mini, an attacker can run thousands of attempts against a target for under $1.
 
-6. **Model safety varies dramatically.** Claude Sonnet refuses all 30 payloads. GPT-4o-mini follows every one. Gemini falls in between at 90%. Developers cannot rely on model-level safety alone.
+6. **Model safety varies dramatically.** Anthropic is the most resistant to attacker-directed destination override in the March 2026 protocol, but it does not refuse treatment runs universally and still shows partial or low-success exfiltration behavior. GPT-4o-mini and Gemini are materially more permissive in the same protocol. Developers cannot rely on model-level safety alone.
 
 7. **This is not theoretical.** Every finding in this document is backed by machine-readable execution traces with ground-truth labels, available in [`harness/traces/`](../harness/traces/).
 

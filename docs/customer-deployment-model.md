@@ -10,6 +10,9 @@ across the four product layers:
 - Intelligence
 - Enterprise / Control Plane
 
+For the canonical product-tier definition that complements this deployment
+model, see [product-tiers.md](/Users/dre/prod/cerberus/docs/product-tiers.md).
+
 The goal is simple: Cerberus should not "install itself." It should be deployed
 into known customer control points with a clear ownership model.
 

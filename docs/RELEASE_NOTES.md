@@ -10,7 +10,7 @@
 - **7 sub-classifiers** — outbound correlator joins secrets detector, injection scanner, encoding detector, MCP poisoning scanner, domain classifier, and drift detector
 - **773 tests**, 98%+ coverage
 - **Landing page v1.0.0** — updated stats, Live Demo nav link, Grafana dashboard link, v1.0.0 badge
-- Production deployment: `demo.cerberus.sixsenseenterprise.com` + `grafana.cerberus.sixsenseenterprise.com`
+- Production deployment at the time of v1.0.0 included the hosted demo and Grafana surfaces; current public demo references should be aligned to the active proof path before reuse in launch materials
 
 ### New Attack Scenarios (Playground)
 
